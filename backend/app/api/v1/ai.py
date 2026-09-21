@@ -1,5 +1,6 @@
-﻿from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any
 import httpx
+import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
@@ -76,6 +77,9 @@ Một người học vừa làm câu hỏi trắc nghiệm sau đây và trả l
 {req.raw_explanation or 'Không có'}
 
 ---
+QUY TẮC ĐỊNH DẠNG CÔNG THỨC TOÁN (BẮT BUỘC):
+- Tất cả các ký hiệu toán học (như forall, exists, in, notin, rightarrow, leftrightarrow, land, lor, neg, mathbb, subset,...) PHẢI ĐƯỢC BỌC TRONG DẤU ĐÔ LA: ví dụ `$ \\forall $`, `$ \\exists $`, `$ \\mathbb{{Z}} $`, `$ \\neg p $`, `$ \\rightarrow $`, `$ P(x, y) $`. TUYỆT ĐỐI KHÔNG ĐỂ KÝ HIỆU TRẦN dạng \\forall hay \\exists mà không có dấu `$`.
+
 HÃY GIẢI THÍCH CHO NGƯỜI HỌC THEO ĐÚNG CẤU TRÚC SAU (Trình bày Markdown đẹp mắt, văn phong ấm áp, gần gũi, khích lệ người học):
 
 ### 💡 1. Vì sao bạn chọn nhầm?
@@ -96,7 +100,7 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
         "messages": [
             {
                 "role": "system",
-                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của HNUE PRO, chuyên giải thích kiến thức một cách dễ hiểu nhất, có ví dụ trực quan, sinh động."
+                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của HNUE PRO, chuyên giải thích kiến thức một cách dễ hiểu nhất, có ví dụ trực quan, sinh động. Luôn luôn bọc mọi ký hiệu toán học trong cặp dấu $...$."
             },
             {
                 "role": "user",
@@ -124,11 +128,33 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
                     status_code=status.HTTP_502_BAD_GATEWAY,
                     detail=f"Lỗi dịch vụ AI ({resp.status_code}): {resp.text}"
                 )
-            data = resp.json()
-            explanation_text = data["choices"][0]["message"]["content"]
+            
+            # Xử lý an toàn cả trường hợp trả về JSON thường hoặc text/event-stream
+            content_type = resp.headers.get("content-type", "")
+            explanation_text = ""
+            if "application/json" in content_type:
+                data = resp.json()
+                explanation_text = data["choices"][0]["message"]["content"]
+            else:
+                # Parse SSE chunks
+                chunks = []
+                for line in resp.text.split("\n"):
+                    line = line.strip()
+                    if line.startswith("data: "):
+                        data_str = line[6:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            d = json.loads(data_str)
+                            c = d["choices"][0].get("delta", {}).get("content", "")
+                            if c:
+                                chunks.append(c)
+                        except Exception:
+                            pass
+                explanation_text = "".join(chunks)
             
             # Cache result
-            if req.question_id:
+            if req.question_id and explanation_text:
                 _ai_cache[cache_key] = explanation_text
 
             return AIExplainResponse(explanation=explanation_text, cached=False)

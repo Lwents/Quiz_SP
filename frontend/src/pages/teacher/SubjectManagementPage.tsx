@@ -45,6 +45,7 @@ export const SubjectManagementPage: React.FC = () => {
   const [draggedTopic, setDraggedTopic] = useState<{ subjectId: string; index: number } | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isReordering, setIsReordering] = useState<string | null>(null);
+  const [pendingOrders, setPendingOrders] = useState<Record<string, Topic[]>>({});
 
   // Lessons management modal state
   const [activeTopicForLessons, setActiveTopicForLessons] = useState<{ subject: Subject; topic: Topic } | null>(null);
@@ -304,58 +305,59 @@ export const SubjectManagementPage: React.FC = () => {
       return;
     }
 
-    const currentTopics = [...(topicsMap[subjectId] || [])];
-    const [movedTopic] = currentTopics.splice(fromIndex, 1);
-    currentTopics.splice(dropIndex, 0, movedTopic);
+    const activeList = [...(pendingOrders[subjectId] || topicsMap[subjectId] || [])];
+    const [movedTopic] = activeList.splice(fromIndex, 1);
+    activeList.splice(dropIndex, 0, movedTopic);
 
-    // Optimistic local update
-    setTopicsMap((prev) => ({ ...prev, [subjectId]: currentTopics }));
+    setPendingOrders((prev) => ({ ...prev, [subjectId]: activeList }));
     handleDragEnd();
+    toast.info('Đã thay đổi vị trí. Nhấn "Lưu thay đổi" để xác nhận lưu thứ tự!');
+  };
 
-    // Persist to server
+  // Button move up / down handler
+  const handleMoveTopic = (subjectId: string, currentIndex: number, direction: 'up' | 'down') => {
+    const activeList = [...(pendingOrders[subjectId] || topicsMap[subjectId] || [])];
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= activeList.length) return;
+
+    const temp = activeList[currentIndex];
+    activeList[currentIndex] = activeList[targetIndex];
+    activeList[targetIndex] = temp;
+
+    setPendingOrders((prev) => ({ ...prev, [subjectId]: activeList }));
+    toast.info('Đã thay đổi vị trí. Nhấn "Lưu thay đổi" để xác nhận lưu thứ tự!');
+  };
+
+  const handleSaveOrder = async (subjectId: string) => {
+    const newOrder = pendingOrders[subjectId];
+    if (!newOrder) return;
+
+    setIsReordering(subjectId);
     try {
-      setIsReordering(subjectId);
       await apiClient.put(`/subjects/${subjectId}/topics/reorder`, {
-        topic_ids: currentTopics.map((t) => t.id),
+        topic_ids: newOrder.map((t) => t.id),
       });
+      setTopicsMap((prev) => ({ ...prev, [subjectId]: newOrder }));
+      setPendingOrders((prev) => {
+        const next = { ...prev };
+        delete next[subjectId];
+        return next;
+      });
+      toast.success('Đã lưu thứ tự các chương học thành công!');
     } catch (err) {
-      console.error('Failed to reorder topics:', err);
-      // Revert if error
-      const tRes = await apiClient.get(`/subjects/${subjectId}/topics`);
-      setTopicsMap((prev) => ({ ...prev, [subjectId]: tRes.data }));
-      toast.error('Không thể lưu thứ tự mới cho chủ đề.');
+      toast.error('Không thể lưu thứ tự chủ đề');
     } finally {
       setIsReordering(null);
     }
   };
 
-  // Button move up / down handler
-  const handleMoveTopic = async (subjectId: string, currentIndex: number, direction: 'up' | 'down') => {
-    const currentTopics = [...(topicsMap[subjectId] || [])];
-    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    if (targetIndex < 0 || targetIndex >= currentTopics.length) return;
-
-    const temp = currentTopics[currentIndex];
-    currentTopics[currentIndex] = currentTopics[targetIndex];
-    currentTopics[targetIndex] = temp;
-
-    // Optimistic local update
-    setTopicsMap((prev) => ({ ...prev, [subjectId]: currentTopics }));
-
-    // Persist to server
-    try {
-      setIsReordering(subjectId);
-      await apiClient.put(`/subjects/${subjectId}/topics/reorder`, {
-        topic_ids: currentTopics.map((t) => t.id),
-      });
-    } catch (err) {
-      console.error('Failed to reorder topics:', err);
-      const tRes = await apiClient.get(`/subjects/${subjectId}/topics`);
-      setTopicsMap((prev) => ({ ...prev, [subjectId]: tRes.data }));
-      toast.error('Không thể di chuyển chủ đề.');
-    } finally {
-      setIsReordering(null);
-    }
+  const handleCancelOrder = (subjectId: string) => {
+    setPendingOrders((prev) => {
+      const next = { ...prev };
+      delete next[subjectId];
+      return next;
+    });
+    toast.info('Đã hủy thay đổi thứ tự');
   };
 
   if (loading) {
@@ -429,7 +431,8 @@ export const SubjectManagementPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {subjects.map((sub) => {
-            const topics = topicsMap[sub.id] || [];
+            const topics = pendingOrders[sub.id] || topicsMap[sub.id] || [];
+            const hasChanges = Boolean(pendingOrders[sub.id]);
             const isAddingTopic = activeSubjectForTopic === sub.id;
             const isSavingThisSubject = isReordering === sub.id;
 
@@ -502,19 +505,42 @@ export const SubjectManagementPage: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      {!isAddingTopic && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveSubjectForTopic(sub.id);
-                            setNewTopicName('');
-                            setNewTopicDesc('');
-                          }}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition cursor-pointer"
-                        >
-                          <Plus className="w-3 h-3" /> Thêm chủ đề
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {hasChanges && (
+                          <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg animate-in fade-in">
+                            <span className="text-[11px] text-amber-800 font-medium hidden sm:inline">Chưa lưu:</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCancelOrder(sub.id)}
+                              className="px-2 py-0.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-200 rounded transition cursor-pointer"
+                            >
+                              Hủy
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isSavingThisSubject}
+                              onClick={() => handleSaveOrder(sub.id)}
+                              className="px-2.5 py-0.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded transition flex items-center gap-1 shadow-2xs cursor-pointer disabled:opacity-50"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>{isSavingThisSubject ? 'Đang lưu...' : 'Lưu thay đổi'}</span>
+                            </button>
+                          </div>
+                        )}
+                        {!isAddingTopic && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveSubjectForTopic(sub.id);
+                              setNewTopicName('');
+                              setNewTopicDesc('');
+                            }}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" /> Thêm chủ đề
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Inline Add Topic Box */}

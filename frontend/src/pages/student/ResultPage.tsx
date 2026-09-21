@@ -1,6 +1,8 @@
 import { toast } from '../../stores/toastStore';
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import { apiClient } from '../../api/client';
 import { AttemptResult } from '../../types';
 import {
@@ -16,9 +18,96 @@ import {
   ChevronUp,
 } from 'lucide-react';
 
-// Lightweight parser to render AI markdown with rich visual sections
+// Helper to render KaTeX formula safely
+const renderKatexSafe = (formula: string, displayMode: boolean = false): string => {
+  try {
+    return katex.renderToString(formula.trim(), { displayMode, throwOnError: false });
+  } catch (e) {
+    return formula;
+  }
+};
+
+// Replace math blocks, inline math, and bare LaTeX commands into encoded HTML tokens
+const preprocessAllMath = (text: string): string => {
+  // 1. Block math $$...$$
+  let out = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
+    const rendered = renderKatexSafe(math, true);
+    return `###MATH_BLOCK###${encodeURIComponent(rendered)}###END###`;
+  });
+
+  // 2. Inline math $...$
+  out = out.replace(/\$([^\$\n]+?)\$/g, (_, math) => {
+    const rendered = renderKatexSafe(math, false);
+    return `###MATH_INLINE###${encodeURIComponent(rendered)}###END###`;
+  });
+
+  // 3. Bare LaTeX commands without $...$, e.g. \forall, \exists, \mathbb{Z}, \rightarrow, etc.
+  out = out.replace(/(\\[a-zA-Z]+(?:\{[^{}]*\})?)/g, (match) => {
+    try {
+      const rendered = katex.renderToString(match, { throwOnError: true });
+      return `###MATH_INLINE###${encodeURIComponent(rendered)}###END###`;
+    } catch {
+      return match;
+    }
+  });
+
+  return out;
+};
+
+// Render string containing markdown bold and math tokens into ReactNode
+const renderProcessedInline = (text: string): React.ReactNode => {
+  const parts = text.split(/(###MATH_BLOCK###.*?###END###|###MATH_INLINE###.*?###END###|\*\*.*?\*\*|`.*?`)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith('###MATH_BLOCK###') && part.endsWith('###END###')) {
+      const encodedHtml = part.replace('###MATH_BLOCK###', '').replace('###END###', '');
+      const html = decodeURIComponent(encodedHtml);
+      return (
+        <div
+          key={`mb-${index}`}
+          className="my-2 p-2 rounded-lg bg-indigo-50/50 text-center overflow-x-auto"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
+    }
+
+    if (part.startsWith('###MATH_INLINE###') && part.endsWith('###END###')) {
+      const encodedHtml = part.replace('###MATH_INLINE###', '').replace('###END###', '');
+      const html = decodeURIComponent(encodedHtml);
+      return (
+        <span
+          key={`mi-${index}`}
+          className="inline-block px-0.5 mx-0.5 text-indigo-950 font-medium align-baseline"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
+    }
+
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={`b-${index}`} className="font-bold text-slate-900">
+          {renderProcessedInline(part.slice(2, -2))}
+        </strong>
+      );
+    }
+
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code key={`cd-${index}`} className="font-mono text-xs bg-indigo-50 text-indigo-800 px-1.5 py-0.5 rounded border border-indigo-200/60">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+
+    return part;
+  });
+};
+
+// Full AI Explanation Markdown Renderer
 const renderFormattedAI = (content: string) => {
-  const lines = content.split('\n');
+  // Preprocess all math first
+  const preprocessed = preprocessAllMath(content);
+  const lines = preprocessed.split('\n');
   const elements: React.ReactNode[] = [];
   let listItems: string[] = [];
 
@@ -29,32 +118,14 @@ const renderFormattedAI = (content: string) => {
       elements.push(
         <ul key={`list-${elements.length}`} className="space-y-1.5 my-2 pl-1">
           {currentList.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-700">
+            <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-slate-700 leading-relaxed">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0"></span>
-              <div>{renderInlineMarkdown(item)}</div>
+              <div className="flex-1">{renderProcessedInline(item)}</div>
             </li>
           ))}
         </ul>
       );
     }
-  };
-
-  const renderInlineMarkdown = (text: string) => {
-    // Replace inline code or math $...$ with highlighted span
-    const parts = text.split(/(\*\*.*?\*\*|\$.*?\$|`.*?`)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={index} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
-      }
-      if ((part.startsWith('$') && part.endsWith('$')) || (part.startsWith('`') && part.endsWith('`'))) {
-        return (
-          <span key={index} className="font-mono font-semibold text-indigo-700 bg-indigo-50 px-1 py-0.5 rounded text-[12px]">
-            {part.slice(1, -1)}
-          </span>
-        );
-      }
-      return part;
-    });
   };
 
   lines.forEach((line, idx) => {
@@ -79,7 +150,7 @@ const renderFormattedAI = (content: string) => {
           key={`h-${idx}`}
           className={`font-bold text-xs sm:text-sm px-3 py-1.5 rounded-lg border my-2.5 ${headerTheme}`}
         >
-          {renderInlineMarkdown(title)}
+          {renderProcessedInline(title)}
         </div>
       );
       return;
@@ -95,7 +166,7 @@ const renderFormattedAI = (content: string) => {
       flushList();
       elements.push(
         <div key={`q-${idx}`} className="p-3 bg-white/90 rounded-xl border border-indigo-100 text-xs sm:text-sm text-indigo-950 font-medium italic my-2 shadow-2xs">
-          {renderInlineMarkdown(trimmed.slice(2))}
+          {renderProcessedInline(trimmed.slice(2))}
         </div>
       );
       return;
@@ -106,11 +177,24 @@ const renderFormattedAI = (content: string) => {
       return;
     }
 
+    // Numbered list
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (numMatch) {
+      flushList();
+      elements.push(
+        <div key={`nl-${idx}`} className="flex items-start gap-2 text-xs sm:text-sm text-slate-700 leading-relaxed my-1.5">
+          <span className="font-bold text-indigo-600 mt-0.5">{numMatch[1]}.</span>
+          <div className="flex-1">{renderProcessedInline(numMatch[2])}</div>
+        </div>
+      );
+      return;
+    }
+
     // Regular paragraph
     flushList();
     elements.push(
       <p key={`p-${idx}`} className="text-xs sm:text-sm text-slate-700 leading-relaxed my-1.5">
-        {renderInlineMarkdown(trimmed)}
+        {renderProcessedInline(trimmed)}
       </p>
     );
   });
@@ -131,6 +215,9 @@ export const ResultPage: React.FC = () => {
   const [loadingAi, setLoadingAi] = useState<Record<string, boolean>>({});
   const [expandedAi, setExpandedAi] = useState<Record<string, boolean>>({});
 
+  // Ref to trigger auto AI exactly once
+  const autoTriggeredRef = useRef(false);
+
   useEffect(() => {
     fetchResult();
   }, [attemptId]);
@@ -139,7 +226,19 @@ export const ResultPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await apiClient.get(`/attempts/${attemptId}/result`);
-      setResult(res.data);
+      const data: AttemptResult = res.data;
+      setResult(data);
+
+      // TỰ ĐỘNG GỌI GIA SƯ AI CHO TẤT CẢ CÁC CÂU LÀM SAI HOẶC BỎ TRỐNG NGAY KHI VÀO TRANG KẾT QUẢ
+      if (!autoTriggeredRef.current && data.questions_review) {
+        autoTriggeredRef.current = true;
+        const wrongItems = data.questions_review.filter(
+          (item) => item.is_correct !== 'true'
+        );
+        wrongItems.forEach((rev) => {
+          triggerAiForQuestion(rev.question.id, rev);
+        });
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.detail?.error?.message || 'Không thể tải kết quả bài làm');
       navigate('/practice');
@@ -148,8 +247,8 @@ export const ResultPage: React.FC = () => {
     }
   };
 
-  const handleAskAI = async (questionId: string, rev: any) => {
-    if (loadingAi[questionId]) return;
+  const triggerAiForQuestion = async (questionId: string, rev: any) => {
+    if (loadingAi[questionId] || aiExplanations[questionId]) return;
 
     setLoadingAi((prev) => ({ ...prev, [questionId]: true }));
     setExpandedAi((prev) => ({ ...prev, [questionId]: true }));
@@ -168,10 +267,14 @@ export const ResultPage: React.FC = () => {
       const res = await apiClient.post('/ai/explain', payload);
       setAiExplanations((prev) => ({ ...prev, [questionId]: res.data.explanation }));
     } catch (err: any) {
-      toast.error('Không thể kết nối với Gia sư AI. Vui lòng thử lại sau giây lát.', 'Lỗi dịch vụ AI');
+      console.warn(`Lỗi gọi AI cho câu hỏi ${questionId}:`, err);
     } finally {
       setLoadingAi((prev) => ({ ...prev, [questionId]: false }));
     }
+  };
+
+  const handleAskAI = (questionId: string, rev: any) => {
+    triggerAiForQuestion(questionId, rev);
   };
 
   if (loading || !result) {
@@ -264,9 +367,9 @@ export const ResultPage: React.FC = () => {
           <div className="bg-blue-50/60 p-3.5 rounded-2xl border border-blue-100">
             <div className="flex items-center justify-center gap-1 text-blue-700 font-bold text-lg">
               <Clock className="w-5 h-5" />
-              <span className="text-sm">{Math.round(result.duration_seconds / 60)}m</span>
+              <span>{formatSeconds(result.duration_seconds)}</span>
             </div>
-            <span className="text-xs text-blue-800 font-medium">{formatSeconds(result.duration_seconds)}</span>
+            <span className="text-xs text-blue-800 font-medium">Thời gian thi</span>
           </div>
         </div>
 
@@ -274,7 +377,7 @@ export const ResultPage: React.FC = () => {
         <div className="flex items-center justify-center gap-3 mt-8">
           <Link
             to={`/practice/${result.quiz_id}`}
-            className="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-xs flex items-center gap-2 cursor-pointer"
+            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2 cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" /> Làm lại bài này
           </Link>
@@ -288,7 +391,7 @@ export const ResultPage: React.FC = () => {
             <div>
               <h2 className="text-xl font-bold text-slate-900">Chi tiết đáp án & lời giải</h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Xem lại các câu trả lời và sử dụng Gia sư AI để hiểu thấu đáo các câu chưa làm đúng
+                Xem lại các câu trả lời và Gia sư AI tự động phân tích chi tiết các câu chưa làm đúng
               </p>
             </div>
 
@@ -413,7 +516,7 @@ export const ResultPage: React.FC = () => {
                         {isAiLoading ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Gia sư AI đang phân tích lỗi sai và tạo ví dụ...</span>
+                            <span>Gia sư AI đang tự động phân tích lỗi sai & tạo ví dụ...</span>
                           </>
                         ) : (
                           <>
@@ -428,61 +531,23 @@ export const ResultPage: React.FC = () => {
                       </button>
                     ) : (
                       /* AI Explanation Card */
-                      <div className="bg-gradient-to-br from-indigo-50/90 via-purple-50/50 to-blue-50/70 border border-indigo-200 rounded-2xl p-5 shadow-xs space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between gap-3 pb-3 border-b border-indigo-100">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs">
-                              <Sparkles className="w-4 h-4 text-amber-300" />
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-black text-indigo-950 uppercase tracking-wide">
-                                  Gia sư AI HNUE PRO
-                                </span>
-                                <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-indigo-100 text-indigo-700">
-                                  Gemini 3.8 Flash
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-indigo-600/90 font-medium">
-                                Phân tích lỗi sai • Giải thích trực quan • Ví dụ minh họa chọn đáp án
-                              </p>
-                            </div>
+                      <div className="rounded-2xl border border-indigo-200 bg-gradient-to-b from-indigo-50/90 to-white shadow-xs overflow-hidden">
+                        <div
+                          onClick={() => setExpandedAi((prev) => ({ ...prev, [qId]: !isAiExpanded }))}
+                          className="px-5 py-3.5 bg-gradient-to-r from-indigo-100/80 via-blue-50 to-indigo-100/80 border-b border-indigo-200/60 flex items-center justify-between cursor-pointer select-none"
+                        >
+                          <div className="flex items-center gap-2 text-indigo-950 font-extrabold text-xs sm:text-sm">
+                            <Sparkles className="w-4 h-4 text-amber-500" />
+                            <span>Gia sư AI Sư phạm (Phân tích lỗi sai & Ví dụ thực tế)</span>
                           </div>
-
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleAskAI(qId, rev)}
-                              className="text-xs text-indigo-600 hover:text-indigo-800 p-1 rounded hover:bg-indigo-100/50 cursor-pointer"
-                              title="Tạo lại lời giải thích"
-                            >
-                              <RotateCcw className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setExpandedAi((prev) => ({
-                                  ...prev,
-                                  [qId]: !isAiExpanded,
-                                }))
-                              }
-                              className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs hover:bg-indigo-50 transition cursor-pointer"
-                            >
-                              {isAiExpanded ? (
-                                <>
-                                  Thu gọn <ChevronUp className="w-3 h-3" />
-                                </>
-                              ) : (
-                                <>
-                                  Mở rộng <ChevronDown className="w-3 h-3" />
-                                </>
-                              )}
-                            </button>
+                          <div className="flex items-center gap-1.5 text-xs text-indigo-700 font-semibold">
+                            <span>{isAiExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
+                            {isAiExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </div>
                         </div>
 
                         {isAiExpanded && (
-                          <div className="pt-1">
+                          <div className="p-5 space-y-3 animate-in fade-in duration-200">
                             {renderFormattedAI(aiExplanations[qId])}
                           </div>
                         )}
