@@ -84,24 +84,38 @@ async def seed_data():
             subject.description = "Môn học nền tảng Khoa học Máy tính & Công nghệ Thông tin - Trường Đại học Sư phạm Hà Nội (HNUE). Bao gồm Logic mệnh đề, vị ngữ, lượng tử, suy luận toán học, tập hợp, quan hệ, đại số Boole và lý thuyết đồ thị."
             await session.commit()
 
-        # 4. Các chủ đề chuẩn của môn Toán rời rạc
+        # 4. Các chủ đề chuẩn của môn Toán rời rạc (khớp với lộ trình 5 chương học)
         topics_data = [
-            ("Chương 1: Mệnh đề, vị ngữ và lượng tử", "Các phép toán logic, bảng chân trị, tương đương logic, lượng tử và vị từ."),
-            ("Chương 2: Tập hợp, quan hệ và hàm số", "Tập hợp, các phép toán tập hợp, quan hệ tương đương, quan hệ thứ tự, ánh xạ."),
-            ("Chương 3: Đại số Boole và mạch logic", "Đại số Boole, hàm Boole, biểu diễn hàm Boole, tối tiểu hóa hàm Boole."),
-            ("Chương 4: Lý thuyết đồ thị và cây", "Định nghĩa đồ thị, đường đi, chu trình, đồ thị Euler, Hamilton, cây và ứng dụng.")
+            ("Chương 1: Logic mệnh đề và suy luận", "Khái niệm mệnh đề, các phép toán logic, bảng chân trị, tương đương logic, vị ngữ, lượng tử và các quy tắc suy luận.", 0),
+            ("Chương 2: Lý thuyết tập hợp", "Khái niệm tập hợp, các phép toán hợp, giao, hiệu, phần bù, tích Descartes, ánh xạ và lực lượng tập hợp.", 1),
+            ("Chương 3: Lý thuyết tổ hợp", "Các nguyên lý đếm cơ bản (cộng, nhân, trừ, Dirichlet), chỉnh hợp, hoán vị, tổ hợp và bài toán liệt kê cấu hình.", 2),
+            ("Chương 4: Đại số Boole", "Khái niệm đại số Boole, hàm Boole, bảng chân trị, dạng chuẩn tắc tuyển/hội, rút gọn hàm Boole và thiết kế mạch logic.", 3),
+            ("Chương 5: Lý thuyết đồ thị", "Định nghĩa đồ thị vô hướng/có hướng, các đơn đồ thị đặc biệt, đường đi, chu trình, đồ thị Euler, Hamilton, cây và cây khung nhỏ nhất.", 4),
         ]
         topic_map = {}
-        for top_name, top_desc in topics_data:
+        for top_name, top_desc, top_order in topics_data:
             t = (await session.execute(select(Topic).where(Topic.subject_id == subject.id, Topic.name == top_name))).scalar_one_or_none()
             if not t:
-                t = Topic(subject_id=subject.id, name=top_name, description=top_desc)
+                t = Topic(subject_id=subject.id, name=top_name, description=top_desc, order=top_order)
                 session.add(t)
                 await session.flush()
+            else:
+                t.order = top_order
+                t.description = top_desc
+                await session.flush()
             topic_map[top_name] = t
+
+        # Xóa các topic rỗng không thuộc 5 chương chuẩn
+        valid_topic_ids = [t.id for t in topic_map.values()]
+        extra_topics = (await session.execute(
+            select(Topic).where(Topic.subject_id == subject.id, ~Topic.id.in_(valid_topic_ids))
+        )).scalars().all()
+        for et in extra_topics:
+            await session.delete(et)
+
         await session.commit()
 
-        topic_1 = topic_map["Chương 1: Mệnh đề, vị ngữ và lượng tử"]
+        topic_1 = topic_map["Chương 1: Logic mệnh đề và suy luận"]
 
         # 5. Nạp Đề thi thật: Quiz 1.2 (23 câu hỏi thật từ ngân hàng đề HNUE)
         quiz_12_res = await session.execute(select(Quiz).where(Quiz.slug == "quiz-1-2-tuong-duong-logic-vi-ngu-luong-tu"))
@@ -126,6 +140,9 @@ async def seed_data():
             session.add(quiz_12)
             await session.commit()
             await session.refresh(quiz_12)
+        else:
+            quiz_12.topic_id = topic_1.id
+            await session.commit()
 
         # Kiểm tra và nạp 23 câu hỏi thật từ quiz_data.json
         cur_qqs = (await session.execute(select(QuizQuestion).where(QuizQuestion.quiz_id == quiz_12.id))).scalars().all()
@@ -134,7 +151,6 @@ async def seed_data():
                 await session.delete(eq)
             await session.flush()
 
-            # Tìm đường dẫn quiz_data.json
             possible_paths = [
                 os.path.join(os.path.dirname(__file__), "data", "quiz_data.json"),
                 "/app/app/data/quiz_data.json",

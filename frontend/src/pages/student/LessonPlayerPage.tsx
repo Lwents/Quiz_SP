@@ -34,14 +34,7 @@ import {
 
 // Helper to render KaTeX formula safely
 const renderKatexSafe = (formula: string, displayMode: boolean = false): string => {
-  let cleaned = formula.trim();
-  // Auto-heal any broken eg( or eg p
-  if (cleaned.includes('eg(') || cleaned.includes('eg p') || cleaned.includes('eg q')) {
-    cleaned = cleaned
-      .replace(/eg\(/g, '\\neg(')
-      .replace(/eg p/g, '\\neg p')
-      .replace(/eg q/g, '\\neg q');
-  }
+  const cleaned = formula.trim();
   try {
     return katex.renderToString(cleaned, { displayMode, throwOnError: false });
   } catch (e) {
