@@ -1,3 +1,4 @@
+import { ConfirmStartQuizModal, ConfirmQuizInfo } from "../../components/ConfirmStartQuizModal";
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import katex from 'katex';
@@ -63,6 +64,26 @@ export const LessonPlayerPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [selectedQuizForConfirm, setSelectedQuizForConfirm] = useState<ConfirmQuizInfo | null>(null);
+
+  const handleOpenQuizConfirm = (qz: { id: string; title: string; duration_minutes: number; pass_score?: number }) => {
+    setSelectedQuizForConfirm({
+      id: qz.id,
+      title: qz.title,
+      duration_minutes: qz.duration_minutes,
+      pass_score: qz.pass_score,
+    });
+    setQuizModalOpen(true);
+  };
+
+  const handleConfirmStart = () => {
+    if (selectedQuizForConfirm) {
+      const qid = selectedQuizForConfirm.id;
+      setQuizModalOpen(false);
+      navigate(`/practice/${qid}`);
+    }
+  };
 
   useEffect(() => {
     if (lessonId) {
@@ -500,14 +521,18 @@ export const LessonPlayerPage: React.FC = () => {
 
                 {/* Quizzes inside topic */}
                 {top.quizzes.map((qz) => (
-                  <Link
+                  <button
                     key={qz.id}
-                    to={`/practice/${qz.id}`}
-                    className="flex items-center gap-2 p-2 rounded-xl text-xs text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100/70 transition font-semibold"
+                    type="button"
+                    onClick={() => {
+                      setSidebarOpen(false);
+                      handleOpenQuizConfirm(qz);
+                    }}
+                    className="w-full text-left flex items-center gap-2 p-2 rounded-xl text-xs text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100/70 transition font-semibold cursor-pointer"
                   >
                     <FileCheck2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                     <span className="truncate flex-1">Đề thi: {qz.title}</span>
-                  </Link>
+                  </button>
                 ))}
               </div>
             ))}
@@ -703,13 +728,14 @@ export const LessonPlayerPage: React.FC = () => {
                       Thời gian: {lesson.quiz_info.duration_minutes} phút • Điểm đạt: {lesson.quiz_info.pass_score}
                     </p>
                   </div>
-                  <Link
-                    to={`/practice/${lesson.quiz_info.id}`}
+                  <button
+                    type="button"
+                    onClick={() => handleOpenQuizConfirm(lesson.quiz_info!)}
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>Làm bài kiểm tra ngay</span>
                     <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  </button>
                 </div>
               </div>
             )}
@@ -774,6 +800,13 @@ export const LessonPlayerPage: React.FC = () => {
           </div>
         </main>
       </div>
+      {/* Modal Xác nhận làm bài thi */}
+      <ConfirmStartQuizModal
+        isOpen={quizModalOpen}
+        onClose={() => setQuizModalOpen(false)}
+        onConfirm={handleConfirmStart}
+        quiz={selectedQuizForConfirm}
+      />
     </div>
   );
 };

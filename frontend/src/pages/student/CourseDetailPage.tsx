@@ -1,3 +1,4 @@
+import { ConfirmStartQuizModal, ConfirmQuizInfo } from "../../components/ConfirmStartQuizModal";
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
@@ -33,6 +34,26 @@ export const CourseDetailPage: React.FC = () => {
   const [curriculum, setCurriculum] = useState<CourseCurriculum | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedTopics, setExpandedTopics] = useState<Record<string, boolean>>({});
+  const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [selectedQuizForConfirm, setSelectedQuizForConfirm] = useState<ConfirmQuizInfo | null>(null);
+
+  const handleOpenQuizConfirm = (qz: { id: string; title: string; duration_minutes: number; pass_score?: number }) => {
+    setSelectedQuizForConfirm({
+      id: qz.id,
+      title: qz.title,
+      duration_minutes: qz.duration_minutes,
+      pass_score: qz.pass_score,
+    });
+    setQuizModalOpen(true);
+  };
+
+  const handleConfirmStart = () => {
+    if (selectedQuizForConfirm) {
+      const qid = selectedQuizForConfirm.id;
+      setQuizModalOpen(false);
+      navigate(`/practice/${qid}`);
+    }
+  };
 
   useEffect(() => {
     if (subjectId) {
@@ -432,13 +453,14 @@ export const CourseDetailPage: React.FC = () => {
                                   </div>
                                 </div>
 
-                                <Link
-                                  to={`/practice/${qz.id}`}
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenQuizConfirm(qz)}
                                   className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-2xs transition flex items-center gap-1.5 shrink-0 cursor-pointer"
                                 >
                                   <span>Làm bài thi</span>
                                   <ArrowRight className="w-3 h-3" />
-                                </Link>
+                                </button>
                               </div>
                             ))}
                           </div>
@@ -452,6 +474,13 @@ export const CourseDetailPage: React.FC = () => {
           )}
         </div>
       </div>
+      {/* Modal Xác nhận làm bài thi */}
+      <ConfirmStartQuizModal
+        isOpen={quizModalOpen}
+        onClose={() => setQuizModalOpen(false)}
+        onConfirm={handleConfirmStart}
+        quiz={selectedQuizForConfirm}
+      />
     </div>
   );
 };

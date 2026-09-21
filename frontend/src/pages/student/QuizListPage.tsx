@@ -1,3 +1,5 @@
+import { ConfirmStartQuizModal, ConfirmQuizInfo } from "../../components/ConfirmStartQuizModal";
+import { useNavigate } from "react-router-dom";
 ﻿import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
@@ -14,6 +16,29 @@ import {
 } from 'lucide-react';
 
 export const QuizListPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [selectedQuizForConfirm, setSelectedQuizForConfirm] = useState<ConfirmQuizInfo | null>(null);
+
+  const handleOpenQuizConfirm = (qz: { id: string; title: string; duration_minutes: number; pass_score?: number; question_count?: number }, inProgress?: boolean) => {
+    setSelectedQuizForConfirm({
+      id: qz.id,
+      title: qz.title,
+      duration_minutes: qz.duration_minutes,
+      pass_score: qz.pass_score,
+      question_count: qz.question_count,
+      isInProgress: inProgress,
+    });
+    setQuizModalOpen(true);
+  };
+
+  const handleConfirmStart = () => {
+    if (selectedQuizForConfirm) {
+      const qid = selectedQuizForConfirm.id;
+      setQuizModalOpen(false);
+      navigate(`/practice/${qid}`);
+    }
+  };
   const [searchParams, setSearchParams] = useSearchParams();
   const subjectParam = searchParams.get('subject') || '';
 
@@ -174,13 +199,14 @@ export const QuizListPage: React.FC = () => {
             </div>
           </div>
 
-          <Link
-            to={`/practice/${inProgressQuiz.id}`}
+          <button
+            type="button"
+            onClick={() => handleOpenQuizConfirm(inProgressQuiz, true)}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm rounded-xl transition shadow-xs shrink-0 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
             <span>Tiếp tục làm tiếp</span>
-          </Link>
+          </button>
         </div>
       )}
 
@@ -407,21 +433,23 @@ export const QuizListPage: React.FC = () => {
                     </div>
 
                     {isInProgress ? (
-                      <Link
-                        to={`/practice/${quiz.id}`}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenQuizConfirm(quiz, true)}
                         className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-xs group-hover:shadow cursor-pointer"
                       >
                         <Play className="w-4 h-4 fill-white" />
                         <span>Tiếp tục làm bài</span>
-                      </Link>
+                      </button>
                     ) : (
-                      <Link
-                        to={`/practice/${quiz.id}`}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenQuizConfirm(quiz, false)}
                         className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-xs group-hover:shadow cursor-pointer"
                       >
                         <span>Bắt đầu làm bài</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                      </Link>
+                      </button>
                     )}
                   </div>
                 );
@@ -430,6 +458,13 @@ export const QuizListPage: React.FC = () => {
           )}
         </div>
       )}
+      {/* Modal Xác nhận làm bài thi */}
+      <ConfirmStartQuizModal
+        isOpen={quizModalOpen}
+        onClose={() => setQuizModalOpen(false)}
+        onConfirm={handleConfirmStart}
+        quiz={selectedQuizForConfirm}
+      />
     </div>
   );
 };
