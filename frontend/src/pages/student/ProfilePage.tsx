@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from '../../stores/toastStore';
@@ -18,6 +19,8 @@ import {
   TrendingUp,
   Sparkles,
   Smile,
+  PlusCircle,
+  Layers,
   X,
 } from 'lucide-react';
 
@@ -225,7 +228,25 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         {/* Action Tabs Switcher */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 z-10 shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 z-10 shrink-0">
+          {user && (user.role === 'ADMIN' || (user.role as any) === 'TEACHER') && (
+            <>
+              <Link
+                to="/teacher"
+                className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-amber-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5 border border-amber-300/30 bg-amber-500/10"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-amber-300" />
+                <span>Quản trị đề thi</span>
+              </Link>
+              <Link
+                to="/teacher/subjects"
+                className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-amber-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5 border border-amber-300/30 bg-amber-500/10 mr-1"
+              >
+                <Layers className="w-3.5 h-3.5 text-amber-300" />
+                <span>Môn học & Khóa học</span>
+              </Link>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setActiveTab('profile')}

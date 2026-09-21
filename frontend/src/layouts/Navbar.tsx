@@ -80,34 +80,7 @@ export const Navbar: React.FC = () => {
 
               
 
-              {isAdmin && (
-                <>
-                  <Link
-                    to="/teacher"
-                    onClick={(e) => handleGuardedNav(e, '/teacher')}
-                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                      location.pathname === '/teacher' || (location.pathname.startsWith('/teacher/quizzes') && !location.pathname.startsWith('/teacher/subjects'))
-                        ? 'text-blue-600 bg-blue-50 font-semibold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    Quản trị đề thi
-                  </Link>
-                  <Link
-                    to="/teacher/subjects"
-                    onClick={(e) => handleGuardedNav(e, '/teacher/subjects')}
-                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                      location.pathname.startsWith('/teacher/subjects')
-                        ? 'text-blue-600 bg-blue-50 font-semibold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Layers className="w-4 h-4" />
-                    Môn học & Khóa học
-                  </Link>
-                </>
-              )}
+              
             </nav>
           </div>
 
