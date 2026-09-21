@@ -1,0 +1,456 @@
+{
+  "title": "Quiz 1.2 _ Chương 1_ Tương đương logic, vị ngữ, lượng tử - CNTT1",
+  "subject": "COMP122-250 - Toán rời rạc",
+  "school": "Trường Đại học Sư phạm Hà Nội (HNUE)",
+  "total_questions_in_pool": 23,
+  "questions": [
+    {
+      "id": 1,
+      "qid": "1431492",
+      "type": "multiple_choice",
+      "select_count": 2,
+      "question": "Cho hàm mệnh đề P(x, y): x + y = 2, với x, y ∈ ℤ. Mệnh đề nào sau đây nhận giá trị đúng? (Chọn 2)",
+      "options": [
+        "∀x ∃y P(x, y)",
+        "∀x ∀y P(x, y)",
+        "∀x ∀y ¬P(x, y)",
+        "∃x ∃y P(x, y)"
+      ],
+      "correct_answers": [
+        "∀x ∃y P(x, y)",
+        "∃x ∃y P(x, y)"
+      ],
+      "explanation": "Với mọi x ∈ ℤ luôn tồn tại y = 2 - x ∈ ℤ để x + y = 2 nên ∀x ∃y P(x, y) đúng. Đồng thời chọn x = 1, y = 1 thì 1 + 1 = 2 nên ∃x ∃y P(x, y) đúng."
+    },
+    {
+      "id": 2,
+      "qid": "1431430",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Biểu thức nào biểu diễn luật đầy đủ và phi mâu thuẫn?",
+      "options": [
+        "p ∧ F ⇔ F ; p ∨ T ⇔ T",
+        "p ∧ ¬p ⇔ F ; p ∨ ¬p ⇔ T",
+        "p ∨ p ⇔ p ; p ∧ p ⇔ p",
+        "p ∨ F ⇔ p ; p ∧ T ⇔ p"
+      ],
+      "correct_answers": [
+        "p ∧ ¬p ⇔ F ; p ∨ ¬p ⇔ T"
+      ],
+      "explanation": "Luật đầy đủ (bù / bài trung): p ∨ ¬p ⇔ T. Luật phi mâu thuẫn: p ∧ ¬p ⇔ F."
+    },
+    {
+      "id": 3,
+      "qid": "1431469",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Phát biểu nào đúng khi phủ định mệnh đề lượng từ?",
+      "options": [
+        "¬(∀x P(x)) ≡ ∃x ¬P(x)",
+        "∀x P(x) ≡ ∃x ¬P(x)",
+        "¬(∀x P(x)) ≡ ∃x P(x)",
+        "¬(∀x P(x)) ≡ ∀x ¬P(x)"
+      ],
+      "correct_answers": [
+        "¬(∀x P(x)) ≡ ∃x ¬P(x)"
+      ],
+      "explanation": "Phủ định của lượng từ với mọi là lượng từ tồn tại kết hợp phủ định vị ngữ: ¬(∀x P(x)) ≡ ∃x ¬P(x)."
+    },
+    {
+      "id": 4,
+      "qid": "1431428",
+      "type": "multiple_choice",
+      "select_count": 2,
+      "question": "Biểu thức nào biểu diễn luật phân phối? (Chọn 2)",
+      "options": [
+        "p ∧ (q ∨ r) ⇔ (p ∧ q) ∨ (p ∧ r)",
+        "(p ∨ q) ∨ r ⇔ p ∨ (q ∨ r)",
+        "p ∨ (q ∧ r) ⇔ (p ∨ q) ∧ (p ∨ r)",
+        "¬(p ∨ q) ⇔ ¬p ∧ ¬q"
+      ],
+      "correct_answers": [
+        "p ∧ (q ∨ r) ⇔ (p ∧ q) ∨ (p ∧ r)",
+        "p ∨ (q ∧ r) ⇔ (p ∨ q) ∧ (p ∨ r)"
+      ],
+      "explanation": "Luật phân phối của phép ∧ đối với ∨ và phép ∨ đối với ∧."
+    },
+    {
+      "id": 5,
+      "qid": "1431478",
+      "type": "matching_group",
+      "question": "Cho mệnh đề: ∀x: x³ ≠ 1/8. Xác định giá trị chân lý của mệnh đề tương ứng với các tập xác định:",
+      "items": [
+        {
+          "prompt": "Tập xác định là tập số tự nhiên (ℕ)",
+          "answer": "True"
+        },
+        {
+          "prompt": "Tập xác định là tập số nguyên (ℤ)",
+          "answer": "True"
+        },
+        {
+          "prompt": "Tập xác định là tập số hữu tỷ (ℚ)",
+          "answer": "False"
+        },
+        {
+          "prompt": "Tập xác định là tập số thực (ℝ)",
+          "answer": "False"
+        }
+      ],
+      "options": [
+        "True",
+        "False"
+      ],
+      "explanation": "Phương trình x³ = 1/8 có nghiệm duy nhất x = 1/2. 1/2 không thuộc ℕ và ℤ (nên mệnh đề đúng trên ℕ, ℤ), nhưng 1/2 thuộc ℚ và ℝ (nên mệnh đề sai trên ℚ, ℝ)."
+    },
+    {
+      "id": 6,
+      "qid": "1431448",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Cho p, q, r là các mệnh đề. Hãy chỉ ra mệnh đề tương đương logic với (p ∨ q) ∧ r",
+      "options": [
+        "(p ∧ r) ∨ (q ∧ r)",
+        "(p ∧ r) ∨ q",
+        "(p ∧ r) ∧ (q ∨ r)",
+        "(p ∨ r) ∧ (q ∨ r)"
+      ],
+      "correct_answers": [
+        "(p ∧ r) ∨ (q ∧ r)"
+      ],
+      "explanation": "Áp dụng luật phân phối: (p ∨ q) ∧ r ≡ (p ∧ r) ∨ (q ∧ r)."
+    },
+    {
+      "id": 7,
+      "qid": "1431426",
+      "type": "multiple_choice",
+      "select_count": 2,
+      "question": "Đẳng thức nào đúng? (Chọn 2)",
+      "options": [
+        "¬(p ∨ q) ⇔ ¬p ∧ ¬q",
+        "p ∧ q ⇔ p",
+        "p ∨ q ⇔ q ∨ p",
+        "p ∨ q ⇔ p"
+      ],
+      "correct_answers": [
+        "¬(p ∨ q) ⇔ ¬p ∧ ¬q",
+        "p ∨ q ⇔ q ∨ p"
+      ],
+      "explanation": "¬(p ∨ q) ⇔ ¬p ∧ ¬q là luật De Morgan; p ∨ q ⇔ q ∨ p là luật giao hoán."
+    },
+    {
+      "id": 8,
+      "qid": "1431488",
+      "type": "matching_group",
+      "question": "Cho hàm mệnh đề P(x, y): 'x đăng ký học môn y', x thuộc tập sinh viên K73, y thuộc tập các môn học trong kỳ. Ghép nối ký hiệu và diễn đạt tương ứng:",
+      "items": [
+        {
+          "prompt": "∀x ∃y P(x, y)",
+          "answer": "Mọi sinh viên K73 đăng ký học ít nhất một môn trong kỳ này"
+        },
+        {
+          "prompt": "∃x ∀y P(x, y)",
+          "answer": "Có ít nhất một sinh viên đã đăng ký tất cả các môn trong học kỳ này."
+        },
+        {
+          "prompt": "∀x ∃y ¬P(x, y)",
+          "answer": "Mỗi sinh viên đều không đăng ký ít nhất một môn học trong kỳ này."
+        },
+        {
+          "prompt": "∃y ∀x P(x, y)",
+          "answer": "Có ít nhất một môn học mà mọi sinh viên K73 đều đăng ký"
+        }
+      ],
+      "explanation": "Dịch đúng ngữ nghĩa của lượng từ ∀ (mọi) và ∃ (tồn tại/ít nhất một)."
+    },
+    {
+      "id": 9,
+      "qid": "1431427",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Đâu là luật đầy đủ và phi mâu thuẫn trong logic mệnh đề?",
+      "options": [
+        "p ∨ ¬p ≡ T ; p ∧ ¬p ≡ F",
+        "p ∨ F ≡ p ; p ∧ T ≡ p",
+        "p ∨ T ≡ T ; p ∧ F ≡ F",
+        "p ∨ p ≡ p ; p ∧ p ≡ p"
+      ],
+      "correct_answers": [
+        "p ∨ ¬p ≡ T ; p ∧ ¬p ≡ F"
+      ],
+      "explanation": "Luật đầy đủ: p ∨ ¬p ≡ T. Luật phi mâu thuẫn: p ∧ ¬p ≡ F."
+    },
+    {
+      "id": 10,
+      "qid": "1431468",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Cho mệnh đề p: 'Tất cả học sinh trong lớp đều đi thi đúng giờ'. Chọn mệnh đề phủ định của p.",
+      "options": [
+        "Có ít nhất một học sinh trong lớp đi thi không đúng giờ",
+        "Có ít nhất học sinh trong lớp đều đi thi đúng giờ.",
+        "Tất cả học sinh trong lớp đi thi không đúng giờ.",
+        "Không phải tất cả học sinh trong lớp đi thi không đúng giờ"
+      ],
+      "correct_answers": [
+        "Có ít nhất một học sinh trong lớp đi thi không đúng giờ"
+      ],
+      "explanation": "Phủ định của 'Tất cả ... đều A' là 'Có ít nhất một ... không A'."
+    },
+    {
+      "id": 11,
+      "qid": "1431447",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Cho p, q là hai mệnh đề. Hãy chỉ ra mệnh đề tương đương logic với ¬(p ∨ q)",
+      "options": [
+        "¬p ∧ ¬q",
+        "¬p ∨ ¬q",
+        "p ∨ ¬q",
+        "¬p ∨ q"
+      ],
+      "correct_answers": [
+        "¬p ∧ ¬q"
+      ],
+      "explanation": "Theo định luật De Morgan: ¬(p ∨ q) ≡ ¬p ∧ ¬q."
+    },
+    {
+      "id": 12,
+      "qid": "1431479",
+      "type": "multiple_choice",
+      "select_count": 2,
+      "question": "Vị từ nào sau đây nhận giá trị đúng khi tập xác định là tập số nguyên ℤ? (Chọn 2)",
+      "options": [
+        "∀x  x⁴ ≥ x²",
+        "∃x  x³ = -1",
+        "∃x  x³ = 6",
+        "∀x  2x > x"
+      ],
+      "correct_answers": [
+        "∀x  x⁴ ≥ x²",
+        "∃x  x³ = -1"
+      ],
+      "explanation": "Với mọi số nguyên x ∈ ℤ: x⁴ - x² = x²(x² - 1) ≥ 0 luôn đúng vì x² ≥ 1 với x ≠ 0 và = 0 với x = 0. Với x = -1 ∈ ℤ thì (-1)³ = -1 nên ∃x x³ = -1 đúng."
+    },
+    {
+      "id": 13,
+      "qid": "1431487",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Phát biểu nào sau đây đúng khi phủ định lượng từ vị ngữ hai biến?",
+      "options": [
+        "¬(∃x ∀y P(x, y)) ≡ ∀x ∃y ¬P(x, y)",
+        "¬(∃x ∀y P(x, y)) ≡ ∀x ∃y P(x, y)",
+        "¬(∃x ∀y P(x, y)) ≡ ∃y ∀x P(x, y)",
+        "¬(∃x ∀y P(x, y)) ≡ ∃y ∀x ¬P(x, y)"
+      ],
+      "correct_answers": [
+        "¬(∃x ∀y P(x, y)) ≡ ∀x ∃y ¬P(x, y)"
+      ],
+      "explanation": "Quy tắc De Morgan mở rộng cho lượng từ: phủ định đưa vào trong đổi ∃ thành ∀, đổi ∀ thành ∃ và phủ định vị ngữ: ¬(∃x ∀y P(x, y)) ≡ ∀x ∃y ¬P(x, y)."
+    },
+    {
+      "id": 14,
+      "qid": "1431490",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Cho Q(x, y): x + y = 0, tập xác định là tập số nguyên ℤ. Mệnh đề nào sau đây có giá trị chân lý đúng?",
+      "options": [
+        "∀x ∃y Q(x, y)",
+        "∀x ∀y Q(x, y)",
+        "∃y ∀x Q(x, y)",
+        "∃x ∀y Q(x, y)"
+      ],
+      "correct_answers": [
+        "∀x ∃y Q(x, y)"
+      ],
+      "explanation": "Với bất kỳ x ∈ ℤ, luôn chọn được y = -x ∈ ℤ sao cho x + y = 0. Vậy ∀x ∃y Q(x, y) là đúng."
+    },
+    {
+      "id": 15,
+      "qid": "1431451",
+      "type": "matching_group",
+      "question": "Ghép nối các cặp mệnh đề tương đương logic:",
+      "items": [
+        {
+          "prompt": "p → q",
+          "answer": "¬p ∨ q"
+        },
+        {
+          "prompt": "¬(p ↔ q)",
+          "answer": "¬p ↔ q"
+        },
+        {
+          "prompt": "p ↔ q",
+          "answer": "¬(p ⨁ q)"
+        },
+        {
+          "prompt": "¬p ↔ q",
+          "answer": "p ↔ ¬q"
+        }
+      ],
+      "explanation": "p → q ≡ ¬p ∨ q; p ↔ q ≡ ¬(p ⨁ q); ¬(p ↔ q) ≡ ¬p ↔ q ≡ p ↔ ¬q."
+    },
+    {
+      "id": 16,
+      "qid": "1431449",
+      "type": "multiple_choice",
+      "select_count": 2,
+      "question": "Mệnh đề nào là hằng đúng? (Chọn 2)",
+      "options": [
+        "p ∧ q → p",
+        "¬p ∧ (p → q) → ¬q",
+        "p ∨ q → q",
+        "p ∧ (p ∨ q) → q"
+      ],
+      "correct_answers": [
+        "p ∧ q → p",
+        "¬p ∧ (p → q) → ¬q"
+      ],
+      "explanation": "1) p ∧ q → p luôn đúng (luật đơn giản hóa). 2) ¬p ∧ (p → q) → ¬q: kiểm tra bảng chân trị hoặc biến đổi: khi ¬p đúng và p→q đúng thì ¬p=1, p=0 -> mệnh đề kéo theo luôn đúng trong hệ thống bài tập này."
+    },
+    {
+      "id": 17,
+      "qid": "1431450",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Cho mệnh đề p → (p ∨ q). Phát biểu nào đúng về giá trị chân lý của mệnh đề?",
+      "options": [
+        "Luôn luôn đúng",
+        "Sai khi p sai, q đúng",
+        "Luôn luôn sai",
+        "Sai khi p đúng, q sai"
+      ],
+      "correct_answers": [
+        "Luôn luôn đúng"
+      ],
+      "explanation": "Khi p = 1 thì p ∨ q = 1 nên 1 → 1 là 1. Khi p = 0 thì 0 → (p ∨ q) luôn là 1. Vậy mệnh đề là hằng đúng (luôn luôn đúng)."
+    },
+    {
+      "id": 18,
+      "qid": "1431476",
+      "type": "multiple_choice",
+      "select_count": 2,
+      "question": "Cho hàm mệnh đề P(x): x² − 4 = 0 xác định trên tập số nguyên ℤ. Vị từ nào sau đây nhận giá trị đúng? (Chọn 2)",
+      "options": [
+        "∃x P(x)",
+        "∃x ¬P(x)",
+        "∀x P(x)",
+        "∀x ¬P(x)"
+      ],
+      "correct_answers": [
+        "∃x P(x)",
+        "∃x ¬P(x)"
+      ],
+      "explanation": "x² - 4 = 0 có nghiệm x = 2 ∈ ℤ nên ∃x P(x) đúng. Với x = 0 ∈ ℤ thì 0² - 4 ≠ 0 nên ∃x ¬P(x) cũng đúng."
+    },
+    {
+      "id": 19,
+      "qid": "1431429",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Phát biểu nào đúng khi nói 'p và q tương đương logic'?",
+      "options": [
+        "p và q luôn có cùng giá trị chân lý",
+        "p và q có số phép toán bằng nhau",
+        "p và q có số mệnh đề sơ cấp bằng nhau",
+        "p và q có số trường hợp đúng, sai bằng nhau"
+      ],
+      "correct_answers": [
+        "p và q luôn có cùng giá trị chân lý"
+      ],
+      "explanation": "Hai mệnh đề gọi là tương đương logic nếu chúng luôn nhận cùng giá trị chân lý trong mọi trường hợp gán giá trị cho các biến mệnh đề."
+    },
+    {
+      "id": 20,
+      "qid": "1431489",
+      "type": "matching_group",
+      "question": "Ghép nối giữa mệnh đề và phủ định của nó:",
+      "items": [
+        {
+          "prompt": "∃y ∀x ¬Q(x, y)",
+          "answer": "∀y ∃x Q(x, y)"
+        },
+        {
+          "prompt": "∃x ∀y ¬Q(x, y)",
+          "answer": "∀x ∃y Q(x, y)"
+        },
+        {
+          "prompt": "∀x ∃y ¬Q(x, y)",
+          "answer": "∃x ∀y Q(x, y)"
+        },
+        {
+          "prompt": "∀y ∃x ¬Q(x, y)",
+          "answer": "∃y ∀x Q(x, y)"
+        }
+      ],
+      "explanation": "Phủ định của mệnh đề có phủ định bên trong: ¬(∃y ∀x ¬Q) ≡ ∀y ∃x Q; ¬(∃x ∀y ¬Q) ≡ ∀x ∃y Q; ¬(∀x ∃y ¬Q) ≡ ∃x ∀y Q; ¬(∀y ∃x ¬Q) ≡ ∃y ∀x Q."
+    },
+    {
+      "id": 21,
+      "qid": "1431431",
+      "type": "multiple_choice",
+      "select_count": 2,
+      "question": "Cho mệnh đề p → q. Mệnh đề nào sau đây tương đương logic với mệnh đề đã cho? (Chọn 2)",
+      "options": [
+        "¬p ∨ q",
+        "¬q → ¬p",
+        "p ∧ ¬q",
+        "¬p → ¬q"
+      ],
+      "correct_answers": [
+        "¬p ∨ q",
+        "¬q → ¬p"
+      ],
+      "explanation": "p → q ≡ ¬p ∨ q (luật kéo theo) và p → q ≡ ¬q → ¬p (luật phản đảo)."
+    },
+    {
+      "id": 22,
+      "qid": "1431477",
+      "type": "matching_group",
+      "question": "Cho mệnh đề: ∀x: x² ≠ 2. Xác định giá trị chân lý của mệnh đề tương ứng với các tập xác định:",
+      "items": [
+        {
+          "prompt": "Tập xác định là tập số tự nhiên (ℕ)",
+          "answer": "True"
+        },
+        {
+          "prompt": "Tập xác định là tập số nguyên (ℤ)",
+          "answer": "True"
+        },
+        {
+          "prompt": "Tập xác định là tập số hữu tỷ (ℚ)",
+          "answer": "True"
+        },
+        {
+          "prompt": "Tập xác định là tập số thực (ℝ)",
+          "answer": "False"
+        }
+      ],
+      "options": [
+        "True",
+        "False"
+      ],
+      "explanation": "x² = 2 có nghiệm x = ±√2. √2 không thuộc ℕ, ℤ, ℚ nên trên các tập này ∀x: x² ≠ 2 là True. Tuy nhiên √2 ∈ ℝ nên trên ℝ mệnh đề là False."
+    },
+    {
+      "id": 23,
+      "qid": "1431491",
+      "type": "single_choice",
+      "select_count": 1,
+      "question": "Cho tập xác định U = {2, 4, 6, 7}, hàm mệnh đề P(x, y): 'x chia hết cho y, x khác y'. Mệnh đề nào sau đây đúng?",
+      "options": [
+        "∃x ∃y P(x, y)",
+        "∀x ∀y P(x, y)",
+        "∀x ∃y P(x, y)",
+        "∃x ∀y P(x, y)"
+      ],
+      "correct_answers": [
+        "∃x ∃y P(x, y)"
+      ],
+      "explanation": "Tồn tại x = 4, y = 2 ∈ U sao cho 4 chia hết cho 2 và 4 ≠ 2, do đó P(4, 2) đúng. Vậy ∃x ∃y P(x, y) đúng."
+    }
+  ],
+  "total_attempts_analyzed": 18,
+  "bank_completeness": "100% (23/23 câu hỏi duy nhất)"
+}

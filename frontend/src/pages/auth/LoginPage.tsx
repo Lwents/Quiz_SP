@@ -1,14 +1,16 @@
+import { toast } from '../../stores/toastStore';
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { apiClient } from '../../api/client';
-import { GraduationCap, Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { Logo } from '../../components/Logo';
+import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
-  const [email, setEmail] = useState('student@example.com');
-  const [password, setPassword] = useState('REDACTED_SEED_PASSWORD');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,10 +23,11 @@ export const LoginPage: React.FC = () => {
       const res = await apiClient.post('/auth/login', { email, password });
       const { access_token, refresh_token, user } = res.data;
       setAuth(user, access_token, refresh_token);
-      if (user.role === 'TEACHER' || user.role === 'ADMIN') {
+      if (user.role === 'ADMIN' || (user.role as any) === 'TEACHER') {
         navigate('/teacher');
       } else {
-        navigate('/practice');
+        toast.success('Đăng nhập thành công! Chào mừng bạn quay trở lại.');
+      navigate('/courses');
       }
     } catch (err: any) {
       setError(err.response?.data?.detail?.error?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại email hoặc mật khẩu.');
@@ -33,20 +36,15 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const fillDemo = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('REDACTED_SEED_PASSWORD');
-  };
-
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="max-w-md w-full space-y-7 bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm">
         <div className="text-center">
-          <div className="inline-flex p-3 bg-blue-50 text-blue-600 rounded-2xl mb-3">
-            <GraduationCap className="w-8 h-8" />
+          <div className="flex justify-center mb-4">
+            <Logo size="lg" showSubtitle={true} />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Đăng nhập tài khoản</h2>
-          <p className="text-sm text-slate-500 mt-1">Hệ thống luyện tập & kiểm tra trực tuyến Quiz_SP</p>
+          <p className="text-sm text-slate-500 mt-1">Hệ thống luyện tập & kiểm tra trực tuyến</p>
         </div>
 
         {error && (
@@ -67,7 +65,7 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="name@example.com"
+                placeholder="Nhập email..."
               />
             </div>
           </div>
@@ -82,7 +80,7 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="••••••••"
+                placeholder="Nhập mật khẩu..."
               />
             </div>
           </div>
@@ -97,34 +95,7 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="pt-2 border-t border-slate-100">
-          <p className="text-xs text-slate-500 text-center mb-2 font-medium">Tài khoản demo sẵn có (mật khẩu: REDACTED_SEED_PASSWORD):</p>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => fillDemo('student@example.com')}
-              className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-center font-medium transition cursor-pointer"
-            >
-              Học sinh
-            </button>
-            <button
-              type="button"
-              onClick={() => fillDemo('teacher@example.com')}
-              className="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-center font-medium transition cursor-pointer"
-            >
-              Giáo viên
-            </button>
-            <button
-              type="button"
-              onClick={() => fillDemo('admin@example.com')}
-              className="px-2 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-center font-medium transition cursor-pointer"
-            >
-              Admin
-            </button>
-          </div>
-        </div>
-
-        <p className="text-sm text-center text-slate-600">
+        <p className="text-sm text-center text-slate-600 pt-2 border-t border-slate-100">
           Chưa có tài khoản?{' '}
           <Link to="/register" className="text-blue-600 hover:text-blue-700 font-semibold">
             Đăng ký ngay

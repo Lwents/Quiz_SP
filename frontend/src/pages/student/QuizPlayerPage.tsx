@@ -1,9 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { toast } from '../../stores/toastStore';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { AttemptStart, AttemptStatus, BaseQuestion } from '../../types';
 import { getQuestionRenderer } from '../../features/question/question-registry';
-import { Clock, CheckCircle, Bookmark, ArrowLeft, ArrowRight, Menu, X, AlertTriangle, Send } from 'lucide-react';
+import {
+  Clock,
+  Bookmark,
+  ArrowLeft,
+  ArrowRight,
+  Menu,
+  X,
+  AlertTriangle,
+  Send,
+  BookOpen,
+} from 'lucide-react';
 
 export const QuizPlayerPage: React.FC = () => {
   const { quizId } = useParams<{ quizId: string }>();
@@ -17,11 +28,14 @@ export const QuizPlayerPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const debounceTimers = useRef<Record<string, any>>({});
+  const pendingSaves = useRef<Record<string, any>>({});
+  const activeSecondsRef = useRef<number>(0);
 
-  // 1. Khởi tạo attempt
+  // 1. Khởi tạo / khôi phục attempt
   useEffect(() => {
     startOrResumeAttempt();
   }, [quizId]);
@@ -43,21 +57,64 @@ export const QuizPlayerPage: React.FC = () => {
       });
       setAnswers(existingAnswersMap);
 
-      // Setup timer
+      // Restore saved local state (currentIndex and markedReview)
+      try {
+        const savedMeta = localStorage.getItem(`quiz_meta_${data.id}`);
+        if (savedMeta) {
+          const parsed = JSON.parse(savedMeta);
+          if (typeof parsed.currentIndex === 'number' && parsed.currentIndex < data.questions.length) {
+            setCurrentIndex(parsed.currentIndex);
+          }
+          if (parsed.markedReview) {
+            setMarkedReview(parsed.markedReview);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not restore local quiz meta', e);
+      }
+
+      // Setup active duration and timer
+      const elapsed = statusRes.data.duration_seconds || 0;
+      activeSecondsRef.current = elapsed;
+
       if (data.duration_minutes > 0) {
-        const elapsed = statusRes.data.duration_seconds || 0;
         const totalSec = data.duration_minutes * 60;
         setTimeLeft(Math.max(0, totalSec - elapsed));
       }
     } catch (err: any) {
-      alert(err.response?.data?.detail?.error?.message || 'Không thể bắt đầu bài làm');
+      toast.error(err.response?.data?.detail?.error?.message || 'Không thể bắt đầu bài làm');
       navigate('/practice');
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. Countdown Timer
+  // 2. Persist local state whenever currentIndex or markedReview changes
+  useEffect(() => {
+    if (attempt) {
+      localStorage.setItem(
+        `quiz_meta_${attempt.id}`,
+        JSON.stringify({ currentIndex, markedReview })
+      );
+    }
+  }, [currentIndex, markedReview, attempt]);
+
+  // 3. Track active seconds and auto-save duration periodically
+  useEffect(() => {
+    if (!attempt) return;
+    const interval = setInterval(() => {
+      activeSecondsRef.current += 1;
+      // Sync progress to server every 20 seconds
+      if (activeSecondsRef.current % 20 === 0) {
+        apiClient.patch(`/attempts/${attempt.id}/progress`, {
+          duration_seconds: activeSecondsRef.current,
+        }).catch(() => {});
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [attempt]);
+
+  // 4. Countdown Timer
   useEffect(() => {
     if (timeLeft <= 0) return;
     const interval = setInterval(() => {
@@ -73,12 +130,35 @@ export const QuizPlayerPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [timeLeft]);
 
-  // 3. Answer change with debounce autosave
-  const handleAnswerChange = (questionId: string, val: any) => {
-    // Immediate local state update
-    setAnswers((prev) => ({ ...prev, [questionId]: val }));
+  // 5. Intercept browser back button & page unload
+  useEffect(() => {
+    window.history.pushState({ inQuiz: true }, '');
 
-    // Debounce save to backend
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      window.history.pushState({ inQuiz: true }, '');
+      setShowExitModal(true);
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  // 6. Answer change with debounce autosave
+  const handleAnswerChange = (questionId: string, val: any) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: val }));
+    pendingSaves.current[questionId] = val;
+
     if (debounceTimers.current[questionId]) {
       clearTimeout(debounceTimers.current[questionId]);
     }
@@ -89,6 +169,7 @@ export const QuizPlayerPage: React.FC = () => {
         await apiClient.patch(`/attempts/${attempt.id}/answers/${questionId}`, {
           answer: val,
         });
+        delete pendingSaves.current[questionId];
       } catch (err) {
         console.error('Autosave failed:', err);
       }
@@ -99,15 +180,39 @@ export const QuizPlayerPage: React.FC = () => {
     setMarkedReview((prev) => ({ ...prev, [qId]: !prev[qId] }));
   };
 
-  // 4. Submit
+  // 7. Flush pending saves and exit cleanly
+  const handleConfirmExit = async () => {
+    if (attempt) {
+      // Flush any pending unsaved answers
+      const saves: Promise<any>[] = Object.entries(pendingSaves.current).map(([qId, val]) =>
+        apiClient.patch(`/attempts/${attempt.id}/answers/${qId}`, { answer: val }).catch(() => {})
+      );
+      saves.push(
+        apiClient.patch(`/attempts/${attempt.id}/progress`, {
+          duration_seconds: activeSecondsRef.current,
+        }).catch(() => {})
+      );
+      await Promise.all(saves);
+    }
+    setShowExitModal(false);
+    navigate('/practice');
+  };
+
+  // 8. Submit
   const handleSubmit = async () => {
     if (!attempt || submitting) return;
     setSubmitting(true);
     try {
+      // Flush any pending saves
+      const saves: Promise<any>[] = Object.entries(pendingSaves.current).map(([qId, val]) =>
+        apiClient.patch(`/attempts/${attempt.id}/answers/${qId}`, { answer: val }).catch(() => {})
+      );
+      await Promise.all(saves);
+
       await apiClient.post(`/attempts/${attempt.id}/submit`);
       navigate(`/results/${attempt.id}`);
     } catch (err: any) {
-      alert(err.response?.data?.detail?.error?.message || 'Có lỗi khi nộp bài');
+      toast.error(err.response?.data?.detail?.error?.message || 'Có lỗi khi nộp bài');
       setSubmitting(false);
     }
   };
@@ -141,17 +246,18 @@ export const QuizPlayerPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top sticky Header Bar */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 py-3 shadow-xs">
+      {/* Top Header Bar for Quiz Player (Sticky below Navbar at top-16) */}
+      <div className="bg-white border-b border-slate-200 sticky top-16 z-30 px-4 py-3 shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate('/practice')}
-              className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer"
-              title="Quay lại danh sách"
+              onClick={() => setShowExitModal(true)}
+              className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+              title="Quay lại danh sách bài thi"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Rời bài thi</span>
             </button>
             <div>
               <h1 className="text-base font-bold text-slate-900 tracking-tight line-clamp-1">Bài làm trắc nghiệm</h1>
@@ -240,13 +346,13 @@ export const QuizPlayerPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Bottom Nav Buttons */}
+              {/* Pagination Controls */}
               <div className="flex items-center justify-between pt-6 border-t border-slate-100">
                 <button
                   type="button"
                   disabled={currentIndex === 0}
-                  onClick={() => setCurrentIndex((prev) => prev - 1)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2 cursor-pointer"
+                  onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition flex items-center gap-2 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" /> Câu trước
                 </button>
@@ -254,8 +360,8 @@ export const QuizPlayerPage: React.FC = () => {
                 <button
                   type="button"
                   disabled={currentIndex === totalQuestions - 1}
-                  onClick={() => setCurrentIndex((prev) => prev + 1)}
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2 cursor-pointer"
+                  onClick={() => setCurrentIndex((prev) => Math.min(totalQuestions - 1, prev + 1))}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2 disabled:opacity-30 cursor-pointer"
                 >
                   Câu tiếp theo <ArrowRight className="w-4 h-4" />
                 </button>
@@ -266,7 +372,7 @@ export const QuizPlayerPage: React.FC = () => {
 
         {/* Right Column: Question Navigator Palette (Desktop) */}
         <div className="hidden md:block md:col-span-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs sticky top-20">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs sticky top-36">
             <h3 className="font-bold text-slate-900 text-sm mb-4 flex items-center justify-between">
               <span>Bảng danh sách câu hỏi</span>
               <span className="text-xs font-normal text-slate-500">{totalQuestions} câu</span>
@@ -388,10 +494,47 @@ export const QuizPlayerPage: React.FC = () => {
         </div>
       )}
 
+      {/* Exit Confirmation Modal */}
+      {showExitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+              <BookOpen className="w-6 h-6" />
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-slate-900">Tạm dừng làm bài thi?</h3>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                Hệ thống đã tự động lưu lại toàn bộ tiến trình làm bài của bạn (
+                <strong className="text-blue-600 font-semibold">{answeredCount} / {totalQuestions} câu</strong>).
+                Bạn có thể quay lại danh sách và tiếp tục làm bài bất kỳ lúc nào mà không bị mất kết quả.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowExitModal(false)}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition cursor-pointer"
+              >
+                Ở lại làm tiếp
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmExit}
+                className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-xs cursor-pointer"
+              >
+                Tạm dừng & Thoát
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Submit Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
               <AlertTriangle className="w-6 h-6" />
             </div>

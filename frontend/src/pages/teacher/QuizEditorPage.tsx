@@ -1,17 +1,21 @@
+import { toast } from '../../stores/toastStore';
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { apiClient } from '../../api/client';
-import { Quiz, BaseQuestion, QuestionType, DifficultyLevel, QuizStatus } from '../../types';
+import { Quiz, BaseQuestion, QuestionType, DifficultyLevel, QuizStatus, Subject, Topic } from '../../types';
 import { getQuestionEditor } from '../../features/question/question-editor-registry';
-import { ArrowLeft, Save, Plus, Trash2, ArrowUp, ArrowDown, Check, Eye } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, ArrowUp, ArrowDown, Check, Eye, Layers } from 'lucide-react';
 
 export const QuizEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const isNew = id === 'new';
+  const isNew = id === 'new' || !id;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [subjectId, setSubjectId] = useState<string>(searchParams.get('subject_id') || '');
+  const [topicId, setTopicId] = useState<string>('');
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [passScore, setPassScore] = useState(5.0);
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('MEDIUM');
@@ -20,6 +24,8 @@ export const QuizEditorPage: React.FC = () => {
   const [shuffleAnswers, setShuffleAnswers] = useState(false);
   const [showAnswerAfterSubmit, setShowAnswerAfterSubmit] = useState(true);
 
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [questions, setQuestions] = useState<BaseQuestion[]>([]);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -27,11 +33,43 @@ export const QuizEditorPage: React.FC = () => {
   // New question modal state
   const [editingQuestion, setEditingQuestion] = useState<BaseQuestion | null>(null);
 
+  // Load all subjects on mount
+  useEffect(() => {
+    const loadSubjects = async () => {
+      try {
+        const res = await apiClient.get('/subjects');
+        setSubjects(res.data);
+      } catch (err) {
+        console.error('Error loading subjects:', err);
+      }
+    };
+    loadSubjects();
+  }, []);
+
+  // When subjectId changes, load topics for that subject
+  useEffect(() => {
+    if (!subjectId) {
+      setTopics([]);
+      setTopicId('');
+      return;
+    }
+    const loadTopics = async () => {
+      try {
+        const res = await apiClient.get(`/subjects/${subjectId}/topics`);
+        setTopics(res.data);
+      } catch (err) {
+        console.error('Error loading topics:', err);
+        setTopics([]);
+      }
+    };
+    loadTopics();
+  }, [subjectId]);
+
   useEffect(() => {
     if (!isNew && id) {
       fetchQuizDetail(id);
     }
-  }, [id]);
+  }, [id, isNew]);
 
   const fetchQuizDetail = async (quizId: string) => {
     setLoading(true);
@@ -40,6 +78,12 @@ export const QuizEditorPage: React.FC = () => {
       const data: Quiz = res.data;
       setTitle(data.title);
       setDescription(data.description || '');
+      if (data.subject_id) {
+        setSubjectId(data.subject_id);
+      }
+      if (data.topic_id) {
+        setTopicId(data.topic_id);
+      }
       setDurationMinutes(data.duration_minutes);
       setPassScore(data.pass_score);
       setDifficulty(data.difficulty);
@@ -50,7 +94,7 @@ export const QuizEditorPage: React.FC = () => {
       setQuestions(data.questions || []);
     } catch (err) {
       console.error('Error loading quiz:', err);
-      alert('Không thể tải bài thi');
+      toast.error('Không thể tải bài thi');
     } finally {
       setLoading(false);
     }
@@ -58,7 +102,7 @@ export const QuizEditorPage: React.FC = () => {
 
   const handleSaveQuiz = async () => {
     if (!title.trim()) {
-      alert('Vui lòng nhập tiêu đề bài thi');
+      toast.warning('Vui lòng nhập tiêu đề bài thi');
       return;
     }
 
@@ -67,6 +111,8 @@ export const QuizEditorPage: React.FC = () => {
       const payload = {
         title,
         description,
+        subject_id: subjectId || null,
+        topic_id: topicId || null,
         duration_minutes: Number(durationMinutes),
         pass_score: Number(passScore),
         difficulty,
@@ -78,14 +124,14 @@ export const QuizEditorPage: React.FC = () => {
 
       if (isNew) {
         const res = await apiClient.post('/quizzes', payload);
-        alert('Tạo bài thi thành công!');
-        navigate(`/teacher/quizzes/${res.data.id}/edit`);
+        toast.success('Tạo bài thi thành công! Bạn có thể tiếp tục thêm câu hỏi bên dưới.');
+        navigate(`/teacher/quizzes/${res.data.id}/edit`, { replace: true });
       } else {
         await apiClient.patch(`/quizzes/${id}`, payload);
-        alert('Cập nhật bài thi thành công!');
+        toast.success('Cập nhật thông tin bài thi thành công!');
       }
     } catch (err: any) {
-      alert(err.response?.data?.detail?.error?.message || 'Có lỗi khi lưu bài thi');
+      toast.error(err.response?.data?.detail?.error?.message || 'Có lỗi khi lưu bài thi');
     } finally {
       setSaving(false);
     }
@@ -93,7 +139,7 @@ export const QuizEditorPage: React.FC = () => {
 
   const handleCreateOrUpdateQuestion = async (qData: Partial<BaseQuestion>) => {
     if (!id || isNew) {
-      alert('Vui lòng lưu bài kiểm tra trước khi thêm câu hỏi!');
+      toast.warning('Vui lòng lưu thông tin bài kiểm tra trước khi thêm câu hỏi!');
       return;
     }
 
@@ -110,7 +156,7 @@ export const QuizEditorPage: React.FC = () => {
       }
       setEditingQuestion(null);
     } catch (err) {
-      alert('Có lỗi khi lưu câu hỏi');
+      toast.error('Có lỗi khi lưu câu hỏi');
     }
   };
 
@@ -120,7 +166,7 @@ export const QuizEditorPage: React.FC = () => {
       await apiClient.delete(`/quizzes/${id}/questions/${qId}`);
       setQuestions((prev) => prev.filter((q) => q.id !== qId));
     } catch (err) {
-      alert('Không thể xóa câu hỏi');
+      toast.error('Không thể xóa câu hỏi');
     }
   };
 
@@ -163,7 +209,7 @@ export const QuizEditorPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               {isNew ? 'Soạn đề thi mới' : `Chỉnh sửa: ${title}`}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">Thiết lập thông số bài thi, thêm và sắp xếp câu hỏi</p>
+            <p className="text-xs text-slate-500 mt-0.5">Thiết lập môn học, thông số bài thi, thêm và sắp xếp câu hỏi</p>
           </div>
         </div>
 
@@ -183,14 +229,14 @@ export const QuizEditorPage: React.FC = () => {
             onClick={handleSaveQuiz}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2 disabled:opacity-60 cursor-pointer"
           >
-            <Save className="w-4 h-4" /> {saving ? 'Đang lưu...' : 'Lưu bài thi'}
+            <Save className="w-4 h-4" /> {saving ? 'Đang lưu...' : (isNew ? 'Lưu & Tạo câu hỏi' : 'Lưu bài thi')}
           </button>
         </div>
       </div>
 
       {/* Quiz Settings Card */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
-        <h2 className="text-base font-bold text-slate-900 pb-3 border-b border-slate-100">1. Thông tin chung</h2>
+        <h2 className="text-base font-bold text-slate-900 pb-3 border-b border-slate-100">1. Thông tin chung & Phân môn</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
@@ -203,8 +249,60 @@ export const QuizEditorPage: React.FC = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
-              placeholder="Ví dụ: Quiz 1.2 _ Chương 1: Tương đương logic, vị ngữ, lượng tử..."
+              placeholder="Nhập tiêu đề bài thi..."
             />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                Môn học (Subject)
+              </label>
+              <Link
+                to="/teacher/subjects"
+                className="text-xs text-blue-600 hover:underline font-medium"
+              >
+                + Quản lý / Tạo môn học
+              </Link>
+            </div>
+            <select
+              value={subjectId}
+              onChange={(e) => {
+                setSubjectId(e.target.value);
+                setTopicId('');
+              }}
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
+            >
+              <option value="">-- Chọn môn học --</option>
+              {subjects.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name} ({sub.code})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">
+              Chủ đề / Chương (Topic)
+            </label>
+            <select
+              value={topicId}
+              disabled={!subjectId || topics.length === 0}
+              onChange={(e) => setTopicId(e.target.value)}
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium disabled:bg-slate-100 disabled:text-slate-400"
+            >
+              <option value="">
+                {subjectId
+                  ? (topics.length > 0 ? '-- Chọn chủ đề / chương --' : '-- Môn này chưa có chủ đề --')
+                  : '-- Vui lòng chọn môn học trước --'}
+              </option>
+              {topics.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="sm:col-span-2">
@@ -324,42 +422,42 @@ export const QuizEditorPage: React.FC = () => {
                 setEditingQuestion({
                   id: `new_${Date.now()}`,
                   type: 'single_choice',
-                  title: '',
                   content: '',
                   points: 1.0,
                   difficulty: 'MEDIUM',
                   config: { options: [{ id: 'a', text: '' }, { id: 'b', text: '' }], correct: 'a' },
                 })
               }
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs rounded-xl transition cursor-pointer"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> Thêm câu hỏi mới
+              <Plus className="w-4 h-4" /> Thêm câu hỏi
             </button>
           </div>
 
           {questions.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-sm">
-              Đề thi chưa có câu hỏi nào. Nhấn "+ Thêm câu hỏi mới" để bắt đầu soạn câu hỏi.
+            <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl">
+              <p className="text-sm text-slate-500 font-medium">Chưa có câu hỏi nào trong đề thi này.</p>
+              <p className="text-xs text-slate-400 mt-1">Bấm nút "Thêm câu hỏi" phía trên để bắt đầu soạn đề.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {questions.map((q, idx) => (
                 <div
                   key={q.id}
-                  className="flex items-start justify-between p-4 bg-slate-50/70 border border-slate-200 rounded-xl hover:bg-white hover:border-slate-300 transition-all shadow-xs gap-4"
+                  className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition shadow-2xs gap-4"
                 >
-                  <div className="flex items-start gap-3 flex-1">
-                    <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
                       {idx + 1}
                     </span>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700 uppercase">
-                          {q.type}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 text-blue-700 tracking-wider">
+                          {q.type.replace('_', ' ')}
                         </span>
-                        <span className="text-xs text-slate-500 font-medium">{q.points} điểm</span>
+                        <span className="text-xs font-semibold text-slate-500">{q.points} điểm</span>
                       </div>
-                      <p className="text-sm font-semibold text-slate-900 line-clamp-2">{q.content}</p>
+                      <p className="text-sm font-medium text-slate-800 truncate mt-1">{q.content}</p>
                     </div>
                   </div>
 
@@ -436,7 +534,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ initialData, onClose, onS
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) {
-      alert('Vui lòng nhập nội dung câu hỏi');
+      toast.warning('Vui lòng nhập nội dung câu hỏi');
       return;
     }
     onSave({
@@ -523,7 +621,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ initialData, onClose, onS
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
-              placeholder="Nhập nội dung câu hỏi hoặc công thức logic..."
+              placeholder="Nhập nội dung câu hỏi..."
             />
           </div>
 

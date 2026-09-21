@@ -44,7 +44,7 @@ export const FillBlankEditor: React.FC<QuestionEditorProps> = ({ config, onChang
               value={ans}
               onChange={(e) => updateAnswer(idx, e.target.value)}
               className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-              placeholder="Ví dụ: Hà Nội hoặc Ha Noi..."
+              placeholder="Nhập đáp án đúng..."
             />
             <button
               type="button"

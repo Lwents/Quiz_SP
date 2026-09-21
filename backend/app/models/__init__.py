@@ -3,6 +3,7 @@ from app.models.user import User, UserRole
 from app.models.quiz import Subject, Topic, Quiz, QuizStatus, DifficultyLevel
 from app.models.question import Question, QuestionType, QuizQuestion
 from app.models.attempt import Attempt, AttemptAnswer, AttemptStatus
+from app.models.lesson import Lesson, UserLessonProgress
 
 __all__ = [
     "Base",
@@ -21,4 +22,6 @@ __all__ = [
     "Attempt",
     "AttemptAnswer",
     "AttemptStatus",
+    "Lesson",
+    "UserLessonProgress",
 ]

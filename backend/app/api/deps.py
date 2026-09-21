@@ -53,3 +53,26 @@ def require_role(*roles: UserRole):
             )
         return current_user
     return role_checker
+
+
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+
+
+async def get_optional_current_user(
+    db: AsyncSession = Depends(get_db),
+    token: Optional[str] = Depends(oauth2_scheme_optional)
+) -> Optional[User]:
+    if not token:
+        return None
+    payload = decode_token(token)
+    if not payload:
+        return None
+    user_id_str = payload.get("sub")
+    if not user_id_str or payload.get("type") != "access":
+        return None
+    try:
+        user_uuid = uuid.UUID(user_id_str)
+    except ValueError:
+        return None
+    result = await db.execute(select(User).where(User.id == user_uuid))
+    return result.scalar_one_or_none()

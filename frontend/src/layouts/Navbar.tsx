@@ -1,111 +1,249 @@
-import React from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { GraduationCap, BookOpen, LayoutDashboard, LogOut, User as UserIcon, PlusCircle } from 'lucide-react';
+import { Logo } from '../components/Logo';
+import { BookOpen, LayoutDashboard, LogOut, PlusCircle, Layers, AlertCircle, GraduationCap } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const handleLogout = () => {
+  // Guard navigation when user is taking a quiz
+  const isInQuiz = location.pathname.startsWith('/practice/') && location.pathname !== '/practice';
+  const [showQuizLeaveModal, setShowQuizLeaveModal] = useState(false);
+  const [pendingNav, setPendingNav] = useState<string>('');
+
+  const handleGuardedNav = (e: React.MouseEvent, targetPath: string) => {
+    if (isInQuiz) {
+      e.preventDefault();
+      setPendingNav(targetPath);
+      setShowQuizLeaveModal(true);
+    }
+  };
+
+  const handleConfirmLeave = () => {
+    setShowQuizLeaveModal(false);
+    if (pendingNav) {
+      navigate(pendingNav);
+    }
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutConfirm(false);
     logout();
     navigate('/login');
   };
 
-  const isTeacherOrAdmin = user && (user.role === 'TEACHER' || user.role === 'ADMIN');
+  const isAdmin = user && (user.role === 'ADMIN' || (user.role as any) === 'TEACHER');
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-2.5 text-blue-700 font-bold text-lg tracking-tight">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-              <GraduationCap className="w-6 h-6" />
-            </div>
-            <span>Hnue</span>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+    <>
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-8">
             <Link
-              to="/practice"
-              className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                location.pathname.startsWith('/practice')
-                  ? 'text-blue-600 bg-blue-50 font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+              to="/"
+              onClick={(e) => handleGuardedNav(e, '/')}
+              className="hover:opacity-90 transition-opacity"
             >
-              <BookOpen className="w-4 h-4" />
-              Luyện tập trắc nghiệm
+              <Logo size="md" showSubtitle={true} />
             </Link>
 
-            {user && (
+            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
               <Link
-                to="/dashboard"
+                to="/courses"
+                onClick={(e) => handleGuardedNav(e, '/courses')}
                 className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  location.pathname === '/dashboard'
+                  location.pathname.startsWith('/courses')
                     ? 'text-blue-600 bg-blue-50 font-semibold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4" />
-                Tiến độ & Thống kê
+                <GraduationCap className="w-4 h-4" />
+                Khóa học
               </Link>
-            )}
 
-            {isTeacherOrAdmin && (
               <Link
-                to="/teacher"
+                to="/practice"
+                onClick={(e) => handleGuardedNav(e, '/practice')}
                 className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  location.pathname.startsWith('/teacher')
+                  location.pathname.startsWith('/practice')
                     ? 'text-blue-600 bg-blue-50 font-semibold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
-                <PlusCircle className="w-4 h-4" />
-                Quản lý đề thi (Teacher)
+                <BookOpen className="w-4 h-4" />
+                Luyện tập
               </Link>
+
+              {user && (
+                <Link
+                  to="/dashboard"
+                  onClick={(e) => handleGuardedNav(e, '/dashboard')}
+                  className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                    location.pathname === '/dashboard'
+                      ? 'text-blue-600 bg-blue-50 font-semibold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Tiến độ & Thống kê
+                </Link>
+              )}
+
+              {isAdmin && (
+                <>
+                  <Link
+                    to="/teacher"
+                    onClick={(e) => handleGuardedNav(e, '/teacher')}
+                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                      location.pathname === '/teacher' || (location.pathname.startsWith('/teacher/quizzes') && !location.pathname.startsWith('/teacher/subjects'))
+                        ? 'text-blue-600 bg-blue-50 font-semibold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Quản trị đề thi
+                  </Link>
+                  <Link
+                    to="/teacher/subjects"
+                    onClick={(e) => handleGuardedNav(e, '/teacher/subjects')}
+                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                      location.pathname.startsWith('/teacher/subjects')
+                        ? 'text-blue-600 bg-blue-50 font-semibold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4" />
+                    Môn học & Khóa học
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex flex-col text-right">
+                  <span className="text-sm font-semibold text-slate-800">{user.full_name}</span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    {isAdmin ? 'Quản trị viên' : 'Người học'}
+                  </span>
+                </div>
+                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
+                  {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLogoutConfirm(true)}
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
+                  title="Đăng xuất"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+                >
+                  Đăng nhập
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition"
+                >
+                  Đăng ký
+                </Link>
+              </div>
             )}
-          </nav>
+          </div>
         </div>
+      </header>
 
-        <div className="flex items-center gap-4">
-          {user ? (
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-semibold text-slate-800">{user.full_name}</span>
-                <span className="text-xs text-slate-500 font-mono capitalize">{user.role.toLowerCase()}</span>
-              </div>
-              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
-                {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-              </div>
+      {/* Leaving Quiz Confirmation Modal */}
+      {showQuizLeaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+              <BookOpen className="w-6 h-6" />
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-slate-900">Tạm dừng làm bài thi?</h3>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                Bạn đang trong quá trình làm bài thi. Tiến trình và các câu trả lời của bạn đã được hệ thống tự động lưu lại an toàn. Bạn có chắc chắn muốn tạm dừng để chuyển sang trang khác?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 type="button"
-                onClick={handleLogout}
-                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
-                title="Đăng xuất"
+                onClick={() => setShowQuizLeaveModal(false)}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition cursor-pointer"
               >
-                <LogOut className="w-5 h-5" />
+                Ở lại làm tiếp
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmLeave}
+                className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-xs cursor-pointer"
+              >
+                Tạm dừng & Thoát
               </button>
             </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                to="/login"
-                className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
-              >
-                Đăng nhập
-              </Link>
-              <Link
-                to="/register"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition"
-              >
-                Đăng ký
-              </Link>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
-    </header>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto">
+              <LogOut className="w-6 h-6" />
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-slate-900">Xác nhận đăng xuất</h3>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                {isInQuiz ? (
+                  <>
+                    Bạn đang làm bài thi. Bài làm của bạn đã được lưu tạm. Bạn có chắc chắn muốn đăng xuất tài khoản{' '}
+                    <strong className="text-slate-800">{user?.full_name}</strong> không?
+                  </>
+                ) : (
+                  <>
+                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản{' '}
+                    <strong className="text-slate-800">{user?.full_name}</strong> không?
+                  </>
+                )}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmLogout}
+                className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-sm transition shadow-xs cursor-pointer"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

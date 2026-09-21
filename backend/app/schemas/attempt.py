@@ -10,6 +10,10 @@ class SaveAnswerRequest(BaseModel):
     answer: Any # user-selected answer (string, list, dict, number, etc.)
 
 
+class AttemptProgressRequest(BaseModel):
+    duration_seconds: Optional[int] = None
+
+
 class AttemptAnswerResponse(BaseModel):
     id: uuid.UUID
     question_id: uuid.UUID

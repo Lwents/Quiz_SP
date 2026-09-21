@@ -25,7 +25,7 @@ class Subject(Base, UUIDMixin, TimestampMixin):
     code = Column(String(50), unique=True, nullable=False)
     description = Column(Text, nullable=True)
 
-    topics = relationship("Topic", back_populates="subject", cascade="all, delete-orphan")
+    topics = relationship("Topic", back_populates="subject", cascade="all, delete-orphan", order_by="Topic.order")
     quizzes = relationship("Quiz", back_populates="subject")
 
 
@@ -35,9 +35,12 @@ class Topic(Base, UUIDMixin, TimestampMixin):
     subject_id = Column(UUID(as_uuid=True), ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
+    slide_url = Column(String(500), nullable=True)
+    order = Column(Integer, default=0, nullable=False)
 
     subject = relationship("Subject", back_populates="topics")
     quizzes = relationship("Quiz", back_populates="topic")
+    lessons = relationship("Lesson", back_populates="topic", cascade="all, delete-orphan", order_by="Lesson.order")
 
 
 class Quiz(Base, UUIDMixin, TimestampMixin):

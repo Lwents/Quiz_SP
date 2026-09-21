@@ -1,6 +1,6 @@
 import uuid
 import random
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +14,7 @@ from app.models.attempt import Attempt, AttemptAnswer, AttemptStatus
 from app.models.user import User, UserRole
 from app.schemas.attempt import (
     SaveAnswerRequest,
+    AttemptProgressRequest,
     AttemptStartResponse,
     AttemptStatusResponse,
     AttemptAnswerResponse,
@@ -92,16 +93,27 @@ async def start_quiz_attempt(
             user_id=current_user.id,
             quiz_id=quiz.id,
             started_at=datetime.now(timezone.utc),
-            status=AttemptStatus.IN_PROGRESS
+            status=AttemptStatus.IN_PROGRESS,
+            duration_seconds=0
         )
         db.add(attempt)
         await db.commit()
         await db.refresh(attempt)
+    else:
+        # Resuming in-progress attempt:
+        # If quiz has a duration limit, adjust started_at so elapsed time reflects
+        # actual duration_seconds spent while active, instead of timing out while away.
+        if quiz.duration_minutes > 0:
+            actual_spent = min(attempt.duration_seconds or 0, max(0, quiz.duration_minutes * 60 - 30))
+            attempt.started_at = datetime.now(timezone.utc) - timedelta(seconds=actual_spent)
+            await db.commit()
+            await db.refresh(attempt)
 
-    # Build sanitized questions for student
+    # Build sanitized questions for student with deterministic PRNG based on attempt.id
     qq_list = list(quiz.quiz_questions)
-    if quiz.shuffle_questions and not existing_attempt:
-        random.shuffle(qq_list)
+    rng = random.Random(str(attempt.id))
+    if quiz.shuffle_questions:
+        rng.shuffle(qq_list)
     else:
         qq_list.sort(key=lambda x: x.order)
 
@@ -114,19 +126,21 @@ async def start_quiz_attempt(
         sanitized_config.pop("accepted_answers", None)
         sanitized_config.pop("correct_order", None)
 
+        q_rng = random.Random(f"{attempt.id}_{q.id}")
+
         if q.type in ("matching", "drag_drop"):
             pairs = sanitized_config.get("pairs", [])
             left_items = [p.get("left") for p in pairs if "left" in p]
             right_items = [p.get("right") for p in pairs if "right" in p]
             if quiz.shuffle_answers:
-                random.shuffle(right_items)
+                q_rng.shuffle(right_items)
             sanitized_config["left_items"] = left_items
             sanitized_config["right_items"] = right_items
             sanitized_config.pop("pairs", None)
 
         if quiz.shuffle_answers and "options" in sanitized_config and isinstance(sanitized_config["options"], list):
             opts = list(sanitized_config["options"])
-            random.shuffle(opts)
+            q_rng.shuffle(opts)
             sanitized_config["options"] = opts
 
         questions_out.append(QuestionStudentResponse(
@@ -148,6 +162,42 @@ async def start_quiz_attempt(
         duration_minutes=quiz.duration_minutes,
         questions=questions_out
     )
+
+
+@router.get("/my-active", response_model=List[uuid.UUID])
+async def get_my_active_attempts(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    res = await db.execute(
+        select(Attempt.quiz_id)
+        .where(
+            and_(
+                Attempt.user_id == current_user.id,
+                Attempt.status == AttemptStatus.IN_PROGRESS
+            )
+        )
+    )
+    return list(set(res.scalars().all()))
+
+
+@router.patch("/{attempt_id}/progress")
+async def update_attempt_progress(
+    attempt_id: uuid.UUID,
+    data: AttemptProgressRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    attempt = await db.get(Attempt, attempt_id)
+    if not attempt or attempt.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Attempt not found")
+    if attempt.status != AttemptStatus.IN_PROGRESS:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Attempt not in progress")
+
+    if data.duration_seconds is not None:
+        attempt.duration_seconds = max(attempt.duration_seconds or 0, data.duration_seconds)
+    await db.commit()
+    return {"status": "ok", "duration_seconds": attempt.duration_seconds}
 
 
 @router.get("/{attempt_id}", response_model=AttemptStatusResponse)

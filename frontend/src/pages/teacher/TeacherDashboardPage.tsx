@@ -1,8 +1,9 @@
+import { toast } from '../../stores/toastStore';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { Quiz } from '../../types';
-import { Plus, BookOpen, Users, CheckCircle, Clock, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, BookOpen, Users, CheckCircle, Clock, Edit, Trash2, Eye, Layers } from 'lucide-react';
 
 export const TeacherDashboardPage: React.FC = () => {
   const [overview, setOverview] = useState<any>(null);
@@ -35,7 +36,7 @@ export const TeacherDashboardPage: React.FC = () => {
       await apiClient.delete(`/quizzes/${quizId}`);
       setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
     } catch (err) {
-      alert('Không thể xóa bài kiểm tra');
+      toast.error('Không thể xóa bài kiểm tra');
     }
   };
 
@@ -53,14 +54,38 @@ export const TeacherDashboardPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Quản trị & Soạn đề thi (Teacher Portal)</h1>
-          <p className="text-sm text-slate-500 mt-1">Quản lý ngân hàng câu hỏi, soạn đề thi và theo dõi kết quả học sinh</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Quản trị & Soạn đề thi (Admin Portal)</h1>
+          <p className="text-sm text-slate-500 mt-1">Quản lý môn học, ngân hàng câu hỏi, soạn đề thi và theo dõi kết quả học sinh</p>
         </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/teacher/subjects"
+            className="px-4 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-sm rounded-xl transition flex items-center gap-2 cursor-pointer shadow-xs"
+          >
+            <Layers className="w-4 h-4 text-blue-600" /> Quản lý môn học & chủ đề
+          </Link>
+          <Link
+            to="/teacher/quizzes/new"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Tạo bài kiểm tra mới
+          </Link>
+        </div>
+      </div>
+
+      {/* Navigation tabs for Teacher */}
+      <div className="flex items-center gap-2 border-b border-slate-200 text-sm font-semibold">
         <Link
-          to="/teacher/quizzes/new"
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2 cursor-pointer"
+          to="/teacher"
+          className="px-4 py-2.5 text-blue-600 border-b-2 border-blue-600 font-bold transition flex items-center gap-2"
         >
-          <Plus className="w-4 h-4" /> Tạo bài kiểm tra mới
+          <BookOpen className="w-4 h-4" /> Quản lý Đề thi (Quizzes)
+        </Link>
+        <Link
+          to="/teacher/subjects"
+          className="px-4 py-2.5 text-slate-500 hover:text-slate-800 transition flex items-center gap-2"
+        >
+          <Layers className="w-4 h-4" /> Quản lý Môn học & Chủ đề (Subjects)
         </Link>
       </div>
 
@@ -81,7 +106,7 @@ export const TeacherDashboardPage: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Học sinh tham gia</div>
           <div className="text-3xl font-black text-slate-900">{overview?.total_students ?? 0}</div>
-          <span className="text-xs text-slate-400 mt-1 block">Tài khoản học viên</span>
+          <span className="text-xs text-slate-400 mt-1 block">Tài khoản người học</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
@@ -95,6 +120,12 @@ export const TeacherDashboardPage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900">Danh sách các bài thi</h2>
+          <Link
+            to="/teacher/quizzes/new"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" /> Thêm đề thi mới
+          </Link>
         </div>
 
         <div className="overflow-x-auto">
@@ -110,55 +141,76 @@ export const TeacherDashboardPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {quizzes.map((q) => (
-                <tr key={q.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 px-6 font-bold text-slate-900">{q.title}</td>
-                  <td className="py-4 px-6 text-slate-600">
-                    <span className="font-medium text-slate-800">{q.subject?.name || 'Toán rời rạc'}</span>
-                  </td>
-                  <td className="py-4 px-6 font-semibold text-slate-700">{q.question_count ?? 0} câu</td>
-                  <td className="py-4 px-6 text-slate-500 font-mono text-xs">{q.duration_minutes} phút</td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        q.status === 'PUBLISHED'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : q.status === 'DRAFT'
-                          ? 'bg-amber-50 text-amber-700'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {q.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="inline-flex items-center gap-2">
-                      <Link
-                        to={`/practice/${q.id}`}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100"
-                        title="Làm thử bài thi"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Link>
-                      <Link
-                        to={`/teacher/quizzes/${q.id}/edit`}
-                        className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-slate-100"
-                        title="Chỉnh sửa bài thi & câu hỏi"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteQuiz(q.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100 cursor-pointer"
-                        title="Xóa bài thi"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+              {quizzes.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-slate-400">
+                    Chưa có bài thi nào. Hãy nhấn{' '}
+                    <Link to="/teacher/quizzes/new" className="text-blue-600 font-semibold underline">
+                      Tạo bài kiểm tra mới
+                    </Link>{' '}
+                    hoặc vào{' '}
+                    <Link to="/teacher/subjects" className="text-blue-600 font-semibold underline">
+                      Quản lý môn học
+                    </Link>{' '}
+                    để bắt đầu.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                quizzes.map((q) => (
+                  <tr key={q.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 px-6 font-bold text-slate-900">{q.title}</td>
+                    <td className="py-4 px-6 text-slate-600">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-800">{q.subject?.name || 'Chưa phân môn'}</span>
+                        {q.topic?.name && (
+                          <span className="text-xs text-slate-400 font-medium">Chủ đề: {q.topic.name}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 font-semibold text-slate-700">{q.question_count ?? 0} câu</td>
+                    <td className="py-4 px-6 text-slate-500 font-mono text-xs">{q.duration_minutes} phút</td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                          q.status === 'PUBLISHED'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : q.status === 'DRAFT'
+                            ? 'bg-amber-50 text-amber-700'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {q.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <div className="inline-flex items-center gap-2">
+                        <Link
+                          to={`/practice/${q.id}`}
+                          className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100"
+                          title="Làm thử bài thi"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                        <Link
+                          to={`/teacher/quizzes/${q.id}/edit`}
+                          className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-slate-100"
+                          title="Chỉnh sửa bài thi & câu hỏi"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteQuiz(q.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100 cursor-pointer"
+                          title="Xóa bài thi"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

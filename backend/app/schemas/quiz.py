@@ -28,10 +28,18 @@ class TopicBase(BaseModel):
     name: str
     description: Optional[str] = None
     subject_id: uuid.UUID
+    order: Optional[int] = 0
 
 
-class TopicCreate(TopicBase):
-    pass
+class TopicCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    subject_id: uuid.UUID
+    order: Optional[int] = None
+
+
+class TopicReorderRequest(BaseModel):
+    topic_ids: List[uuid.UUID]
 
 
 class TopicResponse(TopicBase):

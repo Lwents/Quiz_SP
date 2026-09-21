@@ -49,7 +49,7 @@ export const MatchingEditor: React.FC<QuestionEditorProps> = ({ config, onChange
               value={p.left}
               onChange={(e) => updatePair(idx, 'left', e.target.value)}
               className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              placeholder="Vế trái (Ví dụ: Việt Nam)"
+              placeholder="Vế trái..."
             />
             <span className="text-slate-400">↔</span>
             <input
@@ -57,7 +57,7 @@ export const MatchingEditor: React.FC<QuestionEditorProps> = ({ config, onChange
               value={p.right}
               onChange={(e) => updatePair(idx, 'right', e.target.value)}
               className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              placeholder="Vế phải (Ví dụ: Hà Nội)"
+              placeholder="Vế phải..."
             />
             <button
               type="button"

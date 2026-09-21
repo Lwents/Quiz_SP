@@ -1,0 +1,1509 @@
+[
+  {
+    "qid": "1431492",
+    "type": "multichoice",
+    "qText": "Cho hàm mệnh đề  P(x,y): x + y = 2 , với  x, y ∈ Z . Mệnh đề nào sau đây nhận giá trị đúng? (Chọn 2)",
+    "options": [
+      {
+        "text": "\\(  \\forall x \\exists y P(x, y)  \\)",
+        "rawText": "\\(  \\forall x \\exists y P(x, y)  \\)"
+      },
+      {
+        "text": "\\(  \\forall x \\forall y P(x, y) \\)",
+        "rawText": "\\(  \\forall x \\forall y P(x, y) \\)"
+      },
+      {
+        "text": "\\(  \\forall x \\forall y \\overline{\\rm P(x, y)}  \\)",
+        "rawText": "\\(  \\forall x \\forall y \\overline{\\rm P(x, y)}  \\)"
+      },
+      {
+        "text": "\\( \\exists x \\exists y P(x, y)  \\)",
+        "rawText": "\\( \\exists x \\exists y P(x, y)  \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\(  \\forall x \\exists y P(x, y)  \\)",
+          "\\( \\exists x \\exists y P(x, y)  \\)"
+        ],
+        "correctAnswers": [
+          "\\(  \\forall x \\exists y P(x, y)  \\)",
+          "\\( \\exists x \\exists y P(x, y)  \\)"
+        ]
+      },
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\exists x \\exists y P(x, y)  \\)",
+          "\\(  \\forall x \\exists y P(x, y)  \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\exists x \\exists y P(x, y)  \\)",
+          "\\(  \\forall x \\exists y P(x, y)  \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\(  \\forall x \\exists y P(x, y)  \\)",
+          "\\( \\exists x \\exists y P(x, y)  \\)"
+        ],
+        "correctAnswers": [
+          "\\(  \\forall x \\exists y P(x, y)  \\)",
+          "\\( \\exists x \\exists y P(x, y)  \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431430",
+    "type": "multichoice",
+    "qText": "Biểu thức nào biểu diễn luật đầy đủ và phi mâu thuẫn?",
+    "options": [
+      {
+        "text": "\\( p \\land F \\Leftrightarrow F; p \\lor T \\Leftrightarrow T \\)",
+        "rawText": "\\( p \\land F \\Leftrightarrow F; p \\lor T \\Leftrightarrow T \\)"
+      },
+      {
+        "text": "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)",
+        "rawText": "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)"
+      },
+      {
+        "text": "\\( p \\lor p \\Leftrightarrow p; p \\land p \\Leftrightarrow p \\)",
+        "rawText": "\\( p \\lor p \\Leftrightarrow p; p \\land p \\Leftrightarrow p \\)"
+      },
+      {
+        "text": "\\( p \\lor F \\Leftrightarrow p; p \\land T \\Leftrightarrow p \\)",
+        "rawText": "\\( p \\lor F \\Leftrightarrow p; p \\land T \\Leftrightarrow p \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)"
+        ],
+        "correctAnswers": [
+          "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)"
+        ]
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)"
+        ],
+        "correctAnswers": [
+          "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)"
+        ],
+        "correctAnswers": [
+          "\\( p \\land \\neg p \\Leftrightarrow F; p \\lor \\neg p \\Leftrightarrow T \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431469",
+    "type": "multichoice",
+    "qText": "Phát biểu nào đúng?",
+    "options": [
+      {
+        "text": "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x \\overline{\\rm P(x)}  \\)",
+        "rawText": "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x \\overline{\\rm P(x)}  \\)"
+      },
+      {
+        "text": "\\(  \\forall x P(x) \\equiv \\exists x \\overline{\\rm P(x)} \\)",
+        "rawText": "\\(  \\forall x P(x) \\equiv \\exists x \\overline{\\rm P(x)} \\)"
+      },
+      {
+        "text": "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x P(x) \\)",
+        "rawText": "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x P(x) \\)"
+      },
+      {
+        "text": "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\forall x \\overline{\\rm P(x)} \\)",
+        "rawText": "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\forall x \\overline{\\rm P(x)} \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382426,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x \\overline{\\rm P(x)}  \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x \\overline{\\rm P(x)}  \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x \\overline{\\rm P(x)}  \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\overline{\\rm \\forall x P(x) } \\equiv \\exists x \\overline{\\rm P(x)}  \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431428",
+    "type": "multichoice",
+    "qText": "Biểu thức nào biểu diễn luật phân phối? (chọn 2)",
+    "options": [
+      {
+        "text": "\\( p \\land (q \\lor r) \\Leftrightarrow (p \\land q) \\lor (p \\land r) \\)",
+        "rawText": "\\( p \\land (q \\lor r) \\Leftrightarrow (p \\land q) \\lor (p \\land r) \\)"
+      },
+      {
+        "text": "\\( (p \\lor q) \\lor r \\Leftrightarrow p \\lor (q \\lor r) \\)",
+        "rawText": "\\( (p \\lor q) \\lor r \\Leftrightarrow p \\lor (q \\lor r) \\)"
+      },
+      {
+        "text": "\\( p \\lor (q \\land r) \\Leftrightarrow (p \\lor q) \\land (p \\lor r) \\)",
+        "rawText": "\\( p \\lor (q \\land r) \\Leftrightarrow (p \\lor q) \\land (p \\lor r) \\)"
+      },
+      {
+        "text": "\\( \\neg (p \\lor q) \\Leftrightarrow \\neg p \\land \\neg q \\)",
+        "rawText": "\\( \\neg (p \\lor q) \\Leftrightarrow \\neg p \\land \\neg q \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382426,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( p \\lor (q \\land r) \\Leftrightarrow (p \\lor q) \\land (p \\lor r) \\)",
+          "\\( p \\land (q \\lor r) \\Leftrightarrow (p \\land q) \\lor (p \\land r) \\)"
+        ],
+        "correctAnswers": [
+          "\\( p \\lor (q \\land r) \\Leftrightarrow (p \\lor q) \\land (p \\lor r) \\)",
+          "\\( p \\land (q \\lor r) \\Leftrightarrow (p \\land q) \\lor (p \\land r) \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431478",
+    "type": "select_group",
+    "qText": "Cho mệnh đề: \\( \\forall x: x^3  \\neq \\frac{1}{8} \\). Xác định giá trị chân lý của mệnh đề tương ứng với các tập xác định như sau:Tập xác định là tập số tự nhiên, giá trị chân lý là  TrueFalse Tập xác định là tập số nguyên, giá trị chân lý là  TrueFalse Tập xác định là tập số hữu tỷ, giá trị chân lý là  TrueFalse Tập xác định là tập số thực, giá trị chân lý là  TrueFalse",
+    "options": [
+      {
+        "prompt": "Tập xác định là tập số tự nhiên, giá trị chân lý là",
+        "choices": [
+          "True",
+          "False"
+        ]
+      },
+      {
+        "prompt": "Tập xác định là tập số nguyên, giá trị chân lý là",
+        "choices": [
+          "True",
+          "False"
+        ]
+      },
+      {
+        "prompt": "Tập xác định là tập số hữu tỷ, giá trị chân lý là",
+        "choices": [
+          "True",
+          "False"
+        ]
+      },
+      {
+        "prompt": "Tập xác định là tập số thực, giá trị chân lý là",
+        "choices": [
+          "True",
+          "False"
+        ]
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "True",
+          "True",
+          "False",
+          "False"
+        ],
+        "correctAnswers": []
+      }
+    ]
+  },
+  {
+    "qid": "1431448",
+    "type": "multichoice",
+    "qText": "Cho p, q, r là các mệnh đề. Hãy chỉ ra mệnh đề tương đương logic với \\( (p \\lor q) \\land r \\)",
+    "options": [
+      {
+        "text": "\\( (p \\land r) \\lor (q \\land r) \\)",
+        "rawText": "\\( (p \\land r) \\lor (q \\land r) \\)"
+      },
+      {
+        "text": "\\( (p \\land r) \\lor q \\)",
+        "rawText": "\\( (p \\land r) \\lor q \\)"
+      },
+      {
+        "text": "\\( (p \\land r) \\land (q \\lor r) \\)",
+        "rawText": "\\( (p \\land r) \\land (q \\lor r) \\)"
+      },
+      {
+        "text": "\\( (p \\lor r) \\land (q \\lor r) \\)",
+        "rawText": "\\( (p \\lor r) \\land (q \\lor r) \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( (p \\land r) \\lor (q \\land r) \\)"
+        ],
+        "correctAnswers": [
+          "\\( (p \\land r) \\lor (q \\land r) \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( (p \\land r) \\lor (q \\land r) \\)"
+        ],
+        "correctAnswers": [
+          "\\( (p \\land r) \\lor (q \\land r) \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431426",
+    "type": "multichoice",
+    "qText": "Đẳng thức nào đúng? (Chọn 2)",
+    "options": [
+      {
+        "text": "\\( \\neg (p \\lor q) \\Leftrightarrow \\neg p \\land \\neg q \\)",
+        "rawText": "\\( \\neg (p \\lor q) \\Leftrightarrow \\neg p \\land \\neg q \\)"
+      },
+      {
+        "text": "\\( p \\land q \\Leftrightarrow p \\)",
+        "rawText": "\\( p \\land q \\Leftrightarrow p \\)"
+      },
+      {
+        "text": "\\( p \\lor q \\Leftrightarrow q \\lor p \\)",
+        "rawText": "\\( p \\lor q \\Leftrightarrow q \\lor p \\)"
+      },
+      {
+        "text": "\\( p \\lor q \\Leftrightarrow p  \\)",
+        "rawText": "\\( p \\lor q \\Leftrightarrow p  \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382426,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      }
+    ]
+  },
+  {
+    "qid": "1431488",
+    "type": "match",
+    "qText": "Cho hàm mệnh đề P(x, y): x đăng ký học môn y. Trong đó, x thuộc tập các sinh viên K73, y thuộc tập các môn học trong học kỳ này. Hãy ghép nối các ký hiệu mệnh đề và diễn đạt tương ứng.",
+    "options": [
+      {
+        "prompt": "\\( \\exists y \\forall x  P(x, y) \\)",
+        "choices": [
+          "Mỗi sinh viên đều không đăng ký ít nhất một môn học trong kỳ này.",
+          "Có ít nhất một môn học mà mọi sinh viên K73 đều đăng ký",
+          "Có ít nhất một sinh viên đã đăng ký tất cả các môn trong học kỳ này.",
+          "Mọi sinh viên K73 đăng ký học ít nhất một môn trong kỳ này"
+        ]
+      },
+      {
+        "prompt": "\\(  \\forall x \\exists y \\overline{\\rm P(x, y)} \\)",
+        "choices": [
+          "Mỗi sinh viên đều không đăng ký ít nhất một môn học trong kỳ này.",
+          "Có ít nhất một môn học mà mọi sinh viên K73 đều đăng ký",
+          "Có ít nhất một sinh viên đã đăng ký tất cả các môn trong học kỳ này.",
+          "Mọi sinh viên K73 đăng ký học ít nhất một môn trong kỳ này"
+        ]
+      },
+      {
+        "prompt": "\\( \\exists x \\forall y  P(x, y) \\)",
+        "choices": [
+          "Mỗi sinh viên đều không đăng ký ít nhất một môn học trong kỳ này.",
+          "Có ít nhất một môn học mà mọi sinh viên K73 đều đăng ký",
+          "Có ít nhất một sinh viên đã đăng ký tất cả các môn trong học kỳ này.",
+          "Mọi sinh viên K73 đăng ký học ít nhất một môn trong kỳ này"
+        ]
+      },
+      {
+        "prompt": "\\( \\forall x \\exists y P(x, y) \\)",
+        "choices": [
+          "Mỗi sinh viên đều không đăng ký ít nhất một môn học trong kỳ này.",
+          "Có ít nhất một môn học mà mọi sinh viên K73 đều đăng ký",
+          "Có ít nhất một sinh viên đã đăng ký tất cả các môn trong học kỳ này.",
+          "Mọi sinh viên K73 đăng ký học ít nhất một môn trong kỳ này"
+        ]
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\( \\exists y \\forall x  P(x, y) \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\(  \\forall x \\exists y \\overline{\\rm P(x, y)} \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\( \\exists x \\forall y  P(x, y) \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\( \\forall x \\exists y P(x, y) \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          }
+        ],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\( \\forall x \\exists y P(x, y) \\)",
+            "selected": "Mọi sinh viên K73 đăng ký học ít nhất một môn trong kỳ này",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\exists x \\forall y  P(x, y) \\)",
+            "selected": "Có ít nhất một sinh viên đã đăng ký tất cả các môn trong học kỳ này.",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\(  \\forall x \\exists y \\overline{\\rm P(x, y)} \\)",
+            "selected": "Mỗi sinh viên đều không đăng ký ít nhất một môn học trong kỳ này.",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\exists y \\forall x  P(x, y) \\)",
+            "selected": "Có ít nhất một môn học mà mọi sinh viên K73 đều đăng ký",
+            "isCorrect": true
+          }
+        ],
+        "correctAnswers": [
+          {
+            "prompt": "\\( \\forall x \\exists y P(x, y) \\)",
+            "selected": "Mọi sinh viên K73 đăng ký học ít nhất một môn trong kỳ này"
+          },
+          {
+            "prompt": "\\( \\exists x \\forall y  P(x, y) \\)",
+            "selected": "Có ít nhất một sinh viên đã đăng ký tất cả các môn trong học kỳ này."
+          },
+          {
+            "prompt": "\\(  \\forall x \\exists y \\overline{\\rm P(x, y)} \\)",
+            "selected": "Mỗi sinh viên đều không đăng ký ít nhất một môn học trong kỳ này."
+          },
+          {
+            "prompt": "\\( \\exists y \\forall x  P(x, y) \\)",
+            "selected": "Có ít nhất một môn học mà mọi sinh viên K73 đều đăng ký"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431427",
+    "type": "multichoice",
+    "qText": "Đâu là luật đầy đủ và phi mâu thuẫn trong logic mệnh đề?",
+    "options": [
+      {
+        "text": "\\( p \\lor \\neg p \\equiv T;  p \\land \\neg p \\equiv F \\)",
+        "rawText": "\\( p \\lor \\neg p \\equiv T;  p \\land \\neg p \\equiv F \\)"
+      },
+      {
+        "text": "\\( p \\lor p \\equiv p;  p \\land p \\equiv p \\)",
+        "rawText": "\\( p \\lor p \\equiv p;  p \\land p \\equiv p \\)"
+      },
+      {
+        "text": "\\( p \\lor F \\equiv p;  p \\land T \\equiv p \\)",
+        "rawText": "\\( p \\lor F \\equiv p;  p \\land T \\equiv p \\)"
+      },
+      {
+        "text": "\\( p \\lor T \\equiv T;  p \\land F \\equiv F \\)",
+        "rawText": "\\( p \\lor T \\equiv T;  p \\land F \\equiv F \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Sai",
+        "grade": "Đạt điểm 0,00 trên 1,00",
+        "userAnswers": [
+          "\\( p \\lor F \\equiv p;  p \\land T \\equiv p \\)"
+        ],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( p \\lor \\neg p \\equiv T;  p \\land \\neg p \\equiv F \\)"
+        ],
+        "correctAnswers": [
+          "\\( p \\lor \\neg p \\equiv T;  p \\land \\neg p \\equiv F \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431468",
+    "type": "multichoice",
+    "qText": "Cho mệnh đề p: \"Tất cả học sinh trong lớp đều đi thi đúng giờ\". Chọn mệnh đề phủ định của p.",
+    "options": [
+      {
+        "text": "Tất cả học sinh trong lớp đi thi không đúng giờ.",
+        "rawText": "Tất cả học sinh trong lớp đi thi không đúng giờ."
+      },
+      {
+        "text": "Có ít nhất một học sinh trong lớp đi thi không đúng giờ",
+        "rawText": "Có ít nhất một học sinh trong lớp đi thi không đúng giờ"
+      },
+      {
+        "text": "Không phải tất cả học sinh trong lớp đi thi không đúng giờ",
+        "rawText": "Không phải tất cả học sinh trong lớp đi thi không đúng giờ"
+      },
+      {
+        "text": "Có ít nhất học sinh trong lớp đều đi thi đúng giờ.",
+        "rawText": "Có ít nhất học sinh trong lớp đều đi thi đúng giờ."
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382426,
+        "state": "Sai",
+        "grade": "Đạt điểm 0,00 trên 1,00",
+        "userAnswers": [
+          "Có ít nhất học sinh trong lớp đều đi thi đúng giờ."
+        ],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "Có ít nhất một học sinh trong lớp đi thi không đúng giờ"
+        ],
+        "correctAnswers": [
+          "Có ít nhất một học sinh trong lớp đi thi không đúng giờ"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "Có ít nhất một học sinh trong lớp đi thi không đúng giờ"
+        ],
+        "correctAnswers": [
+          "Có ít nhất một học sinh trong lớp đi thi không đúng giờ"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431447",
+    "type": "multichoice",
+    "qText": "Cho p, q là hai mệnh đề. Hãy chỉ ra mệnh đề tương đương logic với \\( \\neg (p \\lor q) \\)",
+    "options": [
+      {
+        "text": "\\( p \\lor \\neg q \\)",
+        "rawText": "\\( p \\lor \\neg q \\)"
+      },
+      {
+        "text": "\\( \\neg p \\lor \\neg q \\)",
+        "rawText": "\\( \\neg p \\lor \\neg q \\)"
+      },
+      {
+        "text": "\\( \\neg p \\land \\neg q \\)",
+        "rawText": "\\( \\neg p \\land \\neg q \\)"
+      },
+      {
+        "text": "\\( \\neg p \\lor q \\)",
+        "rawText": "\\( \\neg p \\lor q \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\neg p \\land \\neg q \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\neg p \\land \\neg q \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431479",
+    "type": "multichoice",
+    "qText": "Vị từ nào sau đây nhận giá trị đúng khi tập xác định là tập số nguyên Z. (Chọn 2)",
+    "options": [
+      {
+        "text": "\\(  \\forall x \\  2x > x \\)",
+        "rawText": "\\(  \\forall x \\  2x > x \\)"
+      },
+      {
+        "text": "\\(  \\exists x \\   x^3 = 6 \\)",
+        "rawText": "\\(  \\exists x \\   x^3 = 6 \\)"
+      },
+      {
+        "text": "\\( \\forall x  \\ x^4 \\geq x^2 \\)",
+        "rawText": "\\( \\forall x  \\ x^4 \\geq x^2 \\)"
+      },
+      {
+        "text": "\\(  \\exists x \\  x^3 = -1 \\)",
+        "rawText": "\\(  \\exists x \\  x^3 = -1 \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\forall x  \\ x^4 \\geq x^2 \\)",
+          "\\(  \\exists x \\  x^3 = -1 \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\forall x  \\ x^4 \\geq x^2 \\)",
+          "\\(  \\exists x \\  x^3 = -1 \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431487",
+    "type": "multichoice",
+    "qText": "Phát biểu nào sau đây đúng?",
+    "options": [
+      {
+        "text": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y \\overline{\\rm P(x, y)}  \\)",
+        "rawText": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y \\overline{\\rm P(x, y)}  \\)"
+      },
+      {
+        "text": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\exists y \\forall x \\overline{\\rm P(x, y)} \\)",
+        "rawText": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\exists y \\forall x \\overline{\\rm P(x, y)} \\)"
+      },
+      {
+        "text": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\exists y \\forall x P(x, y) \\)",
+        "rawText": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\exists y \\forall x P(x, y) \\)"
+      },
+      {
+        "text": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y P(x, y) \\)",
+        "rawText": "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y P(x, y) \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y \\overline{\\rm P(x, y)}  \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y \\overline{\\rm P(x, y)}  \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y \\overline{\\rm P(x, y)}  \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\overline{\\rm \\exists x \\forall y P(x, y)} \\equiv \\forall x \\exists y \\overline{\\rm P(x, y)}  \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431490",
+    "type": "multichoice",
+    "qText": "Cho Q(x, y): x + y = 0, tập xác định là tập số nguyên Z. Mệnh đề nào sau đây có giá trị chân lý đúng?",
+    "options": [
+      {
+        "text": "\\(  \\exists x \\forall y Q(x, y)  \\)",
+        "rawText": "\\(  \\exists x \\forall y Q(x, y)  \\)"
+      },
+      {
+        "text": "\\( \\exists y \\forall x Q(x, y) \\)",
+        "rawText": "\\( \\exists y \\forall x Q(x, y) \\)"
+      },
+      {
+        "text": "\\(  \\forall x \\exists y Q(x, y)  \\)",
+        "rawText": "\\(  \\forall x \\exists y Q(x, y)  \\)"
+      },
+      {
+        "text": "\\( \\forall x \\forall y Q(x, y) \\)",
+        "rawText": "\\( \\forall x \\forall y Q(x, y) \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\(  \\forall x \\exists y Q(x, y)  \\)"
+        ],
+        "correctAnswers": [
+          "\\(  \\forall x \\exists y Q(x, y)  \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\(  \\forall x \\exists y Q(x, y)  \\)"
+        ],
+        "correctAnswers": [
+          "\\(  \\forall x \\exists y Q(x, y)  \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431451",
+    "type": "match",
+    "qText": "Ghép nối các cặp mệnh đề tương đương logic.",
+    "options": [
+      {
+        "prompt": "\\( p \\leftrightarrow q  \\)",
+        "choices": [
+          "¬p∨q",
+          "¬p ↔q",
+          "¬(p⨁q)",
+          "p ↔¬q"
+        ]
+      },
+      {
+        "prompt": "\\( \\neg p \\leftrightarrow q \\)",
+        "choices": [
+          "¬p∨q",
+          "¬p ↔q",
+          "¬(p⨁q)",
+          "p ↔¬q"
+        ]
+      },
+      {
+        "prompt": "\\( p \\rightarrow q \\)",
+        "choices": [
+          "¬p∨q",
+          "¬p ↔q",
+          "¬(p⨁q)",
+          "p ↔¬q"
+        ]
+      },
+      {
+        "prompt": "\\( \\neg (p \\leftrightarrow q) \\)",
+        "choices": [
+          "¬p∨q",
+          "¬p ↔q",
+          "¬(p⨁q)",
+          "p ↔¬q"
+        ]
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2381031,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\( p \\leftrightarrow q  \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\( \\neg p \\leftrightarrow q \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\( p \\rightarrow q \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\( \\neg (p \\leftrightarrow q) \\)",
+            "selected": "Chọn...",
+            "isCorrect": false
+          }
+        ],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\( p \\rightarrow q \\)",
+            "selected": "¬p∨q",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\neg (p \\leftrightarrow q) \\)",
+            "selected": "¬p ↔q",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( p \\leftrightarrow q  \\)",
+            "selected": "¬(p⨁q)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\neg p \\leftrightarrow q \\)",
+            "selected": "p ↔¬q",
+            "isCorrect": true
+          }
+        ],
+        "correctAnswers": [
+          {
+            "prompt": "\\( p \\rightarrow q \\)",
+            "selected": "¬p∨q"
+          },
+          {
+            "prompt": "\\( \\neg (p \\leftrightarrow q) \\)",
+            "selected": "¬p ↔q"
+          },
+          {
+            "prompt": "\\( p \\leftrightarrow q  \\)",
+            "selected": "¬(p⨁q)"
+          },
+          {
+            "prompt": "\\( \\neg p \\leftrightarrow q \\)",
+            "selected": "p ↔¬q"
+          }
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\( \\neg p \\leftrightarrow q \\)",
+            "selected": "p ↔¬q",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( p \\leftrightarrow q  \\)",
+            "selected": "¬(p⨁q)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\neg (p \\leftrightarrow q) \\)",
+            "selected": "¬p ↔q",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( p \\rightarrow q \\)",
+            "selected": "¬p∨q",
+            "isCorrect": true
+          }
+        ],
+        "correctAnswers": [
+          {
+            "prompt": "\\( \\neg p \\leftrightarrow q \\)",
+            "selected": "p ↔¬q"
+          },
+          {
+            "prompt": "\\( p \\leftrightarrow q  \\)",
+            "selected": "¬(p⨁q)"
+          },
+          {
+            "prompt": "\\( \\neg (p \\leftrightarrow q) \\)",
+            "selected": "¬p ↔q"
+          },
+          {
+            "prompt": "\\( p \\rightarrow q \\)",
+            "selected": "¬p∨q"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431449",
+    "type": "multichoice",
+    "qText": "Mệnh đề nào là hằng đúng? (Chọn 2)",
+    "options": [
+      {
+        "text": "\\( p \\land q \\rightarrow p \\)",
+        "rawText": "\\( p \\land q \\rightarrow p \\)"
+      },
+      {
+        "text": "\\( \\neg p \\land (p \\rightarrow q) \\rightarrow \\neg q \\)",
+        "rawText": "\\( \\neg p \\land (p \\rightarrow q) \\rightarrow \\neg q \\)"
+      },
+      {
+        "text": "\\( p \\lor q \\rightarrow q \\)",
+        "rawText": "\\( p \\lor q \\rightarrow q \\)"
+      },
+      {
+        "text": "\\( p \\land (p \\lor q) \\rightarrow q  \\)",
+        "rawText": "\\( p \\land (p \\lor q) \\rightarrow q  \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Đúng một phần",
+        "grade": "Đạt điểm 0,50 trên 1,00",
+        "userAnswers": [
+          "\\( p \\land q \\rightarrow p \\)",
+          "\\( p \\land (p \\lor q) \\rightarrow q  \\)"
+        ],
+        "correctAnswers": [
+          "\\( p \\land q \\rightarrow p \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\neg p \\land (p \\rightarrow q) \\rightarrow \\neg q \\)",
+          "\\( p \\land q \\rightarrow p \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\neg p \\land (p \\rightarrow q) \\rightarrow \\neg q \\)",
+          "\\( p \\land q \\rightarrow p \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431450",
+    "type": "multichoice",
+    "qText": "Cho mệnh đề \\( p → (p ∨ q) \\) . Phát biểu nào đúng về giá trị chân lý của mệnh đề?",
+    "options": [
+      {
+        "text": "Sai khi p sai, q đúng",
+        "rawText": "Sai khi p sai, q đúng"
+      },
+      {
+        "text": "Luôn luôn sai",
+        "rawText": "Luôn luôn sai"
+      },
+      {
+        "text": "Luôn luôn đúng",
+        "rawText": "Luôn luôn đúng"
+      },
+      {
+        "text": "Sai khi p đúng, q sai",
+        "rawText": "Sai khi p đúng, q sai"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "Luôn luôn đúng"
+        ],
+        "correctAnswers": [
+          "Luôn luôn đúng"
+        ]
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "Luôn luôn đúng"
+        ],
+        "correctAnswers": [
+          "Luôn luôn đúng"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431476",
+    "type": "multichoice",
+    "qText": "ho hàm mệnh đề  P(x): x2 − 4 = 0  xác định trên tập số nguyên Z. Vị từ nào sau đây nhận giá trị đúng? (Chọn 2)",
+    "options": [
+      {
+        "text": "\\(  \\forall x P(x)  \\)",
+        "rawText": "\\(  \\forall x P(x)  \\)"
+      },
+      {
+        "text": "\\(  \\forall x  \\overline{\\rm P(x)} \\)",
+        "rawText": "\\(  \\forall x  \\overline{\\rm P(x)} \\)"
+      },
+      {
+        "text": "\\(  \\exists x P(x)  \\)",
+        "rawText": "\\(  \\exists x P(x)  \\)"
+      },
+      {
+        "text": "\\(  \\exists x  \\overline{\\rm P(x)} \\)",
+        "rawText": "\\(  \\exists x  \\overline{\\rm P(x)} \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\(  \\exists x P(x)  \\)",
+          "\\(  \\exists x  \\overline{\\rm P(x)} \\)"
+        ],
+        "correctAnswers": [
+          "\\(  \\exists x P(x)  \\)",
+          "\\(  \\exists x  \\overline{\\rm P(x)} \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\(  \\exists x  \\overline{\\rm P(x)} \\)",
+          "\\(  \\exists x P(x)  \\)"
+        ],
+        "correctAnswers": [
+          "\\(  \\exists x  \\overline{\\rm P(x)} \\)",
+          "\\(  \\exists x P(x)  \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431429",
+    "type": "multichoice",
+    "qText": "Phát biểu nào đúng khi nói \"p và q tương đương logic\"",
+    "options": [
+      {
+        "text": "p và q luôn có cùng giá trị chân lý",
+        "rawText": "p và q luôn có cùng giá trị chân lý"
+      },
+      {
+        "text": "p và q có số phép toán bằng nhau",
+        "rawText": "p và q có số phép toán bằng nhau"
+      },
+      {
+        "text": "p và q có số mệnh đề sơ cấp bằng nhau",
+        "rawText": "p và q có số mệnh đề sơ cấp bằng nhau"
+      },
+      {
+        "text": "p và q có số trường hợp đúng, sai bằng nhau",
+        "rawText": "p và q có số trường hợp đúng, sai bằng nhau"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "p và q luôn có cùng giá trị chân lý"
+        ],
+        "correctAnswers": [
+          "p và q luôn có cùng giá trị chân lý"
+        ]
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "p và q luôn có cùng giá trị chân lý"
+        ],
+        "correctAnswers": [
+          "p và q luôn có cùng giá trị chân lý"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431489",
+    "type": "match",
+    "qText": "Ghép nối giữa mệnh đề và phủ định của nó",
+    "options": [
+      {
+        "prompt": "\\(  \\exists x \\forall y \\overline{\\rm Q(x, y)}   \\)",
+        "choices": [
+          "∃x∀y Q(x,y)",
+          "∀y∃x Q(x,y)",
+          "∃y∀x Q(x,y)",
+          "∀x∃y Q(x,y)"
+        ]
+      },
+      {
+        "prompt": "\\( \\forall y \\exists x \\overline{\\rm Q(x, y)} \\)",
+        "choices": [
+          "∃x∀y Q(x,y)",
+          "∀y∃x Q(x,y)",
+          "∃y∀x Q(x,y)",
+          "∀x∃y Q(x,y)"
+        ]
+      },
+      {
+        "prompt": "\\( \\exists y \\forall x \\overline{\\rm Q(x, y)} \\)",
+        "choices": [
+          "∃x∀y Q(x,y)",
+          "∀y∃x Q(x,y)",
+          "∃y∀x Q(x,y)",
+          "∀x∃y Q(x,y)"
+        ]
+      },
+      {
+        "prompt": "\\( \\forall x \\exists y \\overline{\\rm Q(x, y)} \\)",
+        "choices": [
+          "∃x∀y Q(x,y)",
+          "∀y∃x Q(x,y)",
+          "∃y∀x Q(x,y)",
+          "∀x∃y Q(x,y)"
+        ]
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\(  \\exists x \\forall y \\overline{\\rm Q(x, y)}   \\)",
+            "selected": "∀x∃y Q(x,y)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\forall y \\exists x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃y∀x Q(x,y)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\exists y \\forall x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∀y∃x Q(x,y)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\forall x \\exists y \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃x∀y Q(x,y)",
+            "isCorrect": true
+          }
+        ],
+        "correctAnswers": [
+          {
+            "prompt": "\\(  \\exists x \\forall y \\overline{\\rm Q(x, y)}   \\)",
+            "selected": "∀x∃y Q(x,y)"
+          },
+          {
+            "prompt": "\\( \\forall y \\exists x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃y∀x Q(x,y)"
+          },
+          {
+            "prompt": "\\( \\exists y \\forall x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∀y∃x Q(x,y)"
+          },
+          {
+            "prompt": "\\( \\forall x \\exists y \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃x∀y Q(x,y)"
+          }
+        ]
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\(  \\exists x \\forall y \\overline{\\rm Q(x, y)}   \\)",
+            "selected": "∀x∃y Q(x,y)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\forall x \\exists y \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃x∀y Q(x,y)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\exists y \\forall x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∀y∃x Q(x,y)",
+            "isCorrect": true
+          },
+          {
+            "prompt": "\\( \\forall y \\exists x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃y∀x Q(x,y)",
+            "isCorrect": true
+          }
+        ],
+        "correctAnswers": [
+          {
+            "prompt": "\\(  \\exists x \\forall y \\overline{\\rm Q(x, y)}   \\)",
+            "selected": "∀x∃y Q(x,y)"
+          },
+          {
+            "prompt": "\\( \\forall x \\exists y \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃x∀y Q(x,y)"
+          },
+          {
+            "prompt": "\\( \\exists y \\forall x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∀y∃x Q(x,y)"
+          },
+          {
+            "prompt": "\\( \\forall y \\exists x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃y∀x Q(x,y)"
+          }
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Sai",
+        "grade": "Đạt điểm 0,00 trên 1,00",
+        "userAnswers": [
+          {
+            "prompt": "\\( \\exists y \\forall x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∃y∀x Q(x,y)",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\(  \\exists x \\forall y \\overline{\\rm Q(x, y)}   \\)",
+            "selected": "∃x∀y Q(x,y)",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\( \\forall y \\exists x \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∀y∃x Q(x,y)",
+            "isCorrect": false
+          },
+          {
+            "prompt": "\\( \\forall x \\exists y \\overline{\\rm Q(x, y)} \\)",
+            "selected": "∀x∃y Q(x,y)",
+            "isCorrect": false
+          }
+        ],
+        "correctAnswers": []
+      }
+    ]
+  },
+  {
+    "qid": "1431431",
+    "type": "multichoice",
+    "qText": "Cho mệnh đề \\( p \\rightarrow q  \\). Mệnh đề nào sau đây tương đương logic với mệnh đề đã cho? (Chọn 2)",
+    "options": [
+      {
+        "text": "\\( p \\land \\neg q \\)",
+        "rawText": "\\( p \\land \\neg q \\)"
+      },
+      {
+        "text": "\\( \\neg p \\lor q \\)",
+        "rawText": "\\( \\neg p \\lor q \\)"
+      },
+      {
+        "text": "\\( \\neg p \\rightarrow \\neg q \\)",
+        "rawText": "\\( \\neg p \\rightarrow \\neg q \\)"
+      },
+      {
+        "text": "\\( \\neg q \\rightarrow \\neg p \\)",
+        "rawText": "\\( \\neg q \\rightarrow \\neg p \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\neg p \\lor q \\)",
+          "\\( \\neg q \\rightarrow \\neg p \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\neg p \\lor q \\)",
+          "\\( \\neg q \\rightarrow \\neg p \\)"
+        ]
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\neg p \\lor q \\)",
+          "\\( \\neg q \\rightarrow \\neg p \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\neg p \\lor q \\)",
+          "\\( \\neg q \\rightarrow \\neg p \\)"
+        ]
+      },
+      {
+        "attempt": 2390246,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\( \\neg q \\rightarrow \\neg p \\)",
+          "\\( \\neg p \\lor q \\)"
+        ],
+        "correctAnswers": [
+          "\\( \\neg q \\rightarrow \\neg p \\)",
+          "\\( \\neg p \\lor q \\)"
+        ]
+      }
+    ]
+  },
+  {
+    "qid": "1431477",
+    "type": "select_group",
+    "qText": "Cho mệnh đề: \\(  \\forall x: x^2  \\neq 2  \\). Xác định giá trị chân lý của mệnh đề tương ứng với các tập xác định như sau:Tập xác định là tập số tự nhiên, giá trị chân lý là  FalseTrue  Tập xác định là tập số nguyên, giá trị chân lý là  FalseTrue Tập xác định là tập số hữu tỷ, giá trị chân lý là  FalseTrue Tập xác định là tập số thực, giá trị chân lý là  FalseTrue",
+    "options": [
+      {
+        "prompt": "Tập xác định là tập số tự nhiên, giá trị chân lý là",
+        "choices": [
+          "False",
+          "True"
+        ]
+      },
+      {
+        "prompt": "Tập xác định là tập số nguyên, giá trị chân lý là",
+        "choices": [
+          "False",
+          "True"
+        ]
+      },
+      {
+        "prompt": "Tập xác định là tập số hữu tỷ, giá trị chân lý là",
+        "choices": [
+          "False",
+          "True"
+        ]
+      },
+      {
+        "prompt": "Tập xác định là tập số thực, giá trị chân lý là",
+        "choices": [
+          "False",
+          "True"
+        ]
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "True",
+          "True",
+          "True",
+          "False"
+        ],
+        "correctAnswers": []
+      }
+    ]
+  },
+  {
+    "qid": "1431491",
+    "type": "multichoice",
+    "qText": "Cho tập xác định U = {2, 4, 6, 7}, hàm mệnh đề P(x, y) : \"x chia hết cho y, x khác y\"Mệnh đề nào sau đây đúng?",
+    "options": [
+      {
+        "text": "\\(  \\forall x \\forall y P(x, y)   \\)",
+        "rawText": "\\(  \\forall x \\forall y P(x, y)   \\)"
+      },
+      {
+        "text": "\\(  \\forall x \\exists y P(x, y)   \\)",
+        "rawText": "\\(  \\forall x \\exists y P(x, y)   \\)"
+      },
+      {
+        "text": "\\(  \\exists x \\forall y P(x, y)   \\)",
+        "rawText": "\\(  \\exists x \\forall y P(x, y)   \\)"
+      },
+      {
+        "text": "\\(  \\exists x \\exists y P(x, y)  \\)",
+        "rawText": "\\(  \\exists x \\exists y P(x, y)  \\)"
+      }
+    ],
+    "history": [
+      {
+        "attempt": 2382426,
+        "state": "Không trả lời",
+        "grade": "Đạt điểm 1,00",
+        "userAnswers": [],
+        "correctAnswers": []
+      },
+      {
+        "attempt": 2382533,
+        "state": "Đúng",
+        "grade": "Đạt điểm 1,00 trên 1,00",
+        "userAnswers": [
+          "\\(  \\exists x \\exists y P(x, y)  \\)"
+        ],
+        "correctAnswers": [
+          "\\(  \\exists x \\exists y P(x, y)  \\)"
+        ]
+      }
+    ]
+  }
+]

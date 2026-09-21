@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 1 day
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # AI Integration
+    AI_BASE_URL: str = "http://localhost:8000/v1"
+    AI_API_KEY: str = "REDACTED_AI_KEY"
+    AI_MODEL: str = "ag/gemini-3.8-flash-high"
+
     class Config:
         env_file = ".env"
         extra = "allow"

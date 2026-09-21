@@ -1,9 +1,10 @@
+import { toast } from '../../stores/toastStore';
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { apiClient } from '../../api/client';
-import { GraduationCap, Lock, Mail, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
-import { UserRole } from '../../types';
+import { Logo } from '../../components/Logo';
+import { Lock, Mail, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +12,6 @@ export const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('STUDENT');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +25,7 @@ export const RegisterPage: React.FC = () => {
         email,
         password,
         full_name: fullName,
-        role,
+        role: 'STUDENT',
       });
 
       // Automatically log in after registration
@@ -33,11 +33,8 @@ export const RegisterPage: React.FC = () => {
       const { access_token, refresh_token, user } = loginRes.data;
       setAuth(user, access_token, refresh_token);
 
-      if (user.role === 'TEACHER' || user.role === 'ADMIN') {
-        navigate('/teacher');
-      } else {
-        navigate('/practice');
-      }
+      toast.success('Đăng ký tài khoản thành công!');
+      navigate('/courses');
     } catch (err: any) {
       setError(err.response?.data?.detail?.error?.message || 'Đăng ký không thành công. Vui lòng thử lại.');
     } finally {
@@ -47,10 +44,10 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="max-w-md w-full space-y-7 bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm">
         <div className="text-center">
-          <div className="inline-flex p-3 bg-blue-50 text-blue-600 rounded-2xl mb-3">
-            <GraduationCap className="w-8 h-8" />
+          <div className="flex justify-center mb-4">
+            <Logo size="lg" showSubtitle={true} />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Đăng ký tài khoản</h2>
           <p className="text-sm text-slate-500 mt-1">Bắt đầu trải nghiệm luyện tập và thi trắc nghiệm</p>
@@ -74,7 +71,7 @@ export const RegisterPage: React.FC = () => {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="Nguyễn Văn A"
+                placeholder="Nhập họ và tên..."
               />
             </div>
           </div>
@@ -89,7 +86,7 @@ export const RegisterPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="name@example.com"
+                placeholder="Nhập email..."
               />
             </div>
           </div>
@@ -105,21 +102,9 @@ export const RegisterPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)..."
               />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Vai trò</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as UserRole)}
-              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="STUDENT">Học sinh / Sinh viên (Làm bài luyện tập)</option>
-              <option value="TEACHER">Giáo viên (Tạo đề thi & Quản lý câu hỏi)</option>
-            </select>
           </div>
 
           <button

@@ -1,4 +1,4 @@
-export type UserRole = 'STUDENT' | 'TEACHER' | 'ADMIN';
+export type UserRole = 'STUDENT' | 'ADMIN';
 
 export interface User {
   id: string;
@@ -46,6 +46,7 @@ export interface Topic {
   name: string;
   description?: string;
   subject_id: string;
+  order?: number;
   created_at: string;
 }
 
@@ -132,4 +133,79 @@ export interface AttemptResult {
   incorrect_count: number;
   unanswered_count: number;
   questions_review?: QuestionReview[];
+}
+
+export interface LessonSimple {
+  id: string;
+  topic_id: string;
+  title: string;
+  description?: string;
+  duration_minutes: number;
+  order: number;
+  video_url?: string;
+  slide_url?: string;
+  quiz_id?: string;
+  is_completed?: boolean;
+}
+
+export interface LessonNavInfo {
+  id: string;
+  title: string;
+  topic_name?: string;
+}
+
+export interface LessonDetail {
+  id: string;
+  topic_id: string;
+  topic_name: string;
+  subject_id: string;
+  subject_name: string;
+  title: string;
+  description?: string;
+  content: string;
+  video_url?: string;
+  slide_url?: string;
+  duration_minutes: number;
+  order: number;
+  quiz_id?: string;
+  quiz_info?: {
+    id: string;
+    title: string;
+    duration_minutes: number;
+    difficulty: DifficultyLevel;
+    pass_score: number;
+  };
+  is_completed: boolean;
+  prev_lesson?: LessonNavInfo;
+  next_lesson?: LessonNavInfo;
+}
+
+export interface CourseTopic {
+  id: string;
+  subject_id: string;
+  name: string;
+  description?: string;
+  slide_url?: string;
+  order: number;
+  lessons: LessonSimple[];
+  quizzes: {
+    id: string;
+    title: string;
+    difficulty: DifficultyLevel;
+    duration_minutes: number;
+    pass_score: number;
+    topic_id: string;
+  }[];
+}
+
+export interface CourseCurriculum {
+  subject_id: string;
+  subject_name: string;
+  subject_code: string;
+  subject_description?: string;
+  total_lessons: number;
+  completed_lessons: number;
+  progress_percent: number;
+  total_quizzes: number;
+  topics: CourseTopic[];
 }
