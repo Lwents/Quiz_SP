@@ -23,7 +23,7 @@ export const Navbar: React.FC = () => {
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
               <GraduationCap className="w-6 h-6" />
             </div>
-            <span>Quiz_SP • HNUE EdTech</span>
+            <span>Hnue</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
