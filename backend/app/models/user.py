@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, String, Boolean, Enum
+from sqlalchemy import Column, String, Boolean, Enum, Text
 from app.core.database import Base
 from app.models.base import UUIDMixin, TimestampMixin
 
@@ -18,3 +18,4 @@ class User(Base, UUIDMixin, TimestampMixin):
     full_name = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.STUDENT, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    avatar_url = Column(Text, nullable=True)

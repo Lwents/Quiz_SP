@@ -127,15 +127,28 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex flex-col text-right">
-                  <span className="text-sm font-semibold text-slate-800">{user.full_name}</span>
-                  <span className="text-xs text-slate-500 font-medium">
-                    {isAdmin ? 'Quản trị viên' : 'Người học'}
-                  </span>
-                </div>
-                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
-                  {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-                </div>
+                <Link
+                  to="/profile"
+                  onClick={(e) => handleGuardedNav(e, '/profile')}
+                  className="flex items-center gap-2.5 p-1 -m-1 rounded-xl hover:bg-slate-100 transition group cursor-pointer"
+                  title="Xem hồ sơ & Cài đặt cá nhân"
+                >
+                  <div className="hidden sm:flex flex-col text-right">
+                    <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
+                      {user.full_name}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      {isAdmin ? 'Quản trị viên' : 'Người học'}
+                    </span>
+                  </div>
+                  <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shadow-2xs bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0 group-hover:ring-2 group-hover:ring-blue-500/30 transition">
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}</span>
+                    )}
+                  </div>
+                </Link>
                 <button
                   type="button"
                   onClick={() => setShowLogoutConfirm(true)}

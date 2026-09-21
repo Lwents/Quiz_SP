@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons
+from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons, users
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -30,6 +30,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Include Routers
 app.include_router(auth.router, prefix=settings.API_V1_STR)
+app.include_router(users.router, prefix=settings.API_V1_STR)
 app.include_router(subjects.router, prefix=settings.API_V1_STR)
 app.include_router(quizzes.router, prefix=settings.API_V1_STR)
 app.include_router(questions.router, prefix=settings.API_V1_STR)

@@ -1,3 +1,4 @@
+import { ProfilePage } from "./pages/student/ProfilePage";
 ﻿import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './layouts/Navbar';
@@ -40,7 +41,7 @@ const PageTitleHandler: React.FC = () => {
       document.title = 'Quản lý môn học | HNUE PRO';
     } else if (path.startsWith('/teacher')) {
       document.title = 'Quản trị đề thi | HNUE PRO';
-    } else if (path.startsWith('/dashboard')) {
+    } else if (path.startsWith('/dashboard') || path.startsWith('/profile')) {
       document.title = 'Tiến độ & Thống kê | HNUE PRO';
     } else if (path.startsWith('/results')) {
       document.title = 'Kết quả thi | HNUE PRO';
@@ -90,7 +91,8 @@ export const App: React.FC = () => {
             <Route path="/practice" element={<QuizListPage />} />
             <Route path="/practice/:quizId" element={<QuizPlayerPage />} />
             <Route path="/results/:attemptId" element={<ResultPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/teacher" element={<TeacherDashboardPage />} />
             <Route path="/teacher/subjects" element={<SubjectManagementPage />} />
             <Route path="/teacher/quizzes/new" element={<QuizEditorPage />} />

@@ -8,6 +8,7 @@ class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     role: Optional[UserRole] = UserRole.STUDENT
+    avatar_url: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -18,6 +19,7 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     password: Optional[str] = None
+    avatar_url: Optional[str] = None
     is_active: Optional[bool] = None
 
 
@@ -48,3 +50,8 @@ class LoginRequest(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
