@@ -228,39 +228,7 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         {/* Action Tabs Switcher */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 z-10 shrink-0">
-          <Link
-            to="/courses"
-            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white/90 hover:text-white hover:bg-white/15 transition flex items-center gap-1.5 border border-white/20 bg-white/5"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-blue-300" />
-            <span>Khóa học</span>
-          </Link>
-          <Link
-            to="/practice"
-            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white/90 hover:text-white hover:bg-white/15 transition flex items-center gap-1.5 border border-white/20 bg-white/5 mr-1"
-          >
-            <Award className="w-3.5 h-3.5 text-amber-300" />
-            <span>Luyện tập</span>
-          </Link>
-          {user && (user.role === 'ADMIN' || (user.role as any) === 'TEACHER') && (
-            <>
-              <Link
-                to="/teacher"
-                className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-amber-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5 border border-amber-300/30 bg-amber-500/10"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-amber-300" />
-                <span>Quản trị đề thi</span>
-              </Link>
-              <Link
-                to="/teacher/subjects"
-                className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-amber-200 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5 border border-amber-300/30 bg-amber-500/10 mr-1"
-              >
-                <Layers className="w-3.5 h-3.5 text-amber-300" />
-                <span>Môn học & Khóa học</span>
-              </Link>
-            </>
-          )}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 z-10 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
