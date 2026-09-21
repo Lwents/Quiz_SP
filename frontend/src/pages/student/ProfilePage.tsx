@@ -229,6 +229,20 @@ export const ProfilePage: React.FC = () => {
 
         {/* Action Tabs Switcher */}
         <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 z-10 shrink-0">
+          <Link
+            to="/courses"
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white/90 hover:text-white hover:bg-white/15 transition flex items-center gap-1.5 border border-white/20 bg-white/5"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-blue-300" />
+            <span>Khóa học</span>
+          </Link>
+          <Link
+            to="/practice"
+            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white/90 hover:text-white hover:bg-white/15 transition flex items-center gap-1.5 border border-white/20 bg-white/5 mr-1"
+          >
+            <Award className="w-3.5 h-3.5 text-amber-300" />
+            <span>Luyện tập</span>
+          </Link>
           {user && (user.role === 'ADMIN' || (user.role as any) === 'TEACHER') && (
             <>
               <Link

@@ -52,35 +52,6 @@ export const Navbar: React.FC = () => {
             </Link>
 
             <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-              <Link
-                to="/courses"
-                onClick={(e) => handleGuardedNav(e, '/courses')}
-                className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  location.pathname.startsWith('/courses')
-                    ? 'text-blue-600 bg-blue-50 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <GraduationCap className="w-4 h-4" />
-                Khóa học
-              </Link>
-
-              <Link
-                to="/practice"
-                onClick={(e) => handleGuardedNav(e, '/practice')}
-                className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  location.pathname.startsWith('/practice')
-                    ? 'text-blue-600 bg-blue-50 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <BookOpen className="w-4 h-4" />
-                Luyện tập
-              </Link>
-
-              
-
-              
             </nav>
           </div>
 
