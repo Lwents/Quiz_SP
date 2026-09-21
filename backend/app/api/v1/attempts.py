@@ -27,6 +27,86 @@ from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/attempts", tags=["attempts"])
 
+async def grade_and_finalize_attempt(attempt: Attempt, db: AsyncSession) -> Attempt:
+    if attempt.status in (AttemptStatus.SUBMITTED, AttemptStatus.GRADED):
+        return attempt
+
+    # Ensure relations are loaded
+    if not attempt.quiz or not hasattr(attempt.quiz, 'quiz_questions') or not attempt.answers:
+        res = await db.execute(
+            select(Attempt)
+            .where(Attempt.id == attempt.id)
+            .options(
+                selectinload(Attempt.quiz).selectinload(Quiz.quiz_questions).selectinload(QuizQuestion.question),
+                selectinload(Attempt.answers)
+            )
+        )
+        attempt = res.scalar_one()
+
+    quiz = attempt.quiz
+    now = datetime.now(timezone.utc)
+    if not attempt.submitted_at:
+        attempt.submitted_at = now
+    delta = now - attempt.started_at
+    attempt.duration_seconds = max(0, int(delta.total_seconds()))
+
+    user_answers_map = {a.question_id: a for a in attempt.answers}
+
+    total_score = 0.0
+    max_total_score = 0.0
+
+    for qq in quiz.quiz_questions:
+        q = qq.question
+        q_points = qq.points_override if qq.points_override is not None else q.points
+        max_total_score += q_points
+
+        att_ans = user_answers_map.get(q.id)
+        user_val = att_ans.answer if att_ans else None
+
+        if user_val is None or user_val == '' or user_val == [] or user_val == {}:
+            is_correct_str = 'false'
+            score_earned = 0.0
+        else:
+            score_result = score_question(
+                q_type=q.type.value,
+                config=q.config or {},
+                user_answer=user_val,
+                max_score=q_points
+            )
+            score_earned = score_result['score']
+            if score_result['correct']:
+                is_correct_str = 'true'
+            elif score_earned > 0:
+                is_correct_str = 'partial'
+            else:
+                is_correct_str = 'false'
+
+        total_score += score_earned
+
+        if not att_ans:
+            att_ans = AttemptAnswer(
+                attempt_id=attempt.id,
+                question_id=q.id,
+                answer=user_val,
+                score=score_earned,
+                max_score=q_points,
+                is_correct=is_correct_str
+            )
+            db.add(att_ans)
+        else:
+            att_ans.score = score_earned
+            att_ans.max_score = q_points
+            att_ans.is_correct = is_correct_str
+
+    attempt.score = round(total_score, 2)
+    attempt.max_score = round(max_total_score, 2)
+    attempt.status = AttemptStatus.GRADED
+
+    await db.commit()
+    await db.refresh(attempt)
+    return attempt
+
+
 
 @router.post("/quiz/{quiz_id}", response_model=AttemptStartResponse, status_code=status.HTTP_201_CREATED)
 async def start_quiz_attempt(
@@ -83,12 +163,41 @@ async def start_quiz_attempt(
                 Attempt.status == AttemptStatus.IN_PROGRESS
             )
         )
-        .options(selectinload(Attempt.answers))
+        .options(
+            selectinload(Attempt.quiz).selectinload(Quiz.quiz_questions).selectinload(QuizQuestion.question),
+            selectinload(Attempt.answers)
+        )
     )
     existing_attempt = in_progress_res.scalar_one_or_none()
 
-    attempt = existing_attempt
-    if not attempt:
+    if existing_attempt:
+        # Check if duration limit has expired while student was away (NO PAUSE)
+        if quiz.duration_minutes > 0:
+            elapsed = (datetime.now(timezone.utc) - existing_attempt.started_at).total_seconds()
+            if elapsed >= quiz.duration_minutes * 60:
+                # Expired while away, auto finalize
+                await grade_and_finalize_attempt(existing_attempt, db)
+                existing_attempt = None
+
+    if not existing_attempt:
+        # If max attempts limit is configured, re-verify completed count
+        if quiz.max_attempts > 0 and current_user.role == UserRole.STUDENT:
+            count_res = await db.execute(
+                select(Attempt).where(
+                    and_(
+                        Attempt.quiz_id == quiz_id,
+                        Attempt.user_id == current_user.id,
+                        Attempt.status.in_([AttemptStatus.SUBMITTED, AttemptStatus.GRADED])
+                    )
+                )
+            )
+            completed_attempts = len(count_res.scalars().all())
+            if completed_attempts >= quiz.max_attempts:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"error": {"code": "MAX_ATTEMPTS_EXCEEDED", "message": f"Bài làm trước đó đã hết giờ và được tự động nộp. Bạn đã đạt tối đa ({quiz.max_attempts}) lượt làm bài."}}
+                )
+
         attempt = Attempt(
             user_id=current_user.id,
             quiz_id=quiz.id,
@@ -100,14 +209,9 @@ async def start_quiz_attempt(
         await db.commit()
         await db.refresh(attempt)
     else:
-        # Resuming in-progress attempt:
-        # If quiz has a duration limit, adjust started_at so elapsed time reflects
-        # actual duration_seconds spent while active, instead of timing out while away.
-        if quiz.duration_minutes > 0:
-            actual_spent = min(attempt.duration_seconds or 0, max(0, quiz.duration_minutes * 60 - 30))
-            attempt.started_at = datetime.now(timezone.utc) - timedelta(seconds=actual_spent)
-            await db.commit()
-            await db.refresh(attempt)
+        # Resuming active attempt:
+        # TIME DOES NOT PAUSE! started_at is preserved exactly as original.
+        attempt = existing_attempt
 
     # Build sanitized questions for student with deterministic PRNG based on attempt.id
     qq_list = list(quiz.quiz_questions)
@@ -170,15 +274,32 @@ async def get_my_active_attempts(
     current_user: User = Depends(get_current_user)
 ):
     res = await db.execute(
-        select(Attempt.quiz_id)
+        select(Attempt)
         .where(
             and_(
                 Attempt.user_id == current_user.id,
                 Attempt.status == AttemptStatus.IN_PROGRESS
             )
         )
+        .options(
+            selectinload(Attempt.quiz).selectinload(Quiz.quiz_questions).selectinload(QuizQuestion.question),
+            selectinload(Attempt.answers)
+        )
     )
-    return list(set(res.scalars().all()))
+    in_progress = res.scalars().all()
+    active_quiz_ids = []
+    now = datetime.now(timezone.utc)
+
+    for att in in_progress:
+        if att.quiz and att.quiz.duration_minutes > 0:
+            elapsed = (now - att.started_at).total_seconds()
+            if elapsed >= att.quiz.duration_minutes * 60:
+                # Expired while away, auto finalize
+                await grade_and_finalize_attempt(att, db)
+                continue
+        active_quiz_ids.append(att.quiz_id)
+
+    return list(set(active_quiz_ids))
 
 
 @router.patch("/{attempt_id}/progress")
@@ -209,7 +330,7 @@ async def get_attempt_state(
     query = (
         select(Attempt)
         .where(Attempt.id == attempt_id)
-        .options(selectinload(Attempt.answers))
+        .options(selectinload(Attempt.quiz), selectinload(Attempt.answers))
     )
     res = await db.execute(query)
     attempt = res.scalar_one_or_none()
@@ -228,6 +349,12 @@ async def get_attempt_state(
     answers_out = [
         AttemptAnswerResponse.model_validate(a) for a in attempt.answers
     ]
+
+    # If in-progress and time limit expired, auto finalize
+    if attempt.status == AttemptStatus.IN_PROGRESS and attempt.quiz and attempt.quiz.duration_minutes > 0:
+        elapsed = (datetime.now(timezone.utc) - attempt.started_at).total_seconds()
+        if elapsed >= attempt.quiz.duration_minutes * 60:
+            attempt = await grade_and_finalize_attempt(attempt, db)
 
     duration = attempt.duration_seconds
     if attempt.status == AttemptStatus.IN_PROGRESS:
@@ -271,6 +398,17 @@ async def save_answer(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"error": {"code": "ATTEMPT_ALREADY_CLOSED", "message": "Attempt is already submitted"}}
         )
+
+    # Check if expired (grace period of 15 seconds for network latency)
+    quiz = await db.get(Quiz, attempt.quiz_id)
+    if quiz and quiz.duration_minutes > 0:
+        elapsed = (datetime.now(timezone.utc) - attempt.started_at).total_seconds()
+        if elapsed > quiz.duration_minutes * 60 + 15:
+            await grade_and_finalize_attempt(attempt, db)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "TIME_EXPIRED", "message": "Thời gian làm bài thi đã kết thúc"}}
+            )
 
     # Upsert attempt answer
     res = await db.execute(
@@ -327,76 +465,7 @@ async def submit_attempt(
     if attempt.status in (AttemptStatus.SUBMITTED, AttemptStatus.GRADED):
         return await get_attempt_result(attempt_id=attempt_id, db=db, current_user=current_user)
 
-    quiz = attempt.quiz
-    now = datetime.now(timezone.utc)
-    attempt.submitted_at = now
-    delta = now - attempt.started_at
-    attempt.duration_seconds = max(0, int(delta.total_seconds()))
-
-    # Build answers map
-    user_answers_map = {a.question_id: a for a in attempt.answers}
-
-    total_score = 0.0
-    max_total_score = 0.0
-    correct_count = 0
-    incorrect_count = 0
-    unanswered_count = 0
-
-    # Score every question in the quiz
-    for qq in quiz.quiz_questions:
-        q = qq.question
-        q_points = qq.points_override if qq.points_override is not None else q.points
-        max_total_score += q_points
-
-        att_ans = user_answers_map.get(q.id)
-        user_val = att_ans.answer if att_ans else None
-
-        if user_val is None or user_val == "" or user_val == [] or user_val == {}:
-            unanswered_count += 1
-            is_correct_str = "false"
-            score_earned = 0.0
-        else:
-            score_result = score_question(
-                q_type=q.type.value,
-                config=q.config or {},
-                user_answer=user_val,
-                max_score=q_points
-            )
-            score_earned = score_result["score"]
-            if score_result["correct"]:
-                correct_count += 1
-                is_correct_str = "true"
-            elif score_earned > 0:
-                is_correct_str = "partial"
-                incorrect_count += 1
-            else:
-                incorrect_count += 1
-                is_correct_str = "false"
-
-        total_score += score_earned
-
-        if not att_ans:
-            att_ans = AttemptAnswer(
-                attempt_id=attempt.id,
-                question_id=q.id,
-                answer=user_val,
-                score=score_earned,
-                max_score=q_points,
-                is_correct=is_correct_str
-            )
-            db.add(att_ans)
-        else:
-            att_ans.score = score_earned
-            att_ans.max_score = q_points
-            att_ans.is_correct = is_correct_str
-
-    attempt.score = round(total_score, 2)
-    attempt.max_score = round(max_total_score, 2)
-    attempt.status = AttemptStatus.GRADED
-
-    await db.commit()
-    await db.refresh(attempt)
-
+    await grade_and_finalize_attempt(attempt, db)
     return await get_attempt_result(attempt_id=attempt_id, db=db, current_user=current_user)
 
 

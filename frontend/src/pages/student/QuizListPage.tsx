@@ -163,10 +163,12 @@ export const QuizListPage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">
-                  ĐANG LÀM DỞ
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900 animate-pulse">
+                  ĐANG LÀM BÀI
                 </span>
-                <span className="text-xs text-slate-500">Tiến trình đã được lưu an toàn</span>
+                <span className="text-xs text-amber-800 font-medium">
+                  Thời gian đang đếm ngược liên tục (không tạm dừng) • Tiến trình đã lưu an toàn
+                </span>
               </div>
               <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">{inProgressQuiz.title}</h3>
             </div>

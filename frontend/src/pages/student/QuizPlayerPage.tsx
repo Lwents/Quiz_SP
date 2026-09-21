@@ -73,13 +73,19 @@ export const QuizPlayerPage: React.FC = () => {
         console.warn('Could not restore local quiz meta', e);
       }
 
-      // Setup active duration and timer
+      // Setup active duration and timer based on true wall-clock time
       const elapsed = statusRes.data.duration_seconds || 0;
       activeSecondsRef.current = elapsed;
 
       if (data.duration_minutes > 0) {
         const totalSec = data.duration_minutes * 60;
-        setTimeLeft(Math.max(0, totalSec - elapsed));
+        const remaining = Math.max(0, totalSec - elapsed);
+        setTimeLeft(remaining);
+        if (remaining <= 0) {
+          toast.warning('Thời gian làm bài thi đã kết thúc! Hệ thống đang tự động nộp bài...');
+          handleSubmit();
+          return;
+        }
       }
     } catch (err: any) {
       toast.error(err.response?.data?.detail?.error?.message || 'Không thể bắt đầu bài làm');
@@ -99,36 +105,47 @@ export const QuizPlayerPage: React.FC = () => {
     }
   }, [currentIndex, markedReview, attempt]);
 
-  // 3. Track active seconds and auto-save duration periodically
+  // 3. Track wall-clock duration and auto-sync periodically
   useEffect(() => {
     if (!attempt) return;
+    const startTimeMs = new Date(attempt.started_at).getTime();
     const interval = setInterval(() => {
-      activeSecondsRef.current += 1;
+      const elapsed = Math.max(0, Math.floor((Date.now() - startTimeMs) / 1000));
+      activeSecondsRef.current = elapsed;
       // Sync progress to server every 20 seconds
-      if (activeSecondsRef.current % 20 === 0) {
+      if (elapsed % 20 === 0) {
         apiClient.patch(`/attempts/${attempt.id}/progress`, {
-          duration_seconds: activeSecondsRef.current,
+          duration_seconds: elapsed,
         }).catch(() => {});
       }
     }, 1000);
     return () => clearInterval(interval);
   }, [attempt]);
 
-  // 4. Countdown Timer
+  // 4. Countdown Timer using wall-clock timestamp (KHÔNG BAO GIỜ TẠM DỪNG DÙ CHUYỂN TAB HAY THU NHỎ TRÌNH DUYỆT)
   useEffect(() => {
-    if (timeLeft <= 0) return;
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          handleSubmit(); // Auto-submit when time up
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timeLeft]);
+    if (!attempt || !attempt.duration_minutes || attempt.duration_minutes <= 0) return;
+
+    const startTimeMs = new Date(attempt.started_at).getTime();
+    const totalSec = attempt.duration_minutes * 60;
+    const endTimeMs = startTimeMs + totalSec * 1000;
+
+    const tick = () => {
+      const nowMs = Date.now();
+      const remainingSec = Math.max(0, Math.ceil((endTimeMs - nowMs) / 1000));
+      setTimeLeft(remainingSec);
+
+      if (remainingSec <= 0) {
+        clearInterval(timerInterval);
+        toast.warning('Thời gian làm bài đã hết! Hệ thống đang tự động nộp bài...');
+        handleSubmit();
+      }
+    };
+
+    tick();
+    const timerInterval = setInterval(tick, 1000);
+    return () => clearInterval(timerInterval);
+  }, [attempt]);
 
   // 5. Intercept browser back button & page unload
   useEffect(() => {
@@ -273,6 +290,7 @@ export const QuizPlayerPage: React.FC = () => {
                     ? 'bg-red-50 text-red-600 border-red-200 animate-pulse'
                     : 'bg-slate-100 text-slate-700 border-slate-200'
                 }`}
+                title="Thời gian làm bài đếm liên tục và không tạm dừng"
               >
                 <Clock className="w-4 h-4" />
                 <span>{formatTime(timeLeft)}</span>
@@ -503,11 +521,14 @@ export const QuizPlayerPage: React.FC = () => {
             </div>
 
             <div className="text-center">
-              <h3 className="text-lg font-bold text-slate-900">Tạm dừng làm bài thi?</h3>
+              <h3 className="text-lg font-bold text-slate-900">Rời khỏi phòng thi?</h3>
               <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                Hệ thống đã tự động lưu lại toàn bộ tiến trình làm bài của bạn (
+                Hệ thống đã tự động lưu lại các câu trả lời của bạn (
                 <strong className="text-blue-600 font-semibold">{answeredCount} / {totalQuestions} câu</strong>).
-                Bạn có thể quay lại danh sách và tiếp tục làm bài bất kỳ lúc nào mà không bị mất kết quả.
+                <br />
+                <span className="block mt-2 p-2 bg-amber-50 text-amber-800 rounded-lg text-xs font-medium border border-amber-200 text-left">
+                  ⚠️ <strong>Lưu ý:</strong> Thời gian làm bài vẫn <strong>tiếp tục đếm ngược và KHÔNG tạm dừng</strong>. Bạn cần quay lại làm tiếp trước khi hết thời gian quy định!
+                </span>
               </p>
             </div>
 
@@ -522,9 +543,9 @@ export const QuizPlayerPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmExit}
-                className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-xs cursor-pointer"
+                className="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm transition shadow-xs cursor-pointer"
               >
-                Tạm dừng & Thoát
+                Rời phòng thi
               </button>
             </div>
           </div>

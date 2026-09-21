@@ -174,9 +174,11 @@ export const Navbar: React.FC = () => {
             </div>
 
             <div className="text-center">
-              <h3 className="text-lg font-bold text-slate-900">Tạm dừng làm bài thi?</h3>
+              <h3 className="text-lg font-bold text-slate-900">Rời khỏi phòng thi?</h3>
               <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                Bạn đang trong quá trình làm bài thi. Tiến trình và các câu trả lời của bạn đã được hệ thống tự động lưu lại an toàn. Bạn có chắc chắn muốn tạm dừng để chuyển sang trang khác?
+                Bạn đang trong thời gian làm bài thi. Toàn bộ câu trả lời đã được hệ thống lưu lại an toàn.
+                <br />
+                <strong className="text-amber-600">Lưu ý quan trọng:</strong> Thời gian làm bài vẫn <span className="font-semibold text-rose-600 underline">tiếp tục đếm ngược và KHÔNG tạm dừng</span>. Bạn cần quay lại làm tiếp trước khi hết giờ!
               </p>
             </div>
 
@@ -191,9 +193,9 @@ export const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmLeave}
-                className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-xs cursor-pointer"
+                className="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm transition shadow-xs cursor-pointer"
               >
-                Tạm dừng & Thoát
+                Rời phòng thi
               </button>
             </div>
           </div>
