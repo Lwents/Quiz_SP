@@ -213,7 +213,8 @@ export const QuizListPage: React.FC = () => {
                 return (
                   <div
                     key={sub.id}
-                    className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-300 hover:shadow-md transition-all duration-200 p-6 flex flex-col justify-between group relative overflow-hidden"
+                    onClick={() => handleSelectSubject(sub.id)}
+                    className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 hover:shadow-md transition-all duration-200 p-6 flex flex-col justify-between group relative overflow-hidden cursor-pointer"
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -234,22 +235,18 @@ export const QuizListPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="pt-5 mt-4 border-t border-slate-100 space-y-2">
-                      <Link
-                        to={`/courses/${sub.id}`}
-                        className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>Vào học môn này (Khóa học)</span>
-                      </Link>
-
+                    <div className="pt-5 mt-4 border-t border-slate-100">
                       <button
                         type="button"
-                        onClick={() => handleSelectSubject(sub.id)}
-                        className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 border border-slate-200/80 transition cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectSubject(sub.id);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
                       >
-                        <span>Xem {count} đề thi trắc nghiệm</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                        <GraduationCap className="w-4 h-4" />
+                        <span>Vào làm trắc nghiệm</span>
+                        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </div>

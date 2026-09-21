@@ -30,6 +30,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  FileText,
 } from 'lucide-react';
 
 // Helper to render KaTeX formula safely
@@ -638,6 +639,50 @@ export const LessonPlayerPage: React.FC = () => {
                 </p>
               )}
             </div>
+
+                        {/* Slide bài giảng đính kèm */}
+            {lesson.slide_url && (
+              <div className="rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900">Slide bài giảng PDF chính thức</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Giáo trình trình chiếu chuẩn ĐH Sư phạm Hà Nội (HNUE) - Khoa CNTT</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <a
+                    href={lesson.slide_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Mở Slide PDF</span>
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Embedded PDF Viewer */}
+            {lesson.slide_url && (
+              <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100">
+                <div className="bg-slate-800 text-white px-4 py-2.5 text-xs font-semibold flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-blue-400" />
+                    <span>Trình xem Slide bài giảng PDF trực tiếp</span>
+                  </span>
+                  <span className="text-slate-400 text-[11px]">Cuộn xem toàn bộ trang tài liệu</span>
+                </div>
+                <iframe
+                  src={`${lesson.slide_url}#toolbar=1&navpanes=0`}
+                  title="Slide bài giảng"
+                  className="w-full h-[550px] sm:h-[680px] border-0"
+                ></iframe>
+              </div>
+            )}
 
             {/* Lecture Theory Content */}
             <article className="prose prose-slate max-w-none text-slate-800">
