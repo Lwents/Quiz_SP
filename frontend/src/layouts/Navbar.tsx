@@ -78,20 +78,7 @@ export const Navbar: React.FC = () => {
                 Luyện tập
               </Link>
 
-              {user && (
-                <Link
-                  to="/dashboard"
-                  onClick={(e) => handleGuardedNav(e, '/dashboard')}
-                  className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                    location.pathname === '/dashboard'
-                      ? 'text-blue-600 bg-blue-50 font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Tiến độ & Thống kê
-                </Link>
-              )}
+              
 
               {isAdmin && (
                 <>

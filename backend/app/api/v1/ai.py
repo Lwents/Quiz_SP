@@ -93,6 +93,22 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
 
 ### ✅ 4. Mẹo ghi nhớ bỏ túi
 Đưa ra 1 câu thần chú ngắn gọn hoặc quy tắc nhanh để lần sau nhìn thấy dạng câu này là chọn đúng 100%.
+
+### 🚀 5. Thử thách củng cố: Bạn hãy chọn đáp án đúng cho câu hỏi tương tự dưới đây!
+(BẮT BUỘC TẠO RA ĐÚNG 1 CÂU HỎI TRẮC NGHIỆM TƯƠNG TỰ ĐỂ HỌC SINH TỰ CHỌN TRẢ LỜI NGAY LẬP TỨC. ĐẶT TRONG KHỐI CODE ```quiz DƯỚI ĐÂY)
+```quiz
+{{
+  "question": "Nội dung câu hỏi thực hành tương tự (ngắn gọn, trực quan)...",
+  "options": [
+    {{"id": "A", "text": "Phương án A..."}},
+    {{"id": "B", "text": "Phương án B..."}},
+    {{"id": "C", "text": "Phương án C..."}},
+    {{"id": "D", "text": "Phương án D..."}}
+  ],
+  "correct": "A",
+  "explanation": "Lời giải thích ngắn gọn vì sao đáp án này đúng!"
+}}
+```
 """
 
     payload = {
@@ -100,7 +116,7 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
         "messages": [
             {
                 "role": "system",
-                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của HNUE PRO, chuyên giải thích kiến thức một cách dễ hiểu nhất, có ví dụ trực quan, sinh động. Luôn luôn bọc mọi ký hiệu toán học trong cặp dấu $...$."
+                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của HNUE PRO, chuyên giải thích kiến thức một cách dễ hiểu nhất, có ví dụ trực quan, sinh động. Luôn luôn bọc mọi ký hiệu toán học trong cặp dấu $...$. Ở mục 5 luôn tạo ra 1 câu hỏi trắc nghiệm tương tự trong khối code ```quiz dạng JSON hợp lệ để học sinh thử sức."
             },
             {
                 "role": "user",
@@ -108,7 +124,7 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
             }
         ],
         "stream": False,
-        "temperature": 0.4
+        "temperature": 0.3
     }
 
     headers = {

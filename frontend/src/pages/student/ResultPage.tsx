@@ -1,3 +1,4 @@
+import { AIPracticeQuestion, AIPracticeData } from '../../components/AIPracticeQuestion';
 import { toast } from '../../stores/toastStore';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -103,10 +104,35 @@ const renderProcessedInline = (text: string): React.ReactNode => {
   });
 };
 
+
+function safeParseQuizJson(str: string): AIPracticeData | null {
+  try {
+    // Fix unescaped backslashes in math formulas before parsing
+    const fixed = str.replace(/\\([^"\\\/bfnrtu])/g, '\\\\$1');
+    return JSON.parse(fixed);
+  } catch (e) {
+    try {
+      return JSON.parse(str);
+    } catch {
+      return null;
+    }
+  }
+}
+
 // Full AI Explanation Markdown Renderer
 const renderFormattedAI = (content: string) => {
-  // Preprocess all math first
-  const preprocessed = preprocessAllMath(content);
+  // Check if there is a quiz block
+  let textToRender = content;
+  let quizData: AIPracticeData | null = null;
+
+  const quizMatch = content.match(/```quiz\s*([\s\S]*?)\s*```/);
+  if (quizMatch) {
+    quizData = safeParseQuizJson(quizMatch[1]);
+    textToRender = content.replace(quizMatch[0], '').trim();
+  }
+
+  // Preprocess all math
+  const preprocessed = preprocessAllMath(textToRender);
   const lines = preprocessed.split('\n');
   const elements: React.ReactNode[] = [];
   let listItems: string[] = [];
@@ -200,6 +226,11 @@ const renderFormattedAI = (content: string) => {
   });
 
   flushList();
+  if (quizData && quizData.question && Array.isArray(quizData.options)) {
+    elements.push(
+      <AIPracticeQuestion key="ai-interactive-practice" data={quizData} />
+    );
+  }
   return elements;
 };
 
