@@ -36,7 +36,8 @@ import {
 
 // Helper to render KaTeX formula safely
 const renderKatexSafe = (formula: string, displayMode: boolean = false): string => {
-  const cleaned = formula.trim();
+  let cleaned = formula.trim();
+  cleaned = cleaned.replace(/\\\\([a-zA-Z]+)/g, '\\$1');
   try {
     return katex.renderToString(cleaned, { displayMode, throwOnError: false });
   } catch (e) {
@@ -218,30 +219,97 @@ export const LessonPlayerPage: React.FC = () => {
       }
     };
 
-    const renderInline = (text: string) => {
-      const parts = text.split(/(\*\*.*?\*\*|\$.*?\$|`.*?`)/g);
+    const renderInline = (text: string): React.ReactNode => {
+      // Split by <br>, code, math, bold, italic, and block math tokens
+      const tokenRegex = /(<br\s*\/?>|__BLOCK_MATH_\d+__|`[^`\n]+?`|\$[^\$\n]+?\$|\*\*[^\*\n]+?\*\*|\*[^\*\n]+?\*)/g;
+      const parts = text.split(tokenRegex);
+
       return parts.map((part, index) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={index} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
+        if (!part) return null;
+
+        // 1. <br> tags
+        if (/^<br\s*\/?>$/i.test(part)) {
+          return <br key={`br-${index}`} />;
         }
-        if (part.startsWith('$') && part.endsWith('$')) {
+
+        // 2. Block math token embedded in inline text
+        const blockMatch = part.match(/^__BLOCK_MATH_(\d+)__$/);
+        if (blockMatch) {
+          const bIdx = parseInt(blockMatch[1], 10);
+          const math = blockMathList[bIdx] || '';
+          const html = renderKatexSafe(math, true);
+          return (
+            <div
+              key={`bm-inline-${index}`}
+              className="my-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-center overflow-x-auto shadow-2xs"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          );
+        }
+
+        // 3. Inline code
+        if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+          return (
+            <code key={`code-${index}`} className="font-mono text-xs bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200">
+              {part.slice(1, -1)}
+            </code>
+          );
+        }
+
+        // 4. Inline math $...$
+        if (part.startsWith('$') && part.endsWith('$') && part.length >= 2) {
           const rawMath = part.slice(1, -1);
           const html = renderKatexSafe(rawMath, false);
           return (
             <span
-              key={index}
+              key={`math-${index}`}
               className="inline-block px-1 mx-0.5 text-slate-900 font-medium align-baseline"
               dangerouslySetInnerHTML={{ __html: html }}
             />
           );
         }
-        if (part.startsWith('`') && part.endsWith('`')) {
+
+        // 5. Bold **...** (render nested inline elements like math inside bold)
+        if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
           return (
-            <code key={index} className="font-mono text-xs bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200">
-              {part.slice(1, -1)}
-            </code>
+            <strong key={`bold-${index}`} className="font-bold text-slate-900">
+              {renderInline(part.slice(2, -2))}
+            </strong>
           );
         }
+
+        // 6. Italic *...*
+        if (part.startsWith('*') && part.endsWith('*') && part.length >= 3) {
+          return (
+            <em key={`italic-${index}`} className="italic text-slate-800">
+              {renderInline(part.slice(1, -1))}
+            </em>
+          );
+        }
+
+        // 7. Plain text: check for bare LaTeX commands like \rightarrow, \equiv, \neg, etc.
+        const bareLatexRegex = /(\\[a-zA-Z]+(?:\{[^{}]*\})?)/g;
+        if (bareLatexRegex.test(part)) {
+          const subParts = part.split(bareLatexRegex);
+          return subParts.map((sp, spIdx) => {
+            if (/^\\[a-zA-Z]+/.test(sp)) {
+              try {
+                const html = katex.renderToString(sp, { throwOnError: true });
+                return (
+                  <span
+                    key={`latex-${index}-${spIdx}`}
+                    className="inline-block px-0.5 text-slate-900 font-medium align-baseline"
+                    dangerouslySetInnerHTML={{ __html: html }}
+                  />
+                );
+              } catch {
+                return sp;
+              }
+            }
+            return sp;
+          });
+        }
+
         return part;
       });
     };
@@ -299,21 +367,27 @@ export const LessonPlayerPage: React.FC = () => {
       if (trimmed.startsWith('# ')) {
         elements.push(
           <h1 key={`h1-${idx}`} className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-6 mb-3 tracking-tight border-b border-slate-100 pb-2">
-            {trimmed.slice(2)}
+            {renderInline(trimmed.slice(2))}
           </h1>
         );
       } else if (trimmed.startsWith('## ')) {
         elements.push(
           <h2 key={`h2-${idx}`} className="text-lg sm:text-xl font-bold text-slate-900 mt-5 mb-2.5 tracking-tight flex items-center gap-2">
-            <span className="w-1.5 h-4 bg-blue-600 rounded-full inline-block"></span>
-            {trimmed.slice(3)}
+            <span className="w-1.5 h-4 bg-blue-600 rounded-full inline-block shrink-0"></span>
+            <span>{renderInline(trimmed.slice(3))}</span>
           </h2>
         );
       } else if (trimmed.startsWith('### ')) {
         elements.push(
           <h3 key={`h3-${idx}`} className="text-sm sm:text-base font-bold text-slate-800 mt-4 mb-2">
-            {trimmed.slice(4)}
+            {renderInline(trimmed.slice(4))}
           </h3>
+        );
+      } else if (trimmed.startsWith('#### ')) {
+        elements.push(
+          <h4 key={`h4-${idx}`} className="text-xs sm:text-sm font-bold text-slate-700 mt-3 mb-1.5 uppercase tracking-wide">
+            {renderInline(trimmed.slice(5))}
+          </h4>
         );
       } else if (trimmed.startsWith('> [!NOTE]') || trimmed.startsWith('> [!IMPORTANT]')) {
         const isNote = trimmed.startsWith('> [!NOTE]');
