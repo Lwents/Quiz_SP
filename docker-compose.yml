@@ -29,7 +29,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-quiz_db}
-      SECRET_KEY: ${SECRET_KEY:-REDACTED_SECRET_KEY}
+      SECRET_KEY: ${SECRET_KEY:-change-this-jwt-secret-in-production-via-env}
       PROJECT_NAME: ${PROJECT_NAME:-Quiz_SP System}
     ports:
       - "8000:8000"

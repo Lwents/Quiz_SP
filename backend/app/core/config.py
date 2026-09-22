@@ -21,14 +21,14 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # JWT Security
-    SECRET_KEY: str = "REDACTED_SECRET_KEY"
+    SECRET_KEY: str = "change-this-jwt-secret-in-production-via-env"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 1 day
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # AI Integration
     AI_BASE_URL: str = "http://localhost:8000/v1"
-    AI_API_KEY: str = "REDACTED_AI_KEY"
+    AI_API_KEY: str = ""
     AI_MODEL: str = "ag/gemini-3.8-flash-high"
 
     class Config:
