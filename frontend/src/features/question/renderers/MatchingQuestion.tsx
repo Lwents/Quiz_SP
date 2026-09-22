@@ -18,6 +18,7 @@ interface PuzzlePieceProps {
   onClick?: () => void;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnter?: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void;
   onDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
   draggable?: boolean;
@@ -33,6 +34,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
   onClick,
   onDragStart,
   onDragOver,
+  onDragEnter,
   onDragLeave,
   onDrop,
   draggable
@@ -41,11 +43,12 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
     <div
       onClick={onClick}
       onDragOver={onDragOver}
+      onDragEnter={onDragEnter}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
       draggable={draggable}
       onDragStart={onDragStart}
-      className={`relative w-full h-[64px] select-none transition-all duration-150 ${
+      className={`relative w-full h-[64px] transition-all duration-150 ${
         draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
       } ${isSelected ? 'scale-[1.02] filter drop-shadow-md' : 'hover:drop-shadow-xs'} ${
         isDragging ? 'opacity-40' : 'opacity-100'
@@ -110,7 +113,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
 
       {/* Content overlay */}
       <div
-        className={`relative z-10 w-full h-full flex items-center justify-between px-5 pointer-events-none ${
+        className={`relative z-10 w-full h-full flex items-center justify-between px-5 pointer-events-none select-none ${
           isLeft ? 'pr-8' : 'pl-7'
         }`}
       >
@@ -255,6 +258,13 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     if (hoveredIdx !== idx) setHoveredIdx(idx);
   };
 
+  const onDragEnter = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
+    if (disabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (hoveredIdx !== idx) setHoveredIdx(idx);
+  };
+
   const onDragLeave = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
     e.preventDefault();
     e.stopPropagation();
@@ -295,11 +305,11 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   const matchedCount = Object.keys(currentMap).length;
 
   return (
-    <div className="space-y-4 select-none">
+    <div className="space-y-4">
       {/* Header hướng dẫn & đếm số câu đã ghép */}
       <div className="flex items-center justify-between pb-1">
         <div className="text-xs text-slate-500">
-          Kéo mảnh ghép bên phải để nối với mảnh ghép bên trái.
+          Kéo mảnh ghép bên phải để nối với mảnh ghép bên trái (hoặc bấm chọn mảnh ghép rồi bấm vào hàng muốn nối).
         </div>
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
           {matchedCount} / {leftItems.length} đã ghép
@@ -320,6 +330,7 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
               isHovered={hoveredIdx === idx}
               onClick={() => onLeftPieceClick(idx)}
               onDragOver={(e) => onDragOver(e, idx)}
+              onDragEnter={(e) => onDragEnter(e, idx)}
               onDragLeave={(e) => onDragLeave(e, idx)}
               onDrop={(e) => onDrop(e, idx)}
             />
@@ -340,6 +351,7 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
               onClick={() => onRightPieceClick(idx)}
               onDragStart={(e) => onDragStart(e, idx)}
               onDragOver={(e) => onDragOver(e, idx)}
+              onDragEnter={(e) => onDragEnter(e, idx)}
               onDragLeave={(e) => onDragLeave(e, idx)}
               onDrop={(e) => onDrop(e, idx)}
             />
