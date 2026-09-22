@@ -10,7 +10,13 @@ Hệ thống Website Full-stack hoàn chỉnh phục vụ thi và luyện tập 
 
 ## 🚀 Khởi chạy hệ thống bằng Docker Compose
 
-Chỉ cần một lệnh duy nhất:
+Với cơ sở dữ liệu mới, đặt mật khẩu tạo quản trị viên trong file `.env` (file này được Git bỏ qua):
+
+```dotenv
+ADMIN_BOOTSTRAP_PASSWORD=<mật khẩu mạnh do bạn tự chọn>
+```
+
+Sau đó khởi chạy:
 
 ```bash
 cd /home/lwent/projects/Quiz_SP
@@ -25,13 +31,25 @@ Sau khi khởi động thành công:
 
 ---
 
-## 👥 Tài khoản Demo có sẵn trong hệ thống
+## 👥 Tài khoản và vai trò
 
-| Vai trò (Role) | Email đăng nhập | Mật khẩu | Chức năng chính |
-| :--- | :--- | :--- | :--- |
-| **STUDENT** (Học sinh) | `student@example.com` | `REDACTED_SEED_PASSWORD` | Xem danh sách bài tập, lọc theo môn/chủ đề, làm bài với bộ đếm thời gian, lưu tiến độ realtime (autosave), nộp bài, xem giải thích chi tiết và dashboard thống kê. |
-| **TEACHER** (Giáo viên) | `teacher@example.com` | `REDACTED_SEED_PASSWORD` | Quản trị ngân hàng đề thi, tạo bài thi mới, tạo và chỉnh sửa câu hỏi đa dạng (Single, Multiple, Matching, Fill Blank, Ordering...), sắp xếp câu hỏi, Publish đề thi. |
-| **ADMIN** (Quản trị viên) | `admin@example.com` | `REDACTED_SEED_PASSWORD` | Toàn quyền kiểm soát hệ thống, người dùng, ngân hàng câu hỏi và điểm số. |
+- **Học sinh:** Đăng ký tại `/register`; tài khoản mới luôn có vai trò `STUDENT`.
+- **Giáo viên:** Không có tài khoản mẫu. Tài khoản đã đăng ký cần được cấp vai trò `TEACHER` trong cơ sở dữ liệu; hiện chưa có màn hình cấp vai trò.
+- **Quản trị viên:** Dữ liệu khởi tạo tạo `admin@gmail.com` khi cơ sở dữ liệu mới, với mật khẩu từ `ADMIN_BOOTSTRAP_PASSWORD`. Có thể đổi email ban đầu qua `ADMIN_BOOTSTRAP_EMAIL`. Khởi động lại không đặt lại mật khẩu của tài khoản đã tồn tại.
+
+Các tài khoản mẫu `student@example.com`, `teacher@example.com` và `admin@example.com` không được cấp sẵn. Dữ liệu tài khoản đã tồn tại được giữ nguyên khi khởi động lại.
+
+---
+
+## 💾 Sao lưu và chuyển dữ liệu sang máy khác
+
+Đăng nhập bằng tài khoản `ADMIN`, bấm biểu tượng **Cài đặt sao lưu dữ liệu** trên thanh đầu trang hoặc mở `/settings/backup`.
+
+1. Ở máy nguồn, chọn **Tải bản sao lưu** và giữ tệp JSON tải về ở nơi riêng tư.
+2. Ở máy đích đã cài cùng phiên bản ứng dụng, mở trang này bằng tài khoản admin tạm thời, chọn tệp và bấm **Xem trước bản sao lưu**. Kiểm tra ngày tạo cùng số tài khoản, khóa học, câu hỏi và bài làm.
+3. Sao lưu dữ liệu hiện có ở máy đích nếu cần giữ lại. Nhập `KHOI PHUC`, bấm **Khôi phục và thay thế dữ liệu**, rồi đăng nhập lại bằng tài khoản trong bản sao lưu.
+
+Khôi phục thay thế toàn bộ 10 bảng dữ liệu của ứng dụng trong một giao dịch; tệp sai hoặc thao tác thất bại không làm thay đổi dữ liệu cũ. Tệp chứa cả thông tin cá nhân và mã băm mật khẩu, nên không đăng công khai. Giới hạn tệp là 50 MB. Khóa API, JWT secret, biến `.env` và tệp bên ngoài được nhúng bằng URL không được sao lưu; hãy cấu hình lại chúng trên máy đích. Máy chủ chỉ nạp dữ liệu mẫu khi cơ sở dữ liệu trống, nên khởi động lại sau khôi phục không tạo lại dữ liệu mẫu.
 
 ---
 

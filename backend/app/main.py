@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons, users
+from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons, users, backups
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -38,6 +38,7 @@ app.include_router(attempts.router, prefix=settings.API_V1_STR)
 app.include_router(stats.router, prefix=settings.API_V1_STR)
 app.include_router(ai.router, prefix=settings.API_V1_STR)
 app.include_router(lessons.router, prefix=settings.API_V1_STR)
+app.include_router(backups.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health")

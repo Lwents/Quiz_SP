@@ -36,8 +36,6 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  const isAdmin = user && (user.role === 'ADMIN' || (user.role as any) === 'TEACHER');
-
   return (
     <>
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
@@ -83,6 +81,17 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-3">
+                {user.role === 'ADMIN' && (
+                  <Link
+                    to="/settings/backup"
+                    onClick={(e) => handleGuardedNav(e, '/settings/backup')}
+                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                    title="Cài đặt sao lưu dữ liệu"
+                    aria-label="Cài đặt sao lưu dữ liệu"
+                  >
+                    <Settings className="w-5 h-5" />
+                  </Link>
+                )}
                 <Link
                   to="/profile"
                   onClick={(e) => handleGuardedNav(e, '/profile')}
@@ -94,7 +103,7 @@ export const Navbar: React.FC = () => {
                       {user.full_name}
                     </span>
                     <span className="text-xs text-slate-500 font-medium">
-                      {isAdmin ? 'Quản trị viên' : 'Sinh viên'}
+                      {user.role === 'ADMIN' ? 'Quản trị viên' : user.role === 'TEACHER' ? 'Giáo viên' : 'Sinh viên'}
                     </span>
                   </div>
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shadow-2xs bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0 group-hover:ring-2 group-hover:ring-blue-500/30 transition">

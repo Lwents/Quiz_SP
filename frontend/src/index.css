@@ -59,3 +59,9 @@ body {
   background-color: #090d16;
   color: #f8fafc;
 }
+
+@media (min-width: 768px) {
+  .matching-piece-connected {
+    transform: translateX(calc(-2rem - 24px));
+  }
+}

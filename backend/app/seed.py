@@ -21,21 +21,24 @@ async def seed_data():
     await init_db()
 
     async with AsyncSessionLocal() as session:
-        # 1. Chuẩn hóa tài khoản người dùng thực tế: Xóa vĩnh viễn tất cả tài khoản demo cũ
-        demo_users = (await session.execute(
-            select(User).where(User.email.in_(["teacher@example.com", "admin@example.com", "student@example.com"]))
-        )).scalars().all()
-        for du in demo_users:
-            await session.delete(du)
-        await session.flush()
+        # Khởi tạo dữ liệu mẫu một lần trên cơ sở dữ liệu trống. Bản khôi phục
+        # không được chỉnh sửa hoặc tạo lại dữ liệu khi backend khởi động lại.
+        existing_user = (await session.execute(select(User.id).limit(1))).scalar_one_or_none()
+        if existing_user is not None:
+            print("Dữ liệu đã tồn tại; bỏ qua bước khởi tạo mẫu.")
+            return
 
-        # Tài khoản Quản trị viên chính thức: admin@gmail.com / 123456
-        admin_res = await session.execute(select(User).where(User.email == "admin@gmail.com"))
+        # 1. Chỉ tạo tài khoản quản trị lần đầu; không đặt lại mật khẩu sau mỗi lần khởi động.
+        admin_email = os.getenv("ADMIN_BOOTSTRAP_EMAIL", "admin@gmail.com")
+        admin_res = await session.execute(select(User).where(User.email == admin_email))
         admin = admin_res.scalar_one_or_none()
         if not admin:
+            admin_password = os.getenv("ADMIN_BOOTSTRAP_PASSWORD")
+            if not admin_password:
+                raise RuntimeError("Set ADMIN_BOOTSTRAP_PASSWORD before initializing a new database")
             admin = User(
-                email="admin@gmail.com",
-                hashed_password=get_password_hash("123456"),
+                email=admin_email,
+                hashed_password=get_password_hash(admin_password),
                 full_name="Quản trị viên",
                 role=UserRole.ADMIN,
                 is_active=True
@@ -43,10 +46,6 @@ async def seed_data():
             session.add(admin)
             await session.commit()
             await session.refresh(admin)
-        else:
-            admin.hashed_password = get_password_hash("123456")
-            admin.role = UserRole.ADMIN
-            await session.commit()
 
         # 2. Xóa các đề thi ảo và môn học ảo cũ nếu có
         dummy_quizzes = (await session.execute(

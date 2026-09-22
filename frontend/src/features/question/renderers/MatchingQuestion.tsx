@@ -1,83 +1,74 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { QuestionRendererProps } from '../question.types';
 import { GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  PointerSensor,
+  pointerWithin,
+  rectIntersection,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type { CollisionDetection } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 
-/* 
+/*
  * Component Matching SVG Puzzle Piece:
- * Vẽ hình chữ nhật bo góc với khớp nối hình jigsaw puzzle:
+ * Vẽ mảnh ghép với ngàm tròn kiểu jigsaw puzzle:
  * - isLeft: cạnh phải có ngàm khuyết lõm vào trong (notch)
  * - !isLeft: cạnh trái có mấu nhô lồi ra ngoài (tab/knob)
  */
 interface PuzzlePieceProps {
   isLeft: boolean;
   text: string;
+  pieceWidth: number;
   index?: number;
   isSelected?: boolean;
   isHovered?: boolean;
   isDragging?: boolean;
   onClick?: () => void;
-  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragEnter?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onContextMenu?: (event: React.MouseEvent<HTMLDivElement>) => void;
   draggable?: boolean;
 }
 
 const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
   isLeft,
   text,
+  pieceWidth,
   index,
   isSelected,
   isHovered,
   isDragging,
   onClick,
-  onDragStart,
-  onDragOver,
-  onDragEnter,
-  onDragLeave,
-  onDrop,
-  onDragEnd,
+  onContextMenu,
   draggable
 }) => {
+  const rightEdge = pieceWidth - 2;
+  const notchEdge = pieceWidth - 10;
+
   return (
     <div
       onClick={onClick}
-      onDragOver={onDragOver}
-      onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-      onDragEnd={onDragEnd}
-      draggable={draggable}
-      onDragStart={onDragStart}
+      onContextMenu={onContextMenu}
       className={`relative w-full h-[64px] select-none transition-all duration-150 ${
         draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
       } ${isSelected ? 'scale-[1.02] filter drop-shadow-md' : 'hover:drop-shadow-xs'} ${
         isDragging ? 'opacity-40' : 'opacity-100'
       }`}
     >
-      {/* SVG Background Puzzle shape (Hình vuông không bo góc, khớp nối vuông vức) */}
+      {/* SVG Background Puzzle shape */}
       <svg
-        viewBox="0 0 320 64"
+        viewBox={`0 0 ${pieceWidth} 64`}
         preserveAspectRatio="none"
         className="absolute inset-0 w-full h-full pointer-events-none"
       >
         {isLeft ? (
-          /* MẢNH TRÁI: Góc vuông 90 độ, cạnh phải có rãnh khuyết hình vuông lõm vào trong */
+          /* MẢNH TRÁI: cạnh phải có rãnh khuyết tròn */
           <path
-            d="
-              M 2 2 
-              L 318 2 
-              L 318 20 
-              L 302 20 
-              L 302 44 
-              L 318 44 
-              L 318 62 
-              L 2 62 
-              Z
-            "
-            strokeLinejoin="miter"
+            d={`M 2 2 H ${rightEdge} V 20 H ${notchEdge} A 12 12 0 0 0 ${notchEdge} 44 H ${rightEdge} V 62 H 2 Z`}
+            strokeLinejoin="round"
             className={`transition-colors duration-150 ${
               isHovered
                 ? 'fill-blue-50/80 stroke-blue-500 stroke-2'
@@ -85,20 +76,10 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
             }`}
           />
         ) : (
-          /* MẢNH PHẢI: Góc vuông 90 độ, cạnh trái có mấu nhô hình vuông lồi ra ngoài */
+          /* MẢNH PHẢI: cạnh trái có mấu nhô tròn */
           <path
-            d="
-              M 18 2 
-              L 318 2 
-              L 318 62 
-              L 18 62 
-              L 18 44 
-              L 2 44 
-              L 2 20 
-              L 18 20 
-              Z
-            "
-            strokeLinejoin="miter"
+            d={`M 22 2 H ${rightEdge} V 62 H 22 V 44 H 14 A 12 12 0 0 1 14 20 H 22 V 2 Z`}
+            strokeLinejoin="round"
             className={`transition-colors duration-150 ${
               isSelected
                 ? 'fill-blue-50 stroke-blue-600 stroke-2'
@@ -113,7 +94,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
       {/* Content overlay */}
       <div
         className={`relative z-10 w-full h-full flex items-center justify-between px-5 pointer-events-none select-none ${
-          isLeft ? 'pr-8' : 'pl-7'
+          isLeft ? 'pr-8' : 'pl-8'
         }`}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -135,6 +116,105 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
   );
 };
 
+const LeftPiece: React.FC<{
+  text: string;
+  index: number;
+  pieceWidth: number;
+  disabled?: boolean;
+  onClick: () => void;
+  onContextMenu: (event: React.MouseEvent<HTMLDivElement>) => void;
+}> = ({ text, index, pieceWidth, disabled, onClick, onContextMenu }) => {
+  const { setNodeRef, isOver } = useDroppable({ id: `left-${index}`, disabled });
+  return (
+    <div ref={setNodeRef}>
+      <PuzzlePiece
+        isLeft
+        text={text}
+        pieceWidth={pieceWidth}
+        index={index + 1}
+        isHovered={isOver}
+        onClick={onClick}
+        onContextMenu={onContextMenu}
+      />
+    </div>
+  );
+};
+
+const RightPiece: React.FC<{
+  text: string;
+  index: number;
+  pieceWidth: number;
+  disabled?: boolean;
+  selected: boolean;
+  matched: boolean;
+  onClick: () => void;
+  onContextMenu: (event: React.MouseEvent<HTMLDivElement>) => void;
+}> = ({ text, index, pieceWidth, disabled, selected, matched, onClick, onContextMenu }) => {
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: `right-${index}`, disabled });
+  const { setNodeRef: setDragRef, attributes, listeners, transform, isDragging } = useDraggable({
+    id: `piece-${index}`,
+    disabled,
+  });
+
+  return (
+    <div ref={setDropRef} className={matched ? 'matching-piece-connected' : undefined}>
+      <div
+        ref={setDragRef}
+        {...attributes}
+        {...listeners}
+        onClick={onClick}
+        onContextMenu={onContextMenu}
+        title={matched ? 'Nhấn chuột phải để gỡ ghép' : undefined}
+        style={{ transform: CSS.Translate.toString(transform), touchAction: 'none' }}
+        className={isDragging ? 'relative z-20' : undefined}
+      >
+        <PuzzlePiece
+          isLeft={false}
+          text={text}
+          pieceWidth={pieceWidth}
+          isSelected={selected}
+          isHovered={isOver}
+          isDragging={isDragging}
+          draggable={!disabled}
+        />
+      </div>
+    </div>
+  );
+};
+
+const orderFromAnswers = (
+  leftItems: string[],
+  shuffledRight: string[],
+  answers: Record<string, string>
+): string[] => {
+  const order = Array<string | undefined>(shuffledRight.length).fill(undefined);
+  const used = new Set<string>();
+
+  leftItems.forEach((left, index) => {
+    const right = answers[left];
+    if (index < order.length && shuffledRight.includes(right) && !used.has(right)) {
+      order[index] = right;
+      used.add(right);
+    }
+  });
+
+  const remaining = shuffledRight.filter((right) => !used.has(right));
+  return order.map((right) => right ?? remaining.shift()!);
+};
+
+// Ưu tiên ô bên trái khi mảnh kéo chạm vào nó; con trỏ có thể vẫn nằm ở nửa phải.
+const matchingCollision: CollisionDetection = (args) => {
+  const initial = args.active.rect.current.initial;
+  const movingLeft = initial && args.collisionRect.left < initial.left - 20;
+  const leftTargets = args.droppableContainers.filter((container) =>
+    String(container.id).startsWith('left-')
+  );
+  const touchingLeft = movingLeft
+    ? rectIntersection({ ...args, droppableContainers: leftTargets })
+    : [];
+  return touchingLeft.length > 0 ? touchingLeft : pointerWithin(args);
+};
+
 export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   question,
   value,
@@ -151,6 +231,18 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   );
 
   const currentMap: Record<string, string> = useMemo(() => value || {}, [value]);
+  const leftColumnRef = useRef<HTMLDivElement>(null);
+  const [pieceWidth, setPieceWidth] = useState(320);
+
+  useLayoutEffect(() => {
+    const element = leftColumnRef.current;
+    if (!element) return;
+    const measure = () => setPieceWidth(element.getBoundingClientRect().width);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   // Sinh thứ tự xáo trộn ngẫu nhiên xác định cho danh sách bên phải
   const initialShuffledRight = useMemo(() => {
@@ -172,121 +264,37 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   }, [question.id, rightItems]);
 
   // Thứ tự hiển thị hiện tại của các mảnh ghép bên phải
-  const [rightOrder, setRightOrder] = useState<string[]>(() => {
-    const keys = Object.keys(currentMap);
-    if (keys.length > 0) {
-      const order: string[] = [];
-      const used = new Set<string>();
-      leftItems.forEach((left) => {
-        const match = currentMap[left];
-        if (match) {
-          order.push(match);
-          used.add(match);
-        }
-      });
-      initialShuffledRight.forEach((item) => {
-        if (!used.has(item)) order.push(item);
-      });
-      return order.length === initialShuffledRight.length ? order : initialShuffledRight;
-    }
-    return initialShuffledRight;
-  });
+  const [rightOrder, setRightOrder] = useState<string[]>(() =>
+    orderFromAnswers(leftItems, initialShuffledRight, currentMap)
+  );
 
   useEffect(() => {
-    const keys = Object.keys(currentMap);
-    if (keys.length > 0) {
-      const order: string[] = [];
-      const used = new Set<string>();
-      leftItems.forEach((left) => {
-        const match = currentMap[left];
-        if (match) {
-          order.push(match);
-          used.add(match);
-        }
-      });
-      initialShuffledRight.forEach((item) => {
-        if (!used.has(item)) order.push(item);
-      });
-      if (order.length === initialShuffledRight.length) {
-        setRightOrder(order);
-      }
-    } else {
-      setRightOrder(initialShuffledRight);
-    }
-  }, [question.id, initialShuffledRight]);
+    setRightOrder(orderFromAnswers(leftItems, initialShuffledRight, currentMap));
+  }, [leftItems, initialShuffledRight, currentMap]);
 
-  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   // Hoán đổi vị trí của 2 mảnh ghép ở cột phải
-  const handleSwap = (fromIdx: number, toIdx: number) => {
-    if (disabled || fromIdx === toIdx) return;
+  const handleSwap = (fromIdx: number, toIdx: number, matchLeft = false) => {
+    if (disabled || !rightOrder[fromIdx] || !leftItems[toIdx]) return;
     const newOrder = [...rightOrder];
-    const temp = newOrder[fromIdx];
-    newOrder[fromIdx] = newOrder[toIdx];
-    newOrder[toIdx] = temp;
-    setRightOrder(newOrder);
-
-    // Cập nhật kết quả ghép đối ứng với vế trái
-    const nextMap: Record<string, string> = {};
-    leftItems.forEach((left, i) => {
-      if (i < newOrder.length) {
-        nextMap[left] = newOrder[i];
-      }
-    });
-    onChange(nextMap);
-
-    setDraggingIdx(null);
-    setHoveredIdx(null);
-    setSelectedIdx(null);
-  };
-
-  const onDragStart = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
-    if (disabled) return;
-    setDraggingIdx(idx);
-    e.dataTransfer.setData('text/plain', String(idx));
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const onDragOver = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
-    if (disabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = 'move';
-    if (hoveredIdx !== idx) setHoveredIdx(idx);
-  };
-
-  const onDragEnter = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
-    if (disabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    if (hoveredIdx !== idx) setHoveredIdx(idx);
-  };
-
-  const onDragLeave = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-    if (hoveredIdx === idx) setHoveredIdx(null);
-  };
-
-  const onDragEnd = () => {
-    setDraggingIdx(null);
-    setHoveredIdx(null);
-  };
-
-  const onDrop = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
-    if (disabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const fromStr = e.dataTransfer.getData('text/plain');
-    const from = fromStr !== '' ? parseInt(fromStr, 10) : draggingIdx;
-    if (from !== null && !isNaN(from)) {
-      handleSwap(from, idx);
+    if (fromIdx !== toIdx) {
+      [newOrder[fromIdx], newOrder[toIdx]] = [newOrder[toIdx], newOrder[fromIdx]];
+      setRightOrder(newOrder);
     }
-    setDraggingIdx(null);
-    setHoveredIdx(null);
+
+    if (matchLeft) {
+      const nextMap = { ...currentMap };
+      const right = rightOrder[fromIdx];
+      Object.keys(nextMap).forEach((left) => {
+        if (nextMap[left] === right) delete nextMap[left];
+      });
+      nextMap[leftItems[toIdx]] = right;
+      onChange(nextMap);
+    }
+
+    setSelectedIdx(null);
   };
 
   const onRightPieceClick = (idx: number) => {
@@ -303,7 +311,17 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   const onLeftPieceClick = (idx: number) => {
     if (disabled) return;
     if (selectedIdx !== null) {
-      handleSwap(selectedIdx, idx);
+      handleSwap(selectedIdx, idx, true);
+    }
+  };
+
+  const removeMatch = (left?: string) => {
+    if (disabled) return;
+    setSelectedIdx(null);
+    if (left && currentMap[left]) {
+      const nextMap = { ...currentMap };
+      delete nextMap[left];
+      onChange(nextMap);
     }
   };
 
@@ -322,22 +340,34 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
       </div>
 
       {/* Grid 2 cột mảnh ghép đối xứng theo đúng ảnh mẫu */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={matchingCollision}
+        onDragEnd={({ active, over }) => {
+          if (!over || disabled) return;
+          const from = Number(String(active.id).replace('piece-', ''));
+          const to = Number(String(over.id).replace(/^(left|right)-/, ''));
+          if (Number.isInteger(from) && Number.isInteger(to)) {
+            handleSwap(from, to, String(over.id).startsWith('left-'));
+          }
+        }}
+      >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-start">
         
         {/* CỘT TRÁI: MẢNH CÂU HỎI (CẠNH PHẢI CÓ RÃNH LÕM NOTCH) */}
-        <div className="space-y-3.5">
+        <div ref={leftColumnRef} className="space-y-3.5">
           {leftItems.map((left, idx) => (
-            <PuzzlePiece
+            <LeftPiece
               key={idx}
-              isLeft={true}
               text={left}
-              index={idx + 1}
-              isHovered={hoveredIdx === idx}
+              index={idx}
+              pieceWidth={pieceWidth}
+              disabled={disabled}
               onClick={() => onLeftPieceClick(idx)}
-              onDragOver={(e) => onDragOver(e, idx)}
-              onDragEnter={(e) => onDragEnter(e, idx)}
-              onDragLeave={(e) => onDragLeave(e, idx)}
-              onDrop={(e) => onDrop(e, idx)}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                removeMatch(left);
+              }}
             />
           ))}
         </div>
@@ -345,26 +375,25 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
         {/* CỘT PHẢI: MẢNH ĐÁP ÁN (CẠNH TRÁI CÓ MẤU LỒI TAB/KNOB, KÉO ĐỔI TỰ DO) */}
         <div className="space-y-3.5">
           {rightOrder.map((piece, idx) => (
-            <PuzzlePiece
+            <RightPiece
               key={idx}
-              isLeft={false}
               text={piece}
-              isSelected={selectedIdx === idx}
-              isHovered={hoveredIdx === idx}
-              isDragging={draggingIdx === idx}
-              draggable={!disabled}
+              index={idx}
+              pieceWidth={pieceWidth}
+              selected={selectedIdx === idx}
+              matched={currentMap[leftItems[idx]] === piece}
+              disabled={disabled}
               onClick={() => onRightPieceClick(idx)}
-              onDragStart={(e) => onDragStart(e, idx)}
-              onDragEnd={onDragEnd}
-              onDragOver={(e) => onDragOver(e, idx)}
-              onDragEnter={(e) => onDragEnter(e, idx)}
-              onDragLeave={(e) => onDragLeave(e, idx)}
-              onDrop={(e) => onDrop(e, idx)}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                removeMatch(Object.keys(currentMap).find((left) => currentMap[left] === piece));
+              }}
             />
           ))}
         </div>
 
       </div>
+      </DndContext>
     </div>
   );
 };

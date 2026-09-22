@@ -213,7 +213,7 @@ export const ProfilePage: React.FC = () => {
           <div>
             <div className="flex items-center justify-center sm:justify-start gap-2">
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-500/30 text-blue-200 border border-blue-400/30 uppercase tracking-wide">
-                {user?.role === 'ADMIN' ? 'Quản trị viên' : 'Sinh viên'}
+                {user?.role === 'ADMIN' ? 'Quản trị viên' : user?.role === 'TEACHER' ? 'Giáo viên' : 'Sinh viên'}
               </span>
               <span className="text-xs text-blue-200/80">Khoa CNTT - ĐHSPHN</span>
             </div>

@@ -54,7 +54,7 @@ export const TeacherDashboardPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Quản trị & Soạn đề thi (Admin Portal)</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Quản lý & Soạn đề thi</h1>
           <p className="text-sm text-slate-500 mt-1">Quản lý môn học, ngân hàng câu hỏi, soạn đề thi và theo dõi kết quả học sinh</p>
         </div>
         <div className="flex items-center gap-3">

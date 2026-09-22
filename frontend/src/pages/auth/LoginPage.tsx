@@ -23,11 +23,11 @@ export const LoginPage: React.FC = () => {
       const res = await apiClient.post('/auth/login', { email, password });
       const { access_token, refresh_token, user } = res.data;
       setAuth(user, access_token, refresh_token);
-      if (user.role === 'ADMIN' || (user.role as any) === 'TEACHER') {
+      if (user.role === 'ADMIN' || user.role === 'TEACHER') {
         navigate('/teacher');
       } else {
         toast.success('Đăng nhập thành công! Chào mừng bạn quay trở lại.');
-      navigate('/courses');
+        navigate('/courses');
       }
     } catch (err: any) {
       setError(err.response?.data?.detail?.error?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại email hoặc mật khẩu.');
