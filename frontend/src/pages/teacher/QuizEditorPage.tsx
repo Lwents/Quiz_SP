@@ -456,6 +456,11 @@ export const QuizEditorPage: React.FC = () => {
                           {q.type.replace('_', ' ')}
                         </span>
                         <span className="text-xs font-semibold text-slate-500">{q.points} điểm</span>
+                        {(!q.config?.correct && (!q.config?.options || !q.config.options.some((o: any) => o.is_correct))) && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            Chưa có đáp án
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm font-medium text-slate-800 truncate mt-1">{q.content}</p>
                     </div>

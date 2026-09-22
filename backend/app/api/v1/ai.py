@@ -59,7 +59,7 @@ async def explain_question_with_ai(
         correct_ans_str = "Không có"
 
     prompt = f"""Bạn là Gia sư AI Sư phạm chuyên nghiệp của hệ thống HNUE PRO. 
-Một người học vừa làm câu hỏi trắc nghiệm sau đây và trả lời CHƯA CHÍNH XÁC:
+Một sinh viên vừa làm câu hỏi trắc nghiệm sau đây và trả lời CHƯA CHÍNH XÁC:
 
 📌 NỘI DUNG CÂU HỎI:
 {req.question_content}
@@ -67,7 +67,7 @@ Một người học vừa làm câu hỏi trắc nghiệm sau đây và trả l
 📋 CÁC PHƯƠNG ÁN LỰA CHỌN:
 {opts_str or 'Không có'}
 
-❌ CÂU TRẢ LỜI CỦA NGƯỜI HỌC (BỊ SAI HOẶC BỎ TRỐNG):
+❌ CÂU TRẢ LỜI CỦA SINH VIÊN (BỊ SAI HOẶC BỎ TRỐNG):
 {user_ans_str}
 
 ✅ ĐÁP ÁN CHUẨN ĐÚNG:
@@ -79,23 +79,24 @@ Một người học vừa làm câu hỏi trắc nghiệm sau đây và trả l
 ---
 QUY TẮC ĐỊNH DẠNG CÔNG THỨC TOÁN (BẮT BUỘC):
 - Tất cả các ký hiệu toán học (như forall, exists, in, notin, rightarrow, leftrightarrow, land, lor, neg, mathbb, subset,...) PHẢI ĐƯỢC BỌC TRONG DẤU ĐÔ LA: ví dụ `$ \\forall $`, `$ \\exists $`, `$ \\mathbb{{Z}} $`, `$ \\neg p $`, `$ \\rightarrow $`, `$ P(x, y) $`. TUYỆT ĐỐI KHÔNG ĐỂ KÝ HIỆU TRẦN dạng \\forall hay \\exists mà không có dấu `$`.
+- TUYỆT ĐỐI KHÔNG đặt công thức toán hay ký hiệu mũi tên suy luận bên trong dấu backtick (code markdown `...`). Hãy viết thẳng hoặc bọc trong `$ ... $`.
 
-HÃY GIẢI THÍCH CHO NGƯỜI HỌC THEO ĐÚNG CẤU TRÚC SAU (Trình bày Markdown đẹp mắt, văn phong ấm áp, gần gũi, khích lệ người học):
+HÃY GIẢI THÍCH CHO SINH VIÊN THEO ĐÚNG CẤU TRÚC SAU (Trình bày Markdown đẹp mắt, văn phong ấm áp, gần gũi, khích lệ sinh viên, xưng bạn/sinh viên, diễn giải ngắn gọn, dễ hiểu nhất, không gọi là 'người học'):
 
 ### 💡 1. Vì sao bạn chọn nhầm?
 Chỉ ra thật rõ ràng lý do hoặc bẫy tư duy dẫn đến việc chọn nhầm phương án `{user_ans_str}` (hoặc vì sao dễ bị lúng túng bỏ trống).
 
 ### 🎯 2. Bản chất cốt lõi & Cách hiểu đúng
-Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correct_ans_str}` lại đúng. Hạn chế dùng thuật ngữ hàn lâm trừu tượng, giải thích như đang trò chuyện trực tiếp với học sinh.
+Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correct_ans_str}` lại đúng. Hạn chế dùng thuật ngữ hàn lâm trừu tượng, giải thích như đang trò chuyện trực tiếp với sinh viên.
 
 ### 🌟 3. Ví dụ thực tế siêu dễ hiểu
-Đưa ra đúng 1 ví dụ cụ thể (bằng con số thực tế, phép so sánh đời thường quen thuộc) tương tự bài toán này, giúp người học hiểu thấu và tự tin chọn được ngay đáp án chuẩn.
+Đưa ra đúng 1 ví dụ cụ thể (bằng con số thực tế, phép so sánh đời thường quen thuộc) tương tự bài toán này, giúp sinh viên hiểu thấu và tự tin chọn được ngay đáp án chuẩn.
 
 ### ✅ 4. Mẹo ghi nhớ bỏ túi
 Đưa ra 1 câu thần chú ngắn gọn hoặc quy tắc nhanh để lần sau nhìn thấy dạng câu này là chọn đúng 100%.
 
 ### 🚀 5. Thử thách củng cố: Bạn hãy chọn đáp án đúng cho câu hỏi tương tự dưới đây!
-(BẮT BUỘC TẠO RA ĐÚNG 1 CÂU HỎI TRẮC NGHIỆM TƯƠNG TỰ ĐỂ HỌC SINH TỰ CHỌN TRẢ LỜI NGAY LẬP TỨC. ĐẶT TRONG KHỐI CODE ```quiz DƯỚI ĐÂY)
+(BẮT BUỘC TẠO RA ĐÚNG 1 CÂU HỎI TRẮC NGHIỆM TƯƠNG TỰ ĐỂ SINH VIÊN TỰ CHỌN TRẢ LỜI NGAY LẬP TỨC. ĐẶT TRONG KHỐI CODE ```quiz DƯỚI ĐÂY)
 ```quiz
 {{
   "question": "Nội dung câu hỏi thực hành tương tự (ngắn gọn, trực quan)...",
@@ -116,7 +117,7 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
         "messages": [
             {
                 "role": "system",
-                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của HNUE PRO, chuyên giải thích kiến thức một cách dễ hiểu nhất, có ví dụ trực quan, sinh động. Luôn luôn bọc mọi ký hiệu toán học trong cặp dấu $...$. Ở mục 5 luôn tạo ra 1 câu hỏi trắc nghiệm tương tự trong khối code ```quiz dạng JSON hợp lệ để học sinh thử sức."
+                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của HNUE PRO, chuyên giải thích kiến thức một cách dễ hiểu, trực quan, gần gũi nhất cho sinh viên đại học. Tuyệt đối không xưng hô cứng nhắc 'người học' mà dùng 'sinh viên' hoặc 'bạn'. Luôn luôn bọc mọi ký hiệu toán học trong cặp dấu $...$. Không bọc công thức hay ký hiệu suy luận trong dấu backtick. Ở mục 5 luôn tạo ra 1 câu hỏi trắc nghiệm tương tự trong khối code ```quiz dạng JSON hợp lệ để sinh viên thử sức."
             },
             {
                 "role": "user",

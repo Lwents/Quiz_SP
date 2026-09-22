@@ -141,7 +141,7 @@ export const CourseDetailPage: React.FC = () => {
                 Chế độ xem trước của Quản trị viên:
               </span>
               <span className="text-slate-300 hidden md:inline">
-                Bạn đang trải nghiệm khóa học dưới giao diện người học.
+                Bạn đang trải nghiệm khóa học dưới giao diện sinh viên.
               </span>
             </div>
 

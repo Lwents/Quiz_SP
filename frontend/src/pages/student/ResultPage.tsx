@@ -30,8 +30,16 @@ const renderKatexSafe = (formula: string, displayMode: boolean = false): string 
 
 // Replace math blocks, inline math, and bare LaTeX commands into encoded HTML tokens
 const preprocessAllMath = (text: string): string => {
+  // Normalize escaped backslashes from AI responses if any (e.g. \\rightarrow -> \rightarrow)
+  let normalized = text.replace(/\\\\([a-zA-Z]+)/g, '\\$1');
+
+  // Convert bare arrows and common math symbols to standard LaTeX inline math if outside
+  normalized = normalized.replace(/\\rightarrow/g, '$ \\rightarrow $');
+  normalized = normalized.replace(/\\leftarrow/g, '$ \\leftarrow $');
+  normalized = normalized.replace(/\\leftrightarrow/g, '$ \\leftrightarrow $');
+
   // 1. Block math $$...$$
-  let out = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
+  let out = normalized.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
     const rendered = renderKatexSafe(math, true);
     return `###MATH_BLOCK###${encodeURIComponent(rendered)}###END###`;
   });
@@ -42,7 +50,7 @@ const preprocessAllMath = (text: string): string => {
     return `###MATH_INLINE###${encodeURIComponent(rendered)}###END###`;
   });
 
-  // 3. Bare LaTeX commands without $...$, e.g. \forall, \exists, \mathbb{Z}, \rightarrow, etc.
+  // 3. Bare LaTeX commands without $...$, e.g. \forall, \exists, \mathbb{Z}, etc.
   out = out.replace(/(\\[a-zA-Z]+(?:\{[^{}]*\})?)/g, (match) => {
     try {
       const rendered = katex.renderToString(match, { throwOnError: true });
@@ -57,7 +65,10 @@ const preprocessAllMath = (text: string): string => {
 
 // Render string containing markdown bold and math tokens into ReactNode
 const renderProcessedInline = (text: string): React.ReactNode => {
-  const parts = text.split(/(###MATH_BLOCK###.*?###END###|###MATH_INLINE###.*?###END###|\*\*.*?\*\*|`.*?`)/g);
+  // First, if there is encoded KaTeX accidentally placed inside backticks `...`, unwrap them
+  const cleanedText = text.replace(/`([^`]*?###MATH_[A-Z]+###.*?###END###[^`]*?)`/g, '$1');
+
+  const parts = cleanedText.split(/(###MATH_BLOCK###.*?###END###|###MATH_INLINE###.*?###END###|\*\*.*?\*\*|`.*?`)/g);
 
   return parts.map((part, index) => {
     if (part.startsWith('###MATH_BLOCK###') && part.endsWith('###END###')) {
@@ -93,9 +104,14 @@ const renderProcessedInline = (text: string): React.ReactNode => {
     }
 
     if (part.startsWith('`') && part.endsWith('`')) {
+      const inner = part.slice(1, -1);
+      // In case inner has math token
+      if (inner.includes('###MATH_INLINE###') || inner.includes('###MATH_BLOCK###')) {
+        return <span key={`cd-${index}`}>{renderProcessedInline(inner)}</span>;
+      }
       return (
         <code key={`cd-${index}`} className="font-mono text-xs bg-indigo-50 text-indigo-800 px-1.5 py-0.5 rounded border border-indigo-200/60">
-          {part.slice(1, -1)}
+          {inner}
         </code>
       );
     }

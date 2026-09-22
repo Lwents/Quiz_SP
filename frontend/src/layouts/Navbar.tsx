@@ -94,7 +94,7 @@ export const Navbar: React.FC = () => {
                       {user.full_name}
                     </span>
                     <span className="text-xs text-slate-500 font-medium">
-                      {isAdmin ? 'Quản trị viên' : 'Người học'}
+                      {isAdmin ? 'Quản trị viên' : 'Sinh viên'}
                     </span>
                   </div>
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 shadow-2xs bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0 group-hover:ring-2 group-hover:ring-blue-500/30 transition">

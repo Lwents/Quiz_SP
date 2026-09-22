@@ -106,7 +106,7 @@ export const TeacherDashboardPage: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Học sinh tham gia</div>
           <div className="text-3xl font-black text-slate-900">{overview?.total_students ?? 0}</div>
-          <span className="text-xs text-slate-400 mt-1 block">Tài khoản người học</span>
+          <span className="text-xs text-slate-400 mt-1 block">Tài khoản sinh viên</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
