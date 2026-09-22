@@ -13,6 +13,7 @@ import { ProfilePage } from './pages/student/ProfilePage';
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage';
 import { SubjectManagementPage } from './pages/teacher/SubjectManagementPage';
 import { QuizEditorPage } from './pages/teacher/QuizEditorPage';
+import { QuizPreviewPage } from './pages/teacher/QuizPreviewPage';
 import { CourseListPage } from './pages/student/CourseListPage';
 import { CourseDetailPage } from './pages/student/CourseDetailPage';
 import { LessonPlayerPage } from './pages/student/LessonPlayerPage';
@@ -35,6 +36,8 @@ const PageTitleHandler: React.FC = () => {
       document.title = 'Chi tiết khóa học | HNUE PRO';
     } else if (path.startsWith('/courses')) {
       document.title = 'Khóa học môn học | HNUE PRO';
+    } else if (path.includes('/preview')) {
+      document.title = 'Xem trước đề thi | HNUE PRO';
     } else if (path.startsWith('/practice/')) {
       document.title = 'Làm bài thi | HNUE PRO';
     } else if (path.startsWith('/practice')) {
@@ -55,6 +58,39 @@ const PageTitleHandler: React.FC = () => {
   }, [location]);
 
   return null;
+};
+
+// Điều hướng trang chủ theo vai trò: ADMIN/TEACHER về /teacher, STUDENT/Khách về /courses
+const RootRedirect: React.FC = () => {
+  const { user, initialized } = useAuthStore();
+
+  if (!initialized) {
+    return <div className="py-12 text-center text-slate-500">Đang tải...</div>;
+  }
+  if (user && (user.role === 'ADMIN' || user.role === 'TEACHER')) {
+    return <Navigate to="/teacher" replace />;
+  }
+  return <Navigate to="/courses" replace />;
+};
+
+// Chặn ADMIN và TEACHER vào luồng làm bài thật ở frontend
+const StudentPracticeGuard: React.FC = () => {
+  const { user, initialized } = useAuthStore();
+  const location = useLocation();
+
+  if (!initialized) {
+    return <div className="py-12 text-center text-slate-500">Đang tải...</div>;
+  }
+
+  if (user && (user.role === 'ADMIN' || user.role === 'TEACHER')) {
+    const match = location.pathname.match(/^\/practice\/([^/]+)$/);
+    if (match && match[1]) {
+      return <Navigate to={`/teacher/quizzes/${match[1]}/preview`} replace />;
+    }
+    return <Navigate to="/teacher" replace />;
+  }
+
+  return <Outlet />;
 };
 
 const RoleRoute: React.FC<{ allowedRoles: UserRole[]; roleLabel: string }> = ({ allowedRoles, roleLabel }) => {
@@ -110,14 +146,16 @@ export const App: React.FC = () => {
         <Navbar />
         <main className="flex-1">
           <Routes>
-            <Route path="/" element={<Navigate to="/courses" replace />} />
+            <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/courses" element={<CourseListPage />} />
             <Route path="/courses/:subjectId" element={<CourseDetailPage />} />
             <Route path="/courses/:subjectId/lessons/:lessonId" element={<LessonPlayerPage />} />
-            <Route path="/practice" element={<QuizListPage />} />
-            <Route path="/practice/:quizId" element={<QuizPlayerPage />} />
+            <Route element={<StudentPracticeGuard />}>
+              <Route path="/practice" element={<QuizListPage />} />
+              <Route path="/practice/:quizId" element={<QuizPlayerPage />} />
+            </Route>
             <Route path="/results/:attemptId" element={<ResultPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -126,11 +164,12 @@ export const App: React.FC = () => {
               <Route path="/teacher/subjects" element={<SubjectManagementPage />} />
               <Route path="/teacher/quizzes/new" element={<QuizEditorPage />} />
               <Route path="/teacher/quizzes/:id/edit" element={<QuizEditorPage />} />
+              <Route path="/teacher/quizzes/:quizId/preview" element={<QuizPreviewPage />} />
             </Route>
             <Route element={<RoleRoute allowedRoles={['ADMIN']} roleLabel="quản trị viên" />}>
               <Route path="/settings/backup" element={<BackupSettingsPage />} />
             </Route>
-            <Route path="*" element={<Navigate to="/practice" replace />} />
+            <Route path="*" element={<RootRedirect />} />
           </Routes>
         </main>
       </div>

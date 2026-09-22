@@ -20,6 +20,15 @@ async def get_student_dashboard(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if current_user.role != UserRole.STUDENT:
+        return {
+            "total_attempts": 0,
+            "unique_quizzes_completed": 0,
+            "average_percentage": 0.0,
+            "total_study_time_seconds": 0,
+            "recent_history": []
+        }
+
     # Total attempts completed
     att_res = await db.execute(
         select(Attempt)
@@ -73,11 +82,30 @@ async def get_teacher_overview(
     published_quizzes = (await db.execute(select(func.count(Quiz.id)).where(Quiz.status == QuizStatus.PUBLISHED))).scalar() or 0
     total_questions = (await db.execute(select(func.count(Question.id)))).scalar() or 0
     total_students = (await db.execute(select(func.count(User.id)).where(User.role == UserRole.STUDENT))).scalar() or 0
-    total_attempts = (await db.execute(select(func.count(Attempt.id)).where(Attempt.status == AttemptStatus.GRADED))).scalar() or 0
+
+    # Lượt nộp bài và lịch sử gần đây chỉ tính Attempt của STUDENT
+    total_attempts = (
+        await db.execute(
+            select(func.count(Attempt.id))
+            .join(User, Attempt.user_id == User.id)
+            .where(
+                and_(
+                    Attempt.status == AttemptStatus.GRADED,
+                    User.role == UserRole.STUDENT
+                )
+            )
+        )
+    ).scalar() or 0
 
     recent_attempts_res = await db.execute(
         select(Attempt)
-        .where(Attempt.status == AttemptStatus.GRADED)
+        .join(User, Attempt.user_id == User.id)
+        .where(
+            and_(
+                Attempt.status == AttemptStatus.GRADED,
+                User.role == UserRole.STUDENT
+            )
+        )
         .options(selectinload(Attempt.quiz))
         .order_by(Attempt.submitted_at.desc())
         .limit(10)

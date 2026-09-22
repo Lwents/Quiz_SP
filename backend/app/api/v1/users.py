@@ -75,18 +75,21 @@ async def get_activity_heatmap(
     now = datetime.now(timezone.utc)
     start_date = now - timedelta(days=days)
 
-    # 1. Lấy tất cả attempts đã nộp trong khoảng thời gian
-    att_res = await db.execute(
-        select(Attempt.submitted_at)
-        .where(
-            and_(
-                Attempt.user_id == current_user.id,
-                Attempt.status.in_([AttemptStatus.SUBMITTED, AttemptStatus.GRADED]),
-                Attempt.submitted_at >= start_date
+    # 1. Lấy tất cả attempts đã nộp trong khoảng thời gian (chỉ tính của STUDENT)
+    if current_user.role != UserRole.STUDENT:
+        attempt_times = []
+    else:
+        att_res = await db.execute(
+            select(Attempt.submitted_at)
+            .where(
+                and_(
+                    Attempt.user_id == current_user.id,
+                    Attempt.status.in_([AttemptStatus.SUBMITTED, AttemptStatus.GRADED]),
+                    Attempt.submitted_at >= start_date
+                )
             )
         )
-    )
-    attempt_times = att_res.scalars().all()
+        attempt_times = att_res.scalars().all()
 
     # 2. Lấy tất cả bài học đã hoàn thành
     lesson_res = await db.execute(

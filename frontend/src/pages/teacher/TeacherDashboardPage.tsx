@@ -185,9 +185,9 @@ export const TeacherDashboardPage: React.FC = () => {
                     <td className="py-4 px-6 text-right">
                       <div className="inline-flex items-center gap-2">
                         <Link
-                          to={`/practice/${q.id}`}
+                          to={`/teacher/quizzes/${q.id}/preview`}
                           className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100"
-                          title="Làm thử bài thi"
+                          title="Xem trước đề thi"
                         >
                           <Eye className="w-4 h-4" />
                         </Link>

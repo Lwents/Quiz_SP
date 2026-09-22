@@ -1,8 +1,16 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Logo } from '../components/Logo';
-import { BookOpen, LayoutDashboard, LogOut, PlusCircle, Layers, AlertCircle, GraduationCap, Settings, Plus } from 'lucide-react';
+import {
+  BookOpen,
+  LogOut,
+  Layers,
+  GraduationCap,
+  Settings,
+  ShieldCheck,
+  FileSpreadsheet
+} from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuthStore();
@@ -14,6 +22,10 @@ export const Navbar: React.FC = () => {
   const isInQuiz = location.pathname.startsWith('/practice/') && location.pathname !== '/practice';
   const [showQuizLeaveModal, setShowQuizLeaveModal] = useState(false);
   const [pendingNav, setPendingNav] = useState<string>('');
+
+  const isStaff = user?.role === 'ADMIN' || user?.role === 'TEACHER';
+  const isAdmin = user?.role === 'ADMIN';
+  const homePath = isStaff ? '/teacher' : '/courses';
 
   const handleGuardedNav = (e: React.MouseEvent, targetPath: string) => {
     if (isInQuiz) {
@@ -42,56 +54,94 @@ export const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link
-              to="/"
-              onClick={(e) => handleGuardedNav(e, '/')}
+              to={homePath}
+              onClick={(e) => handleGuardedNav(e, homePath)}
               className="hover:opacity-90 transition-opacity"
             >
               <Logo size="md" showSubtitle={true} />
             </Link>
 
             <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-              <Link
-                to="/courses"
-                onClick={(e) => handleGuardedNav(e, '/courses')}
-                className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  location.pathname.startsWith('/courses')
-                    ? 'text-blue-600 bg-blue-50 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <GraduationCap className="w-4 h-4" />
-                Khóa học
-              </Link>
+              {isStaff ? (
+                /* Menu quản lý dành riêng cho TEACHER & ADMIN */
+                <>
+                  <Link
+                    to="/teacher"
+                    onClick={(e) => handleGuardedNav(e, '/teacher')}
+                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                      location.pathname === '/teacher' || location.pathname.startsWith('/teacher/quizzes')
+                        ? 'text-blue-600 bg-blue-50 font-semibold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Quản lý đề thi
+                  </Link>
 
-              <Link
-                to="/practice"
-                onClick={(e) => handleGuardedNav(e, '/practice')}
-                className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  location.pathname.startsWith('/practice')
-                    ? 'text-blue-600 bg-blue-50 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <BookOpen className="w-4 h-4" />
-                Luyện tập
-              </Link>
+                  <Link
+                    to="/teacher/subjects"
+                    onClick={(e) => handleGuardedNav(e, '/teacher/subjects')}
+                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                      location.pathname.startsWith('/teacher/subjects')
+                        ? 'text-blue-600 bg-blue-50 font-semibold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4" />
+                    Môn học & Chủ đề
+                  </Link>
+
+                  {isAdmin && (
+                    <Link
+                      to="/settings/backup"
+                      onClick={(e) => handleGuardedNav(e, '/settings/backup')}
+                      className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                        location.pathname.startsWith('/settings/backup')
+                          ? 'text-blue-600 bg-blue-50 font-semibold'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`}
+                    >
+                      <Settings className="w-4 h-4" />
+                      Sao lưu dữ liệu
+                    </Link>
+                  )}
+                </>
+              ) : (
+                /* Menu học tập dành riêng cho STUDENT & Khách */
+                <>
+                  <Link
+                    to="/courses"
+                    onClick={(e) => handleGuardedNav(e, '/courses')}
+                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                      location.pathname.startsWith('/courses')
+                        ? 'text-blue-600 bg-blue-50 font-semibold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    Khóa học
+                  </Link>
+
+                  <Link
+                    to="/practice"
+                    onClick={(e) => handleGuardedNav(e, '/practice')}
+                    className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                      location.pathname.startsWith('/practice')
+                        ? 'text-blue-600 bg-blue-50 font-semibold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Luyện tập
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-3">
-                {user.role === 'ADMIN' && (
-                  <Link
-                    to="/settings/backup"
-                    onClick={(e) => handleGuardedNav(e, '/settings/backup')}
-                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                    title="Cài đặt sao lưu dữ liệu"
-                    aria-label="Cài đặt sao lưu dữ liệu"
-                  >
-                    <Settings className="w-5 h-5" />
-                  </Link>
-                )}
                 <Link
                   to="/profile"
                   onClick={(e) => handleGuardedNav(e, '/profile')}

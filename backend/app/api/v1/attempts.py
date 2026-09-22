@@ -114,6 +114,12 @@ async def start_quiz_attempt(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if current_user.role != UserRole.STUDENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Chỉ sinh viên mới được tham gia làm bài thi"}}
+        )
+
     query = (
         select(Quiz)
         .where(Quiz.id == quiz_id)
@@ -273,6 +279,9 @@ async def get_my_active_attempts(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if current_user.role != UserRole.STUDENT:
+        return []
+
     res = await db.execute(
         select(Attempt)
         .where(
@@ -309,6 +318,12 @@ async def update_attempt_progress(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if current_user.role != UserRole.STUDENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Chỉ sinh viên mới được cập nhật tiến độ làm bài"}}
+        )
+
     attempt = await db.get(Attempt, attempt_id)
     if not attempt or attempt.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Attempt not found")
@@ -380,6 +395,12 @@ async def save_answer(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if current_user.role != UserRole.STUDENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Chỉ sinh viên mới được lưu đáp án bài thi"}}
+        )
+
     attempt = await db.get(Attempt, attempt_id)
     if not attempt:
         raise HTTPException(
@@ -439,6 +460,12 @@ async def submit_attempt(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if current_user.role != UserRole.STUDENT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Chỉ sinh viên mới được nộp bài thi"}}
+        )
+
     query = (
         select(Attempt)
         .where(Attempt.id == attempt_id)
@@ -455,10 +482,10 @@ async def submit_attempt(
             detail={"error": {"code": "ATTEMPT_NOT_FOUND", "message": "Attempt not found"}}
         )
 
-    if attempt.user_id != current_user.id and current_user.role not in (UserRole.TEACHER, UserRole.ADMIN):
+    if attempt.user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": {"code": "FORBIDDEN", "message": "Forbidden"}}
+            detail={"error": {"code": "FORBIDDEN", "message": "Bạn không có quyền nộp bài thi của người khác"}}
         )
 
     # Idempotent submit: if already submitted, simply return result
