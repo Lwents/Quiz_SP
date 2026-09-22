@@ -2,7 +2,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Logo } from '../components/Logo';
-import { BookOpen, LayoutDashboard, LogOut, PlusCircle, Layers, AlertCircle, GraduationCap } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LogOut, PlusCircle, Layers, AlertCircle, GraduationCap, Settings, Plus } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuthStore();

@@ -13,6 +13,7 @@ import {
   Sparkles,
   Layers,
   FileCheck2,
+  Plus,
 } from 'lucide-react';
 
 export const CourseListPage: React.FC = () => {
@@ -97,23 +98,18 @@ export const CourseListPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Mode Switch Tabs */}
-        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl shrink-0 self-start md:self-auto border border-slate-200">
-          <Link
-            to="/courses"
-            className="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-blue-700 shadow-xs flex items-center gap-2 transition"
-          >
-            <BookOpen className="w-4 h-4 text-blue-600" />
-            Khóa học lý thuyết
-          </Link>
-          <Link
-            to="/practice"
-            className="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center gap-2 transition"
-          >
-            <FileCheck2 className="w-4 h-4 text-slate-500" />
-            Luyện đề trắc nghiệm
-          </Link>
-        </div>
+        {/* Admin Action: Tạo khóa học mới (Ẩn 2 tab Khóa học lý thuyết / Luyện đề trắc nghiệm) */}
+        {isAdmin && (
+          <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
+            <Link
+              to="/teacher/subjects"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-xs transition cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Tạo khóa học mới</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {loading ? (

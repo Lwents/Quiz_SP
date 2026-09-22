@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { Quiz, Subject, DifficultyLevel } from '../../types';
+import { useAuthStore } from '../../stores/authStore';
 import {
   Search,
   BookOpen,
@@ -13,6 +14,7 @@ import {
   Layers,
   GraduationCap,
   Play,
+  Plus,
 } from 'lucide-react';
 
 export const QuizListPage: React.FC = () => {
@@ -48,6 +50,9 @@ export const QuizListPage: React.FC = () => {
   const [activeQuizIds, setActiveQuizIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
+
   const [selectedSubject, setSelectedSubject] = useState<string>(subjectParam);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
 
@@ -164,19 +169,18 @@ export const QuizListPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl shrink-0 self-start md:self-auto border border-slate-200">
-          <Link
-            to="/courses"
-            className="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-white/60 flex items-center gap-2 transition"
-          >
-            <BookOpen className="w-4 h-4 text-blue-600" />
-            Khóa học lý thuyết
-          </Link>
-          <span className="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-white text-blue-700 shadow-xs flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-blue-600" />
-            Luyện đề trắc nghiệm
-          </span>
-        </div>
+        {/* Admin Action: Tạo bài tập mới (Ẩn 2 tab Khóa học lý thuyết / Luyện đề trắc nghiệm) */}
+        {isAdmin && (
+          <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
+            <Link
+              to="/teacher/quizzes/new"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-xs transition cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Tạo bài tập mới</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Resume In-Progress Banner (nếu có bài đang làm dở) */}
@@ -286,14 +290,26 @@ export const QuizListPage: React.FC = () => {
         <div className="space-y-6">
           {/* Breadcrumb & Nút đổi môn học */}
           <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
-            <button
-              type="button"
-              onClick={handleBackToSubjects}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>← Chọn môn học khác</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleBackToSubjects}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>← Chọn môn học khác</span>
+              </button>
+
+              {isAdmin && selectedSubject && (
+                <Link
+                  to={`/teacher/quizzes/new?subject=${selectedSubject}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Tạo bài tập cho môn này</span>
+                </Link>
+              )}
+            </div>
 
             {/* Quick Switch Pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto text-xs font-semibold">
