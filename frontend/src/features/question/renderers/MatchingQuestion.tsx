@@ -57,29 +57,27 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
         isDragging ? 'opacity-40' : 'opacity-100'
       }`}
     >
-      {/* SVG Background Puzzle shape */}
+      {/* SVG Background Puzzle shape (Hình vuông không bo góc, khớp nối vuông vức) */}
       <svg
         viewBox="0 0 320 64"
         preserveAspectRatio="none"
         className="absolute inset-0 w-full h-full pointer-events-none"
       >
         {isLeft ? (
-          /* MẢNH TRÁI: Bo góc 12px, cạnh phải có rãnh khuyết hình tròn bán kính r=12 lõm vào trong */
+          /* MẢNH TRÁI: Góc vuông 90 độ, cạnh phải có rãnh khuyết hình vuông lõm vào trong */
           <path
             d="
-              M 12 2 
-              L 308 2 
-              A 12 12 0 0 1 320 14 
-              L 320 20 
-              A 12 12 0 0 0 320 44 
-              L 320 50 
-              A 12 12 0 0 1 308 62 
-              L 12 62 
-              A 12 12 0 0 1 0 50 
-              L 0 14 
-              A 12 12 0 0 1 12 2 
+              M 2 2 
+              L 318 2 
+              L 318 20 
+              L 302 20 
+              L 302 44 
+              L 318 44 
+              L 318 62 
+              L 2 62 
               Z
             "
+            strokeLinejoin="miter"
             className={`transition-colors duration-150 ${
               isHovered
                 ? 'fill-blue-50/80 stroke-blue-500 stroke-2'
@@ -87,22 +85,20 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
             }`}
           />
         ) : (
-          /* MẢNH PHẢI: Bo góc 12px, cạnh trái có mấu nhô hình tròn bán kính r=12 lồi ra ngoài */
+          /* MẢNH PHẢI: Góc vuông 90 độ, cạnh trái có mấu nhô hình vuông lồi ra ngoài */
           <path
             d="
-              M 24 2 
-              L 308 2 
-              A 12 12 0 0 1 320 14 
-              L 320 50 
-              A 12 12 0 0 1 308 62 
-              L 24 62 
-              A 12 12 0 0 1 12 50 
-              L 12 44 
-              A 12 12 0 0 1 12 20 
-              L 12 14 
-              A 12 12 0 0 1 24 2 
+              M 18 2 
+              L 318 2 
+              L 318 62 
+              L 18 62 
+              L 18 44 
+              L 2 44 
+              L 2 20 
+              L 18 20 
               Z
             "
+            strokeLinejoin="miter"
             className={`transition-colors duration-150 ${
               isSelected
                 ? 'fill-blue-50 stroke-blue-600 stroke-2'
@@ -122,7 +118,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
       >
         <div className="flex items-center gap-3 min-w-0">
           {index !== undefined && (
-            <span className="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200">
+            <span className="w-6 h-6 rounded-none bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200">
               {index}
             </span>
           )}
