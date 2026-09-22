@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { QuestionRendererProps } from '../question.types';
 import { GripVertical, Check } from 'lucide-react';
 
@@ -7,7 +7,7 @@ import { GripVertical, Check } from 'lucide-react';
  * - Cột trái: Các mảnh câu hỏi. Mỗi hàng có Mảnh Vế Trái (có rãnh khuyết notch ở mép phải)
  *   và một RÃNH ĐÓN (Slot) ngay sát cạnh để khi kéo mảnh bên phải vào sẽ KHỚP DÍNH LIỀN KHỐI.
  * - Cột phải: Các mảnh đáp án còn lại (có chốt nhô tab ở mép trái).
- * - Kéo thả cực nhạy (HTML5 drag & drop kèm fallbacks click-to-match).
+ * - Kéo thả cực nhạy (HTML5 drag & drop + touch events cho mobile).
  * - Kéo nhầm chỉ việc kéo mảnh đó thả sang câu khác hoặc kéo sang phải để nhả ra.
  */
 
@@ -52,11 +52,23 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
   const [hoveredTarget, setHoveredTarget] = useState<string | null>(null);
 
+  // Touch drag state
+  const touchDragRef = useRef<{
+    piece: string;
+    ghostEl: HTMLDivElement | null;
+    startX: number;
+    startY: number;
+    isDragging: boolean;
+  } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const slotRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const rightAreaRef = useRef<HTMLDivElement>(null);
+
   // Tập hợp các mảnh bên phải đã được ghép vào câu hỏi nào đó
   const assignedValues = new Set(Object.values(currentMap));
 
   // Gán 1 mảnh ghép vào câu vế trái
-  const handleAssign = (targetLeft: string, piece: string) => {
+  const handleAssign = useCallback((targetLeft: string, piece: string) => {
     if (disabled) return;
     const next = { ...currentMap };
 
@@ -78,10 +90,10 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     setDraggedPiece(null);
     setSelectedPiece(null);
     setHoveredTarget(null);
-  };
+  }, [disabled, currentMap, onChange]);
 
   // Trả mảnh ghép về lại cột bên phải
-  const handleUnassign = (piece: string) => {
+  const handleUnassign = useCallback((piece: string) => {
     if (disabled) return;
     const next = { ...currentMap };
     for (const k of Object.keys(next)) {
@@ -93,30 +105,55 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     setDraggedPiece(null);
     setSelectedPiece(null);
     setHoveredTarget(null);
-  };
+  }, [disabled, currentMap, onChange]);
 
-  // Drag & drop handlers
+  // ═══════════════════════════════════════════════
+  // HTML5 Drag & Drop handlers
+  // ═══════════════════════════════════════════════
   const handleDragStart = (e: React.DragEvent, piece: string) => {
     if (disabled) return;
     setDraggedPiece(piece);
     e.dataTransfer.setData('text/plain', piece);
     e.dataTransfer.effectAllowed = 'move';
+    // Set drag image nếu có thể
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, 50, 32);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedPiece(null);
+    setHoveredTarget(null);
+  };
+
+  const handleDragEnterSlot = (e: React.DragEvent, targetLeft: string) => {
+    if (disabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (hoveredTarget !== targetLeft) setHoveredTarget(targetLeft);
   };
 
   const handleDragOverSlot = (e: React.DragEvent, targetLeft: string) => {
     if (disabled) return;
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
     if (hoveredTarget !== targetLeft) setHoveredTarget(targetLeft);
   };
 
-  const handleDragLeaveSlot = (_e: React.DragEvent, targetLeft: string) => {
+  const handleDragLeaveSlot = (e: React.DragEvent, targetLeft: string) => {
+    // Chỉ bỏ hover khi thực sự rời khỏi slot (không phải vào child)
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (e.currentTarget instanceof HTMLElement && relatedTarget && e.currentTarget.contains(relatedTarget)) {
+      return;
+    }
     if (hoveredTarget === targetLeft) setHoveredTarget(null);
   };
 
   const handleDropSlot = (e: React.DragEvent, targetLeft: string) => {
     if (disabled) return;
     e.preventDefault();
+    e.stopPropagation();
     const piece = e.dataTransfer.getData('text/plain') || draggedPiece;
     if (piece) {
       handleAssign(targetLeft, piece);
@@ -127,12 +164,104 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   const handleDropRightArea = (e: React.DragEvent) => {
     if (disabled) return;
     e.preventDefault();
+    e.stopPropagation();
     const piece = e.dataTransfer.getData('text/plain') || draggedPiece;
     if (piece) {
       handleUnassign(piece);
     }
   };
 
+  // ═══════════════════════════════════════════════
+  // Touch event handlers (mobile support)
+  // ═══════════════════════════════════════════════
+  const handleTouchStart = useCallback((e: React.TouchEvent, piece: string) => {
+    if (disabled) return;
+    const touch = e.touches[0];
+    touchDragRef.current = {
+      piece,
+      ghostEl: null,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      isDragging: false
+    };
+  }, [disabled]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const td = touchDragRef.current;
+    if (!td) return;
+
+    const touch = e.touches[0];
+    const dx = touch.clientX - td.startX;
+    const dy = touch.clientY - td.startY;
+
+    // Bắt đầu kéo nếu di chuyển đủ xa (5px)
+    if (!td.isDragging && Math.sqrt(dx * dx + dy * dy) > 5) {
+      td.isDragging = true;
+      setDraggedPiece(td.piece);
+
+      // Tạo ghost element
+      const ghost = document.createElement('div');
+      ghost.textContent = td.piece;
+      ghost.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:rgba(59,130,246,0.15);border:2px solid #3b82f6;border-radius:12px;padding:8px 16px;font-size:13px;font-weight:600;color:#1e3a5f;backdrop-filter:blur(4px);box-shadow:0 8px 24px rgba(0,0,0,0.15);transform:translate(-50%,-50%);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      document.body.appendChild(ghost);
+      td.ghostEl = ghost;
+    }
+
+    if (td.isDragging && td.ghostEl) {
+      e.preventDefault();
+      td.ghostEl.style.left = touch.clientX + 'px';
+      td.ghostEl.style.top = touch.clientY + 'px';
+
+      // Kiểm tra hover trên slot nào
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      let found = false;
+      slotRefs.current.forEach((slotEl, leftKey) => {
+        if (slotEl.contains(elementBelow)) {
+          setHoveredTarget(leftKey);
+          found = true;
+        }
+      });
+      if (!found) setHoveredTarget(null);
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const td = touchDragRef.current;
+    if (!td) return;
+
+    // Cleanup ghost element
+    if (td.ghostEl) {
+      document.body.removeChild(td.ghostEl);
+    }
+
+    if (td.isDragging) {
+      const touch = e.changedTouches[0];
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+
+      // Kiểm tra xem thả vào slot nào
+      let dropped = false;
+      slotRefs.current.forEach((slotEl, leftKey) => {
+        if (slotEl.contains(elementBelow)) {
+          handleAssign(leftKey, td.piece);
+          dropped = true;
+        }
+      });
+
+      // Nếu thả vào vùng bên phải -> gỡ ghép
+      if (!dropped && rightAreaRef.current && rightAreaRef.current.contains(elementBelow)) {
+        handleUnassign(td.piece);
+      }
+
+      setDraggedPiece(null);
+      setHoveredTarget(null);
+    }
+
+    touchDragRef.current = null;
+  }, [handleAssign, handleUnassign]);
+
+  // ═══════════════════════════════════════════════
+  // Click-to-match handlers
+  // ═══════════════════════════════════════════════
   const handlePieceClick = (piece: string) => {
     if (disabled) return;
     if (selectedPiece === piece) {
@@ -147,7 +276,6 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     if (selectedPiece) {
       handleAssign(left, selectedPiece);
     } else if (currentMap[left]) {
-      // Đã có mảnh ghép -> bấm vào để nhấc mảnh này lên đổi chỗ
       setSelectedPiece(currentMap[left]);
     }
   };
@@ -155,7 +283,7 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   const matchedCount = Object.keys(currentMap).length;
 
   return (
-    <div className="space-y-4 select-none">
+    <div ref={containerRef} className="space-y-4 select-none">
       {/* Header hướng dẫn */}
       <div className="flex items-center justify-between pb-1">
         <div className="text-xs text-slate-500">
@@ -174,11 +302,16 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
           {leftItems.map((left, idx) => {
             const matchedPiece = currentMap[left];
             const isHovered = hoveredTarget === left;
-            const isSlotActive = Boolean(selectedPiece);
+            const isSlotActive = Boolean(selectedPiece) || Boolean(draggedPiece);
 
             return (
               <div
                 key={idx}
+                ref={(el) => {
+                  if (el) slotRefs.current.set(left, el);
+                  else slotRefs.current.delete(left);
+                }}
+                onDragEnter={(e) => handleDragEnterSlot(e, left)}
                 onDragOver={(e) => handleDragOverSlot(e, left)}
                 onDragLeave={(e) => handleDragLeaveSlot(e, left)}
                 onDrop={(e) => handleDropSlot(e, left)}
@@ -187,7 +320,7 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
                   matchedPiece
                     ? 'shadow-xs'
                     : isHovered
-                    ? 'ring-2 ring-blue-500 shadow-md'
+                    ? 'ring-2 ring-blue-500 shadow-md scale-[1.01]'
                     : isSlotActive
                     ? 'ring-2 ring-blue-400/50 ring-dashed'
                     : 'hover:shadow-xs'
@@ -244,14 +377,38 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
                       e.stopPropagation();
                       handleDragStart(e, matchedPiece);
                     }}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      e.dataTransfer.dropEffect = 'move';
+                      if (hoveredTarget !== left) setHoveredTarget(left);
+                    }}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (hoveredTarget !== left) setHoveredTarget(left);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const piece = e.dataTransfer.getData('text/plain') || draggedPiece;
+                      if (piece && piece !== matchedPiece) {
+                        handleAssign(left, piece);
+                      }
+                      setHoveredTarget(null);
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       handlePieceClick(matchedPiece);
                     }}
+                    onTouchStart={(e) => handleTouchStart(e, matchedPiece)}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                     title="Kéo sang câu khác hoặc kéo ra ngoài để đổi"
                     className={`relative w-[48%] h-full -ml-3 z-20 cursor-grab active:cursor-grabbing transition-transform ${
                       selectedPiece === matchedPiece ? 'scale-[1.03] ring-2 ring-blue-500 rounded-r-xl' : ''
-                    }`}
+                    } ${draggedPiece === matchedPiece ? 'opacity-40' : 'opacity-100'}`}
                   >
                     <svg
                       viewBox="0 0 200 64"
@@ -329,10 +486,15 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
 
         {/* CỘT PHẢI: CÁC MẢNH GHÉP ĐÁP ÁN ĐỐI DIỆN */}
         <div
+          ref={rightAreaRef}
           onDragOver={(e) => {
             if (disabled) return;
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
+          }}
+          onDragEnter={(e) => {
+            if (disabled) return;
+            e.preventDefault();
           }}
           onDrop={handleDropRightArea}
           className="space-y-3.5"
@@ -369,7 +531,11 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
                 key={idx}
                 draggable={!disabled}
                 onDragStart={(e) => handleDragStart(e, piece)}
+                onDragEnd={handleDragEnd}
                 onClick={() => handlePieceClick(piece)}
+                onTouchStart={(e) => handleTouchStart(e, piece)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 className={`relative w-full h-[64px] select-none transition-all duration-150 cursor-grab active:cursor-grabbing ${
                   isSelected ? 'scale-[1.02] filter drop-shadow-md' : 'hover:drop-shadow-xs'
                 } ${draggedPiece === piece ? 'opacity-40' : 'opacity-100'}`}
