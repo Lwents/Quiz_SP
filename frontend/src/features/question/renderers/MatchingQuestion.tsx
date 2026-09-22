@@ -16,10 +16,10 @@ interface PuzzlePieceProps {
   isHovered?: boolean;
   isDragging?: boolean;
   onClick?: () => void;
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragOver?: (e: React.DragEvent) => void;
-  onDragLeave?: (e: React.DragEvent) => void;
-  onDrop?: (e: React.DragEvent) => void;
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
   draggable?: boolean;
 }
 
@@ -110,7 +110,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
 
       {/* Content overlay */}
       <div
-        className={`relative z-10 w-full h-full flex items-center justify-between px-5 ${
+        className={`relative z-10 w-full h-full flex items-center justify-between px-5 pointer-events-none ${
           isLeft ? 'pr-8' : 'pl-7'
         }`}
       >
@@ -126,7 +126,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
         </div>
 
         {!isLeft && (
-          <GripVertical className="w-4 h-4 text-slate-400 shrink-0 ml-2 pointer-events-none" />
+          <GripVertical className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
         )}
       </div>
     </div>
@@ -240,27 +240,31 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     setSelectedIdx(null);
   };
 
-  const onDragStart = (e: React.DragEvent, idx: number) => {
+  const onDragStart = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
     if (disabled) return;
     setDraggingIdx(idx);
     e.dataTransfer.setData('text/plain', String(idx));
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const onDragOver = (e: React.DragEvent, idx: number) => {
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
     if (disabled) return;
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
     if (hoveredIdx !== idx) setHoveredIdx(idx);
   };
 
-  const onDragLeave = (_e: React.DragEvent, idx: number) => {
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (hoveredIdx === idx) setHoveredIdx(null);
   };
 
-  const onDrop = (e: React.DragEvent, idx: number) => {
+  const onDrop = (e: React.DragEvent<HTMLDivElement>, idx: number) => {
     if (disabled) return;
     e.preventDefault();
+    e.stopPropagation();
     const fromStr = e.dataTransfer.getData('text/plain');
     const from = fromStr !== '' ? parseInt(fromStr, 10) : draggingIdx;
     if (from !== null && !isNaN(from)) {
@@ -288,7 +292,6 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     }
   };
 
-  const maxRows = Math.max(leftItems.length, rightOrder.length);
   const matchedCount = Object.keys(currentMap).length;
 
   return (
