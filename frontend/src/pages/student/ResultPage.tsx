@@ -9,6 +9,7 @@ import { AttemptResult } from '../../types';
 import {
   CheckCircle2,
   XCircle,
+  ArrowRight,
   Clock,
   Award,
   RotateCcw,
@@ -248,6 +249,191 @@ const renderFormattedAI = (content: string) => {
     );
   }
   return elements;
+};
+
+
+interface AnswerReviewSummaryProps {
+  rev: any;
+  isCorrect: boolean;
+}
+
+const AnswerReviewSummary: React.FC<AnswerReviewSummaryProps> = ({ rev, isCorrect }) => {
+  const qType = rev.question?.type;
+  const config = rev.question?.config || {};
+
+  // 1. Dạng câu hỏi GHÉP NỐI (matching / drag_drop hoặc có config.pairs)
+  const isMatching =
+    qType === 'matching' ||
+    qType === 'drag_drop' ||
+    (Array.isArray(config.pairs) && config.pairs.length > 0);
+
+  if (isMatching && Array.isArray(config.pairs) && config.pairs.length > 0) {
+    let userMap: Record<string, string> = {};
+    if (rev.user_answer && typeof rev.user_answer === 'object' && !Array.isArray(rev.user_answer)) {
+      userMap = rev.user_answer;
+    } else if (typeof rev.user_answer === 'string') {
+      try {
+        const parsed = JSON.parse(rev.user_answer);
+        if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+          userMap = parsed;
+        }
+      } catch {
+        userMap = {};
+      }
+    }
+
+    return (
+      <div className="space-y-2.5 text-sm bg-slate-50/90 p-4 rounded-xl mb-4 border border-slate-200">
+        <div className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-2">
+          Chi tiết kết quả ghép nối:
+        </div>
+        <div className="border border-slate-200 rounded-lg overflow-hidden divide-y divide-slate-100 bg-white shadow-2xs">
+          {config.pairs.map((pair: any, pIdx: number) => {
+            const userMatch = userMap[pair.left] || userMap[pair.left?.trim?.()];
+            const isMatchCorrect = Boolean(
+              userMatch && userMatch.trim().toLowerCase() === String(pair.right).trim().toLowerCase()
+            );
+
+            return (
+              <div
+                key={pIdx}
+                className={`p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm ${
+                  isMatchCorrect
+                    ? 'bg-emerald-50/25'
+                    : userMatch
+                    ? 'bg-rose-50/25'
+                    : 'bg-slate-50/40'
+                }`}
+              >
+                {/* Vế trái (câu hỏi) */}
+                <div className="flex items-center gap-2.5 min-w-0 sm:w-5/12">
+                  <span className="w-5 h-5 rounded-none bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200">
+                    {pIdx + 1}
+                  </span>
+                  <span className="font-semibold text-slate-800 break-words leading-relaxed">
+                    {pair.left}
+                  </span>
+                </div>
+
+                {/* Trạng thái Đúng / Sai */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {isMatchCorrect ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Chính xác
+                    </span>
+                  ) : userMatch ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded">
+                      <XCircle className="w-3.5 h-3.5 text-rose-600" /> Chưa đúng
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      Chưa nối
+                    </span>
+                  )}
+                </div>
+
+                {/* Kết quả ghép của bạn & Đáp án đúng */}
+                <div className="flex-1 min-w-0 sm:text-right space-y-0.5">
+                  <div className="flex items-center sm:justify-end gap-1.5">
+                    <span className="text-xs text-slate-500">Bạn ghép:</span>
+                    <span
+                      className={`font-semibold ${
+                        isMatchCorrect
+                          ? 'text-emerald-800'
+                          : userMatch
+                          ? 'text-rose-700 line-through'
+                          : 'text-slate-400 italic'
+                      }`}
+                    >
+                      {userMatch || '(Bỏ trống)'}
+                    </span>
+                  </div>
+                  {!isMatchCorrect && (
+                    <div className="flex items-center sm:justify-end gap-1.5 text-xs">
+                      <span className="text-slate-500">Đáp án chuẩn:</span>
+                      <span className="font-bold text-emerald-700">
+                        {pair.right}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Dạng câu hỏi SẮP XẾP THỨ TỰ (ordering)
+  const isOrdering =
+    qType === 'ordering' ||
+    (Array.isArray(config.correct_order) && config.correct_order.length > 0);
+
+  if (isOrdering && Array.isArray(config.correct_order)) {
+    let userOrderList: string[] = [];
+    if (Array.isArray(rev.user_answer)) {
+      userOrderList = rev.user_answer;
+    } else if (typeof rev.user_answer === 'string') {
+      try {
+        const parsed = JSON.parse(rev.user_answer);
+        if (Array.isArray(parsed)) userOrderList = parsed;
+        else userOrderList = [rev.user_answer];
+      } catch {
+        userOrderList = [rev.user_answer];
+      }
+    }
+
+    return (
+      <div className="space-y-2 text-sm bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100">
+        <div>
+          <span className="font-semibold text-slate-700">Thứ tự bạn chọn: </span>
+          <span className={`font-medium ${!isCorrect ? 'text-rose-700 font-bold' : 'text-slate-900'}`}>
+            {userOrderList.length > 0
+              ? userOrderList.map((item, idx) => `${idx + 1}. ${item}`).join(' ➔ ')
+              : '(Bỏ trống)'}
+          </span>
+        </div>
+        <div>
+          <span className="font-semibold text-emerald-700">Thứ tự chuẩn: </span>
+          <span className="text-emerald-900 font-bold">
+            {config.correct_order.map((item: string, idx: number) => `${idx + 1}. ${item}`).join(' ➔ ')}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Dạng câu hỏi thông thường khác
+  return (
+    <div className="space-y-2 text-sm bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100">
+      <div>
+        <span className="font-semibold text-slate-700">Câu trả lời của bạn: </span>
+        <span className={`font-mono ${!isCorrect ? 'text-rose-700 font-bold' : 'text-slate-900'}`}>
+          {rev.user_answer === null || rev.user_answer === undefined || rev.user_answer === ''
+            ? '(Bỏ trống)'
+            : typeof rev.user_answer === 'object'
+            ? Array.isArray(rev.user_answer)
+              ? rev.user_answer.join(', ')
+              : JSON.stringify(rev.user_answer)
+            : String(rev.user_answer)}
+        </span>
+      </div>
+
+      {(config.correct || config.accepted_answers) && (
+        <div>
+          <span className="font-semibold text-emerald-700">Đáp án chuẩn: </span>
+          <span className="text-emerald-900 font-bold font-mono">
+            {Array.isArray(config.correct)
+              ? config.correct.join(', ')
+              : Array.isArray(config.accepted_answers)
+              ? config.accepted_answers.join(' / ')
+              : String(config.correct || config.accepted_answers)}
+          </span>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export const ResultPage: React.FC = () => {
@@ -515,29 +701,7 @@ export const ResultPage: React.FC = () => {
                   <div className="text-base font-medium text-slate-900 mb-4">{rev.question.content}</div>
 
                   {/* User Answer vs Correct Answer Summary */}
-                  <div className="space-y-2 text-sm bg-slate-50 p-4 rounded-xl mb-4 border border-slate-100">
-                    <div>
-                      <span className="font-semibold text-slate-700">Câu trả lời của bạn: </span>
-                      <span className={`font-mono ${!isCorrect ? 'text-rose-700 font-bold' : 'text-slate-900'}`}>
-                        {rev.user_answer === null || rev.user_answer === undefined || rev.user_answer === ''
-                          ? '(Bỏ trống)'
-                          : typeof rev.user_answer === 'object'
-                          ? JSON.stringify(rev.user_answer)
-                          : String(rev.user_answer)}
-                      </span>
-                    </div>
-
-                    {rev.question.config?.correct && (
-                      <div>
-                        <span className="font-semibold text-emerald-700">Đáp án chuẩn: </span>
-                        <span className="text-emerald-900 font-bold font-mono">
-                          {Array.isArray(rev.question.config.correct)
-                            ? rev.question.config.correct.join(', ')
-                            : String(rev.question.config.correct)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <AnswerReviewSummary rev={rev} isCorrect={isCorrect} />
 
                   {/* Original Static Explanation */}
                   {rev.question.explanation && (
