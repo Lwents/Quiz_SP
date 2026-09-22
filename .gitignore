@@ -1,7 +1,26 @@
+﻿# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.class
+.venv/
+env/
+venv/
+
+# Node
 node_modules/
 dist/
+.output/
+
+# Environment and Secrets (CRITICAL - DO NOT COMMIT)
 .env
+.env.*
+*.env
+backend/.env
+frontend/.env
+*.pem
+*.key
+*.cert
+
+# Temporary & dump scripts
 dump_questions.py
 parse_all_q.py
