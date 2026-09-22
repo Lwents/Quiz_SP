@@ -20,7 +20,7 @@ from app.schemas.quiz import (
     TopicResponse
 )
 from app.schemas.question import QuestionStudentResponse, QuestionTeacherResponse
-from app.api.deps import get_current_user, require_role
+from app.api.deps import get_current_user, get_optional_current_user, require_role
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 
@@ -40,7 +40,7 @@ async def list_quizzes(
     search: Optional[str] = None,
     status_filter: Optional[QuizStatus] = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ):
     query = select(Quiz).options(
         selectinload(Quiz.subject),
@@ -48,8 +48,8 @@ async def list_quizzes(
         selectinload(Quiz.quiz_questions)
     )
 
-    # Students only see published quizzes
-    if current_user.role == UserRole.STUDENT:
+    # If student or unauthenticated guest, only see published quizzes
+    if not current_user or current_user.role == UserRole.STUDENT:
         query = query.where(Quiz.status == QuizStatus.PUBLISHED)
     elif status_filter:
         query = query.where(Quiz.status == status_filter)
