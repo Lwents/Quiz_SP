@@ -38,8 +38,18 @@ class TopicCreate(BaseModel):
     order: Optional[int] = None
 
 
+class TopicUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    order: Optional[int] = None
+
+
 class TopicReorderRequest(BaseModel):
     topic_ids: List[uuid.UUID]
+
+
+class QuizQuestionReorderRequest(BaseModel):
+    question_ids: List[uuid.UUID]
 
 
 class TopicResponse(TopicBase):

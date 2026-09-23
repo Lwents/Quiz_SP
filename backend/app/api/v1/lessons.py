@@ -308,6 +308,20 @@ async def create_lesson(
     else:
         order_val = lesson_in.order
 
+    # Kiểm tra liên kết đề thi nếu có
+    if lesson_in.quiz_id is not None:
+        quiz = await db.get(Quiz, lesson_in.quiz_id)
+        if not quiz:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "QUIZ_NOT_FOUND", "message": "Đề thi liên kết không tồn tại"}}
+            )
+        if quiz.subject_id and quiz.subject_id != topic.subject_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "SUBJECT_MISMATCH", "message": "Đề thi không thuộc môn học của bài giảng này"}}
+            )
+
     lesson = Lesson(
         topic_id=topic_id,
         title=lesson_in.title.strip(),
@@ -337,6 +351,7 @@ async def create_lesson(
     )
 
 
+@router.put("/{lesson_id}", response_model=LessonSimpleResponse)
 @router.patch("/{lesson_id}", response_model=LessonSimpleResponse)
 async def update_lesson(
     lesson_id: uuid.UUID,
@@ -350,6 +365,22 @@ async def update_lesson(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "LESSON_NOT_FOUND", "message": "Không tìm thấy bài học"}}
         )
+
+    # Nếu cập nhật quiz_id, kiểm tra xem quiz có tồn tại và có thuộc cùng subject không
+    if lesson_in.quiz_id is not None:
+        quiz = await db.get(Quiz, lesson_in.quiz_id)
+        if not quiz:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "QUIZ_NOT_FOUND", "message": "Đề thi liên kết không tồn tại"}}
+            )
+        # Kiểm tra subject của topic chứa lesson
+        topic = await db.get(Topic, lesson.topic_id)
+        if topic and quiz.subject_id and quiz.subject_id != topic.subject_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "SUBJECT_MISMATCH", "message": "Đề thi không thuộc môn học của bài giảng này"}}
+            )
 
     update_data = lesson_in.model_dump(exclude_unset=True)
     for field, val in update_data.items():

@@ -1,8 +1,8 @@
-import { toast } from '../../stores/toastStore';
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../../api/client';
-import { Subject, Topic } from '../../types';
+import { Subject, Topic, LessonSimple, Quiz } from '../../types';
+import { toast } from '../../stores/toastStore';
 import {
   Plus,
   BookOpen,
@@ -21,8 +21,9 @@ import {
   CheckCircle2,
   FileCheck2,
   ExternalLink,
+  FileText,
+  Sparkles,
 } from 'lucide-react';
-import { LessonSimple, Quiz } from '../../types';
 
 export const SubjectManagementPage: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -36,10 +37,16 @@ export const SubjectManagementPage: React.FC = () => {
   const [subjectCode, setSubjectCode] = useState('');
   const [subjectDesc, setSubjectDesc] = useState('');
 
-  // New topic inline input state
+  // Inline add topic state
   const [activeSubjectForTopic, setActiveSubjectForTopic] = useState<string | null>(null);
   const [newTopicName, setNewTopicName] = useState('');
   const [newTopicDesc, setNewTopicDesc] = useState('');
+
+  // Modal edit topic state
+  const [showEditTopicModal, setShowEditTopicModal] = useState(false);
+  const [editingTopic, setEditingTopic] = useState<{ subjectId: string; topic: Topic } | null>(null);
+  const [editTopicName, setEditTopicName] = useState('');
+  const [editTopicDesc, setEditTopicDesc] = useState('');
 
   // Drag and drop state
   const [draggedTopic, setDraggedTopic] = useState<{ subjectId: string; index: number } | null>(null);
@@ -86,6 +93,7 @@ export const SubjectManagementPage: React.FC = () => {
       setTopicsMap(topicsData);
     } catch (err) {
       console.error('Error fetching subjects:', err);
+      toast.error('Không thể tải danh sách môn học');
     } finally {
       setLoading(false);
     }
@@ -116,16 +124,18 @@ export const SubjectManagementPage: React.FC = () => {
     try {
       if (editingSubject) {
         await apiClient.put(`/subjects/${editingSubject.id}`, {
-          name: subjectName,
-          code: subjectCode,
-          description: subjectDesc,
+          name: subjectName.trim(),
+          code: subjectCode.trim(),
+          description: subjectDesc.trim() || undefined,
         });
+        toast.success('Đã cập nhật môn học!');
       } else {
         await apiClient.post('/subjects', {
-          name: subjectName,
-          code: subjectCode,
-          description: subjectDesc,
+          name: subjectName.trim(),
+          code: subjectCode.trim(),
+          description: subjectDesc.trim() || undefined,
         });
+        toast.success('Đã tạo môn học mới!');
       }
       setShowSubjectModal(false);
       fetchSubjects();
@@ -138,9 +148,10 @@ export const SubjectManagementPage: React.FC = () => {
     if (!confirm('Bạn có chắc chắn muốn xóa môn học này cùng tất cả chủ đề liên quan?')) return;
     try {
       await apiClient.delete(`/subjects/${subId}`);
+      toast.success('Đã xóa môn học');
       fetchSubjects();
-    } catch (err) {
-      toast.error('Không thể xóa môn học');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail?.error?.message || 'Không thể xóa môn học');
     }
   };
 
@@ -148,10 +159,11 @@ export const SubjectManagementPage: React.FC = () => {
     if (!newTopicName.trim()) return;
     try {
       await apiClient.post(`/subjects/${subjectId}/topics`, {
-        name: newTopicName,
-        description: newTopicDesc,
+        name: newTopicName.trim(),
+        description: newTopicDesc.trim() || undefined,
         subject_id: subjectId,
       });
+      toast.success('Đã thêm chủ đề mới!');
       setNewTopicName('');
       setNewTopicDesc('');
       setActiveSubjectForTopic(null);
@@ -159,19 +171,48 @@ export const SubjectManagementPage: React.FC = () => {
       // Refresh topics for this subject
       const tRes = await apiClient.get(`/subjects/${subjectId}/topics`);
       setTopicsMap((prev) => ({ ...prev, [subjectId]: tRes.data }));
-    } catch (err) {
-      toast.error('Không thể tạo chủ đề');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail?.error?.message || 'Không thể tạo chủ đề');
+    }
+  };
+
+  // Open edit topic modal
+  const handleOpenEditTopicModal = (subjectId: string, topic: Topic) => {
+    setEditingTopic({ subjectId, topic });
+    setEditTopicName(topic.name);
+    setEditTopicDesc(topic.description || '');
+    setShowEditTopicModal(true);
+  };
+
+  const handleSaveEditTopic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTopic || !editTopicName.trim()) {
+      toast.warning('Vui lòng nhập tên chủ đề');
+      return;
+    }
+    try {
+      await apiClient.put(`/subjects/${editingTopic.subjectId}/topics/${editingTopic.topic.id}`, {
+        name: editTopicName.trim(),
+        description: editTopicDesc.trim() || undefined,
+      });
+      toast.success('Cập nhật chủ đề thành công!');
+      setShowEditTopicModal(false);
+      const tRes = await apiClient.get(`/subjects/${editingTopic.subjectId}/topics`);
+      setTopicsMap((prev) => ({ ...prev, [editingTopic.subjectId]: tRes.data }));
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail?.error?.message || 'Không thể cập nhật chủ đề');
     }
   };
 
   const handleDeleteTopic = async (subjectId: string, topicId: string) => {
-    if (!confirm('Xóa chủ đề này?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa chủ đề này?')) return;
     try {
       await apiClient.delete(`/subjects/${subjectId}/topics/${topicId}`);
+      toast.success('Đã xóa chủ đề');
       const tRes = await apiClient.get(`/subjects/${subjectId}/topics`);
       setTopicsMap((prev) => ({ ...prev, [subjectId]: tRes.data }));
-    } catch (err) {
-      toast.error('Không thể xóa chủ đề');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail?.error?.message || 'Không thể xóa chủ đề');
     }
   };
 
@@ -233,19 +274,21 @@ export const SubjectManagementPage: React.FC = () => {
     }
 
     try {
-      const payload = {
+      const payload: any = {
         title: lessonTitle.trim(),
         description: lessonDesc.trim() || undefined,
         duration_minutes: Number(lessonDuration) || 15,
         video_url: lessonVideo.trim() || undefined,
         content: lessonContent,
-        quiz_id: lessonQuizId || undefined,
+        quiz_id: lessonQuizId ? lessonQuizId : null,
       };
 
       if (editingLessonId) {
         await apiClient.put(`/lessons/${editingLessonId}`, payload);
+        toast.success('Đã cập nhật bài học!');
       } else {
         await apiClient.post(`/lessons/topic/${activeTopicForLessons.topic.id}`, payload);
+        toast.success('Đã thêm bài học mới thành công!');
       }
 
       // Refresh lessons
@@ -263,13 +306,14 @@ export const SubjectManagementPage: React.FC = () => {
     if (!confirm('Bạn có chắc chắn muốn xóa bài học này?')) return;
     try {
       await apiClient.delete(`/lessons/${lessonId}`);
+      toast.success('Đã xóa bài học');
       if (activeTopicForLessons) {
         const curRes = await apiClient.get(`/lessons/subject/${activeTopicForLessons.subject.id}`);
         const curTopic = curRes.data.topics?.find((t: any) => t.id === activeTopicForLessons.topic.id);
         setTopicLessons(curTopic?.lessons || []);
       }
-    } catch (err) {
-      toast.error('Không thể xóa bài học');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail?.error?.message || 'Không thể xóa bài học');
     }
   };
 
@@ -383,7 +427,7 @@ export const SubjectManagementPage: React.FC = () => {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Quản lý Môn học & Chủ đề (Courses & Topics)</h1>
-            <p className="text-sm text-slate-500 mt-0.5">Tạo các môn học nền tảng, phân loại chủ đề trước khi tạo bài thi trắc nghiệm</p>
+            <p className="text-sm text-slate-500 mt-0.5">Tạo các môn học nền tảng, phân loại chủ đề và quản lý bài học trước khi tạo bài thi</p>
           </div>
         </div>
 
@@ -419,11 +463,11 @@ export const SubjectManagementPage: React.FC = () => {
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
           <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <h3 className="text-base font-semibold text-slate-800">Chưa có môn học nào</h3>
-          <p className="text-sm text-slate-500 mt-1 mb-4">Hãy tạo môn học đầu tiên để bắt đầu xây dựng bài kiểm tra</p>
+          <p className="text-sm text-slate-500 mt-1 mb-4">Hãy tạo môn học đầu tiên để bắt đầu xây dựng bài kiểm tra và bài giảng</p>
           <button
             type="button"
             onClick={() => handleOpenSubjectModal()}
-            className="px-4 py-2 bg-blue-600 text-white font-semibold text-sm rounded-xl"
+            className="px-4 py-2 bg-blue-600 text-white font-semibold text-sm rounded-xl cursor-pointer"
           >
             + Tạo môn học ngay
           </button>
@@ -548,47 +592,50 @@ export const SubjectManagementPage: React.FC = () => {
                       <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-xl space-y-2 mt-2">
                         <input
                           type="text"
-                          required
                           value={newTopicName}
                           onChange={(e) => setNewTopicName(e.target.value)}
-                          placeholder="Tên chủ đề / chương..."
-                          className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white"
+                          placeholder="Tên chương / chủ đề mới (ví dụ: Chương 1: Đạo hàm)..."
+                          className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                          autoFocus
                         />
                         <input
                           type="text"
                           value={newTopicDesc}
                           onChange={(e) => setNewTopicDesc(e.target.value)}
-                          placeholder="Mô tả tóm tắt phạm vi (tùy chọn)..."
-                          className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white"
+                          placeholder="Mô tả tóm tắt nội dung chủ đề (tùy chọn)..."
+                          className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                         />
-                        <div className="flex items-center justify-end gap-2 pt-1">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => setActiveSubjectForTopic(null)}
-                            className="px-2.5 py-1 text-xs text-slate-500 hover:bg-slate-200 rounded-md cursor-pointer"
+                            className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-700 cursor-pointer"
                           >
                             Hủy
                           </button>
                           <button
                             type="button"
                             onClick={() => handleAddTopic(sub.id)}
-                            className="px-3 py-1 text-xs bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 cursor-pointer"
+                            className="px-3 py-1 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition cursor-pointer"
                           >
-                            Lưu chủ đề
+                            Tạo chủ đề
                           </button>
                         </div>
                       </div>
                     )}
 
-                    {topics.length === 0 && !isAddingTopic ? (
-                      <p className="text-xs text-slate-400 italic py-2">Chưa có chủ đề nào trong môn này.</p>
+                    {/* Topic List Drag & Drop */}
+                    {topics.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic py-2">
+                        Chưa có chủ đề nào. Bấm "Thêm chủ đề" để bắt đầu phân chương.
+                      </p>
                     ) : (
-                      <div className="space-y-1.5 pt-1">
+                      <div className="space-y-1.5 mt-2">
                         {topics.map((top, idx) => {
                           const isCurrentlyDragged =
                             draggedTopic?.subjectId === sub.id && draggedTopic?.index === idx;
                           const isDragTarget =
-                            dragOverIndex === idx && draggedTopic?.subjectId === sub.id;
+                            draggedTopic?.subjectId === sub.id && dragOverIndex === idx;
 
                           return (
                             <div
@@ -634,8 +681,8 @@ export const SubjectManagementPage: React.FC = () => {
                                 </div>
                               </div>
 
-                              {/* Controls: Move Up, Move Down, Delete */}
-                              <div className="flex items-center gap-0.5 shrink-0">
+                              {/* Controls: Move Up, Move Down, Manage Lessons, Edit, Delete */}
+                              <div className="flex items-center gap-1 shrink-0">
                                 <button
                                   type="button"
                                   disabled={idx === 0}
@@ -664,12 +711,35 @@ export const SubjectManagementPage: React.FC = () => {
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    handleOpenLessonModal(sub, top);
+                                  }}
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded transition cursor-pointer"
+                                  title="Quản lý bài giảng & đề thi của chủ đề này"
+                                >
+                                  <BookOpen className="w-3 h-3" />
+                                  <span>Bài học</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenEditTopicModal(sub.id, top);
+                                  }}
+                                  className="text-slate-400 hover:text-amber-600 p-1 rounded hover:bg-amber-50 transition cursor-pointer"
+                                  title="Chỉnh sửa chủ đề"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     handleDeleteTopic(sub.id, top.id);
                                   }}
                                   className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition ml-0.5 cursor-pointer"
                                   title="Xóa chủ đề"
                                 >
-                                  <X className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </div>
@@ -723,7 +793,7 @@ export const SubjectManagementPage: React.FC = () => {
                   required
                   value={subjectCode}
                   onChange={(e) => setSubjectCode(e.target.value)}
-                  placeholder="Nhập mã môn học..."
+                  placeholder="Nhập mã môn học (ví dụ: MATH12, PHYS11)..."
                   className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono uppercase"
                 />
               </div>
@@ -737,7 +807,7 @@ export const SubjectManagementPage: React.FC = () => {
                   required
                   value={subjectName}
                   onChange={(e) => setSubjectName(e.target.value)}
-                  placeholder="Nhập tên môn học..."
+                  placeholder="Nhập tên môn học (ví dụ: Toán học 12)..."
                   className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 />
               </div>
@@ -771,6 +841,347 @@ export const SubjectManagementPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Chỉnh sửa Chủ đề */}
+      {showEditTopicModal && editingTopic && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">Chỉnh sửa chủ đề</h3>
+              <button
+                type="button"
+                onClick={() => setShowEditTopicModal(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditTopic} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                  Tên chủ đề / chương học *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTopicName}
+                  onChange={(e) => setEditTopicName(e.target.value)}
+                  placeholder="Nhập tên chủ đề..."
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                  Mô tả tóm tắt nội dung chủ đề
+                </label>
+                <textarea
+                  rows={3}
+                  value={editTopicDesc}
+                  onChange={(e) => setEditTopicDesc(e.target.value)}
+                  placeholder="Mô tả nội dung chương / chủ đề..."
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditTopicModal(false)}
+                  className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs cursor-pointer"
+                >
+                  Lưu thay đổi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Quản lý Bài học & Gắn đề thi (Course Lessons & Quizzes) */}
+      {activeTopicForLessons && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700">
+                    {activeTopicForLessons.subject.code}
+                  </span>
+                  <span className="text-xs text-slate-500">Chủ đề:</span>
+                  <span className="text-xs font-bold text-slate-700">{activeTopicForLessons.topic.name}</span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {isEditingLesson
+                    ? editingLessonId
+                      ? 'Chỉnh sửa bài học'
+                      : 'Thêm bài học mới'
+                    : 'Quản lý bài giảng & Đề thi đánh giá'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTopicForLessons(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              {!isEditingLesson ? (
+                /* View: List of Lessons in Topic */
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800">
+                        Danh sách bài giảng ({topicLessons.length})
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Các bài học lý thuyết học sinh sẽ học trước khi làm bài tập đánh giá
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleStartNewLesson}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Thêm bài học mới
+                    </button>
+                  </div>
+
+                  {loadingLessons ? (
+                    <div className="py-12 text-center">
+                      <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                      <p className="text-xs text-slate-400">Đang tải danh sách bài học...</p>
+                    </div>
+                  ) : topicLessons.length === 0 ? (
+                    <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      <BookOpen className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-700">Chưa có bài học nào trong chủ đề này</p>
+                      <p className="text-xs text-slate-400 mt-1 mb-4">
+                        Bấm nút bên dưới để tạo bài giảng lý thuyết đầu tiên
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleStartNewLesson}
+                        className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 cursor-pointer"
+                      >
+                        + Tạo bài giảng ngay
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {topicLessons.map((les, idx) => {
+                        const matchedQuiz = availableQuizzes.find((q) => q.id === les.quiz_id);
+                        return (
+                          <div
+                            key={les.id}
+                            className="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
+                          >
+                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                              <span className="w-6 h-6 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                                {idx + 1}
+                              </span>
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <h5 className="font-semibold text-sm text-slate-900 truncate">
+                                  {les.title}
+                                </h5>
+                                {les.description && (
+                                  <p className="text-xs text-slate-500 line-clamp-1">
+                                    {les.description}
+                                  </p>
+                                )}
+                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                  <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                    <Clock className="w-3 h-3 text-slate-400" />
+                                    {les.duration_minutes || 15} phút
+                                  </span>
+                                  {les.video_url && (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded font-medium">
+                                      <Video className="w-3 h-3 text-blue-500" /> Có video
+                                    </span>
+                                  )}
+                                  {les.quiz_id ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-medium">
+                                      <FileCheck2 className="w-3 h-3 text-emerald-600" /> Đề thi: {matchedQuiz?.title || 'Đã liên kết đề thi'}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[11px] text-slate-400 italic">
+                                      Chưa gắn đề thi
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0 self-end sm:self-center">
+                              <a
+                                href={`/lessons/${les.id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                                title="Xem bài giảng ở tab mới"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => handleStartEditLesson(les)}
+                                className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                                title="Chỉnh sửa bài học"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteLesson(les.id)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                                title="Xóa bài học"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* View: Create/Edit Lesson Form */
+                <form onSubmit={handleSaveLesson} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                      Tiêu đề bài giảng *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={lessonTitle}
+                      onChange={(e) => setLessonTitle(e.target.value)}
+                      placeholder="Nhập tiêu đề bài học (ví dụ: Quy tắc tính đạo hàm căn bản)..."
+                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                      Tóm tắt bài học (Mô tả ngắn)
+                    </label>
+                    <input
+                      type="text"
+                      value={lessonDesc}
+                      onChange={(e) => setLessonDesc(e.target.value)}
+                      placeholder="Mô tả mục tiêu đầu ra của bài học này..."
+                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                        Thời lượng học ước tính (phút)
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={180}
+                        value={lessonDuration}
+                        onChange={(e) => setLessonDuration(Number(e.target.value))}
+                        className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wider">
+                        Đường dẫn Video bài giảng (YouTube URL)
+                      </label>
+                      <input
+                        type="url"
+                        value={lessonVideo}
+                        onChange={(e) => setLessonVideo(e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Gắn Đề thi đánh giá (Quiz liên kết)
+                      </label>
+                      <span className="text-[11px] text-slate-400">Chọn hoặc hủy gắn đề thi</span>
+                    </div>
+                    <select
+                      value={lessonQuizId}
+                      onChange={(e) => setLessonQuizId(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    >
+                      <option value="">-- Không gắn đề thi đánh giá --</option>
+                      {availableQuizzes.map((q) => (
+                        <option key={q.id} value={q.id}>
+                          {q.title} ({q.difficulty} - {q.duration_minutes} phút - {q.question_count || 0} câu)
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Khi học sinh học xong lý thuyết, hệ thống sẽ đề xuất làm bài thi đánh giá được gắn ở đây.
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Nội dung bài giảng (Markdown & KaTeX Toán học) *
+                      </label>
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        $x^2$ hoặc $$y = f(x)$$
+                      </span>
+                    </div>
+                    <textarea
+                      rows={10}
+                      required
+                      value={lessonContent}
+                      onChange={(e) => setLessonContent(e.target.value)}
+                      placeholder="# Tiêu đề bài học&#10;&#10;Nội dung lý thuyết, công thức định lý..."
+                      className="w-full px-3 py-2 text-sm font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Hỗ trợ đầy đủ định dạng Markdown (đề mục, bảng biểu, danh sách) và KaTeX cho công thức toán học.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingLesson(false)}
+                      className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                    >
+                      Quay lại danh sách
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs cursor-pointer"
+                    >
+                      {editingLessonId ? 'Lưu thay đổi bài học' : 'Tạo bài học mới'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}

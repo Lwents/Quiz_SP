@@ -7,11 +7,13 @@ from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.models.quiz import Subject, Topic, Quiz
+from app.models.attempt import Attempt
 from app.models.user import User, UserRole
 from app.schemas.quiz import (
     SubjectCreate,
     SubjectResponse,
     TopicCreate,
+    TopicUpdate,
     TopicResponse,
     TopicReorderRequest
 )
@@ -32,16 +34,32 @@ async def create_subject(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.TEACHER, UserRole.ADMIN))
 ):
-    existing = await db.execute(select(Subject).where(Subject.code == subject_in.code.strip().upper()))
-    if existing.scalar_one_or_none():
+    code_clean = subject_in.code.strip().upper()
+    name_clean = subject_in.name.strip()
+    if not code_clean or not name_clean:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "SUBJECT_CODE_EXISTS", "message": "Mã môn học đã tồn tại"}}
+            detail={"error": {"code": "INVALID_INPUT", "message": "Tên và mã môn học không được để trống"}}
         )
+
+    existing_code = await db.execute(select(Subject).where(Subject.code == code_clean))
+    if existing_code.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "SUBJECT_CODE_EXISTS", "message": f"Mã môn học '{code_clean}' đã tồn tại"}}
+        )
+
+    existing_name = await db.execute(select(Subject).where(Subject.name == name_clean))
+    if existing_name.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "SUBJECT_NAME_EXISTS", "message": f"Tên môn học '{name_clean}' đã tồn tại"}}
+        )
+
     subject = Subject(
-        name=subject_in.name.strip(),
-        code=subject_in.code.strip().upper(),
-        description=subject_in.description
+        name=name_clean,
+        code=code_clean,
+        description=subject_in.description.strip() if subject_in.description else None
     )
     db.add(subject)
     await db.commit()
@@ -62,9 +80,36 @@ async def update_subject(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "SUBJECT_NOT_FOUND", "message": "Không tìm thấy môn học"}}
         )
-    subject.name = subject_in.name.strip()
-    subject.code = subject_in.code.strip().upper()
-    subject.description = subject_in.description
+
+    code_clean = subject_in.code.strip().upper()
+    name_clean = subject_in.name.strip()
+    if not code_clean or not name_clean:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "INVALID_INPUT", "message": "Tên và mã môn học không được để trống"}}
+        )
+
+    existing_code = await db.execute(
+        select(Subject).where(and_(Subject.code == code_clean, Subject.id != subject_id))
+    )
+    if existing_code.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "SUBJECT_CODE_EXISTS", "message": f"Mã môn học '{code_clean}' đã được dùng bởi môn học khác"}}
+        )
+
+    existing_name = await db.execute(
+        select(Subject).where(and_(Subject.name == name_clean, Subject.id != subject_id))
+    )
+    if existing_name.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "SUBJECT_NAME_EXISTS", "message": f"Tên môn học '{name_clean}' đã được dùng bởi môn học khác"}}
+        )
+
+    subject.name = name_clean
+    subject.code = code_clean
+    subject.description = subject_in.description.strip() if subject_in.description else None
     await db.commit()
     await db.refresh(subject)
     return subject
@@ -82,6 +127,25 @@ async def delete_subject(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "SUBJECT_NOT_FOUND", "message": "Không tìm thấy môn học"}}
         )
+
+    # Kiểm tra bảo vệ dữ liệu thi: nếu có bất kỳ Quiz nào thuộc Subject đã có Attempt thì chặn xóa cứng Subject
+    attempt_check = await db.execute(
+        select(func.count(Attempt.id))
+        .join(Quiz, Attempt.quiz_id == Quiz.id)
+        .where(Quiz.subject_id == subject_id)
+    )
+    attempt_count = attempt_check.scalar() or 0
+    if attempt_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": {
+                    "code": "SUBJECT_HAS_ATTEMPTS",
+                    "message": f"Không thể xóa môn học này vì các đề thi bên trong đã có {attempt_count} lượt làm bài của học sinh. Hãy lưu trữ (Archive) đề thi thay vì xóa môn."
+                }
+            }
+        )
+
     await db.delete(subject)
     await db.commit()
     return None
@@ -163,6 +227,42 @@ async def reorder_topics(
     return updated_result.scalars().all()
 
 
+@router.put("/{subject_id}/topics/{topic_id}", response_model=TopicResponse)
+@router.patch("/{subject_id}/topics/{topic_id}", response_model=TopicResponse)
+async def update_topic(
+    subject_id: uuid.UUID,
+    topic_id: uuid.UUID,
+    topic_in: TopicUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.TEACHER, UserRole.ADMIN))
+):
+    topic = await db.get(Topic, topic_id)
+    if not topic or topic.subject_id != subject_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": {"code": "TOPIC_NOT_FOUND", "message": "Chủ đề không tồn tại"}}
+        )
+
+    if topic_in.name is not None:
+        trimmed_name = topic_in.name.strip()
+        if not trimmed_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "INVALID_NAME", "message": "Tên chủ đề không được để trống"}}
+            )
+        topic.name = trimmed_name
+
+    if topic_in.description is not None:
+        topic.description = topic_in.description.strip() if topic_in.description else None
+
+    if topic_in.order is not None:
+        topic.order = topic_in.order
+
+    await db.commit()
+    await db.refresh(topic)
+    return topic
+
+
 @router.delete("/{subject_id}/topics/{topic_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_topic(
     subject_id: uuid.UUID,
@@ -176,6 +276,25 @@ async def delete_topic(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "TOPIC_NOT_FOUND", "message": "Chủ đề không tồn tại"}}
         )
+
+    # Kiểm tra bảo vệ dữ liệu: nếu có đề thi thuộc topic này đã có lượt làm bài thì chặn xóa cứng topic
+    attempt_check = await db.execute(
+        select(func.count(Attempt.id))
+        .join(Quiz, Attempt.quiz_id == Quiz.id)
+        .where(Quiz.topic_id == topic_id)
+    )
+    attempt_count = attempt_check.scalar() or 0
+    if attempt_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": {
+                    "code": "TOPIC_HAS_ATTEMPTS",
+                    "message": f"Không thể xóa chủ đề này vì các đề thi bên trong đã có {attempt_count} lượt làm bài của học sinh. Hãy lưu trữ (Archive) đề thi trước."
+                }
+            }
+        )
+
     await db.delete(topic)
     await db.commit()
     return None

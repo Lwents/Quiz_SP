@@ -14,10 +14,11 @@ export const QuizEditorPage: React.FC = () => {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [subjectId, setSubjectId] = useState<string>(searchParams.get('subject_id') || '');
+  const [subjectId, setSubjectId] = useState<string>(searchParams.get('subject_id') || searchParams.get('subject') || '');
   const [topicId, setTopicId] = useState<string>('');
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [passScore, setPassScore] = useState(5.0);
+  const [maxAttempts, setMaxAttempts] = useState(0);
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('MEDIUM');
   const [status, setStatus] = useState<QuizStatus>('DRAFT');
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
@@ -86,6 +87,7 @@ export const QuizEditorPage: React.FC = () => {
       }
       setDurationMinutes(data.duration_minutes);
       setPassScore(data.pass_score);
+      setMaxAttempts(data.max_attempts || 0);
       setDifficulty(data.difficulty);
       setStatus(data.status);
       setShuffleQuestions(data.shuffle_questions);
@@ -115,6 +117,7 @@ export const QuizEditorPage: React.FC = () => {
         topic_id: topicId || null,
         duration_minutes: Number(durationMinutes),
         pass_score: Number(passScore),
+        max_attempts: Number(maxAttempts),
         difficulty,
         status,
         shuffle_questions: shuffleQuestions,
@@ -149,9 +152,8 @@ export const QuizEditorPage: React.FC = () => {
         const res = await apiClient.patch(`/questions/${editingQuestion.id}`, qData);
         setQuestions((prev) => prev.map((q) => (q.id === editingQuestion.id ? res.data : q)));
       } else {
-        // Create new question & link to quiz
-        const res = await apiClient.post('/questions', qData);
-        await apiClient.post(`/quizzes/${id}/questions/${res.data.id}`);
+        // Create new question & link to quiz atomically via backend endpoint
+        const res = await apiClient.post(`/quizzes/${id}/questions`, qData);
         setQuestions((prev) => [...prev, res.data]);
       }
       setEditingQuestion(null);
@@ -178,9 +180,12 @@ export const QuizEditorPage: React.FC = () => {
     setQuestions(reordered);
 
     try {
-      await apiClient.put(`/quizzes/${id}/questions/reorder`, reordered.map((q) => q.id));
-    } catch (err) {
+      await apiClient.put(`/quizzes/${id}/questions/reorder`, {
+        question_ids: reordered.map((q) => q.id),
+      });
+    } catch (err: any) {
       console.error('Failed to sync reorder:', err);
+      toast.error(err.response?.data?.detail?.error?.message || 'Không thể cập nhật thứ tự câu hỏi');
     }
   };
 
@@ -358,6 +363,20 @@ export const QuizEditorPage: React.FC = () => {
               <option value="MEDIUM">Trung bình (Medium)</option>
               <option value="HARD">Nâng cao (Hard)</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">
+              Số lần làm bài tối đa (Max attempts)
+            </label>
+            <input
+              type="number"
+              min={0}
+              value={maxAttempts}
+              onChange={(e) => setMaxAttempts(Number(e.target.value))}
+              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            />
+            <span className="text-xs text-slate-400 mt-1 block">0 = Không giới hạn số lần làm</span>
           </div>
 
           <div>

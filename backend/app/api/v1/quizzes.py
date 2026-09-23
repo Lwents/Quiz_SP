@@ -8,7 +8,8 @@ from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.models.quiz import Quiz, QuizStatus, DifficultyLevel, Subject, Topic
-from app.models.question import Question, QuizQuestion
+from app.models.question import Question, QuizQuestion, QuestionType
+from app.models.attempt import Attempt, AttemptAnswer, AttemptStatus
 from app.models.user import User, UserRole
 from app.schemas.quiz import (
     QuizCreate,
@@ -17,9 +18,10 @@ from app.schemas.quiz import (
     QuizStudentDetailResponse,
     QuizTeacherDetailResponse,
     SubjectResponse,
-    TopicResponse
+    TopicResponse,
+    QuizQuestionReorderRequest
 )
-from app.schemas.question import QuestionStudentResponse, QuestionTeacherResponse
+from app.schemas.question import QuestionStudentResponse, QuestionTeacherResponse, QuestionCreate
 from app.api.deps import get_current_user, get_optional_current_user, require_role
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
@@ -95,12 +97,132 @@ async def list_quizzes(
     return response
 
 
+async def validate_quiz_settings(
+    title: Optional[str],
+    subject_id: Optional[uuid.UUID],
+    topic_id: Optional[uuid.UUID],
+    duration_minutes: Optional[int],
+    pass_score: Optional[float],
+    max_attempts: Optional[int],
+    status_val: Optional[QuizStatus],
+    db: AsyncSession,
+    quiz_id: Optional[uuid.UUID] = None
+):
+    if title is not None and not title.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "INVALID_TITLE", "message": "Tiêu đề đề thi không được để trống"}}
+        )
+
+    if duration_minutes is not None and duration_minutes < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "INVALID_DURATION", "message": "Thời gian làm bài không được là số âm"}}
+        )
+
+    if pass_score is not None and (pass_score < 0.0 or pass_score > 10.0):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "INVALID_PASS_SCORE", "message": "Điểm đạt phải nằm trong khoảng từ 0.0 đến 10.0"}}
+        )
+
+    if max_attempts is not None and max_attempts < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "INVALID_MAX_ATTEMPTS", "message": "Số lần làm bài tối đa không được là số âm"}}
+        )
+
+    if subject_id:
+        subj = await db.get(Subject, subject_id)
+        if not subj:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "SUBJECT_NOT_FOUND", "message": "Môn học không tồn tại"}}
+            )
+
+    if topic_id:
+        top = await db.get(Topic, topic_id)
+        if not top:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "TOPIC_NOT_FOUND", "message": "Chủ đề không tồn tại"}}
+            )
+        if subject_id and top.subject_id != subject_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "TOPIC_SUBJECT_MISMATCH", "message": "Chủ đề được chọn không thuộc môn học đã chọn"}}
+            )
+
+    # Chặn xuất bản đề thi nếu rỗng hoặc câu hỏi thiếu cấu hình
+    if status_val == QuizStatus.PUBLISHED and quiz_id:
+        qq_res = await db.execute(
+            select(QuizQuestion)
+            .where(QuizQuestion.quiz_id == quiz_id)
+            .options(selectinload(QuizQuestion.question))
+        )
+        qq_list = qq_res.scalars().all()
+        if not qq_list:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": {"code": "EMPTY_QUIZ_PUBLISH", "message": "Không thể xuất bản đề thi chưa có câu hỏi nào. Vui lòng thêm ít nhất một câu hỏi hợp lệ."}}
+            )
+        
+        # Kiểm tra tính hợp lệ của từng câu hỏi
+        for qq in qq_list:
+            q = qq.question
+            c = q.config or {}
+            if q.type == QuestionType.SINGLE_CHOICE and not c.get("correct"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"error": {"code": "INVALID_QUESTION_CONFIG", "message": f"Câu hỏi '{q.title or q.content[:30]}' loại trắc nghiệm đơn chưa chọn đáp án đúng."}}
+                )
+            elif q.type == QuestionType.MULTIPLE_CHOICE and not c.get("correct"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"error": {"code": "INVALID_QUESTION_CONFIG", "message": f"Câu hỏi '{q.title or q.content[:30]}' loại nhiều lựa chọn chưa có đáp án đúng."}}
+                )
+            elif q.type == QuestionType.FILL_BLANK and not c.get("accepted_answers"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"error": {"code": "INVALID_QUESTION_CONFIG", "message": f"Câu hỏi '{q.title or q.content[:30]}' loại điền từ chưa thiết lập từ khóa chấp nhận."}}
+                )
+            elif q.type == QuestionType.MATCHING and not c.get("pairs"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"error": {"code": "INVALID_QUESTION_CONFIG", "message": f"Câu hỏi '{q.title or q.content[:30]}' loại ghép nối chưa thiết lập cặp ghép."}}
+                )
+            elif q.type == QuestionType.ORDERING and not c.get("correct_order"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={"error": {"code": "INVALID_QUESTION_CONFIG", "message": f"Câu hỏi '{q.title or q.content[:30]}' loại sắp xếp chưa thiết lập thứ tự đúng."}}
+                )
+
+
 @router.post("", response_model=QuizTeacherDetailResponse, status_code=status.HTTP_201_CREATED)
 async def create_quiz(
     quiz_in: QuizCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.TEACHER, UserRole.ADMIN))
 ):
+    await validate_quiz_settings(
+        title=quiz_in.title,
+        subject_id=quiz_in.subject_id,
+        topic_id=quiz_in.topic_id,
+        duration_minutes=quiz_in.duration_minutes,
+        pass_score=quiz_in.pass_score,
+        max_attempts=quiz_in.max_attempts,
+        status_val=quiz_in.status,
+        db=db,
+        quiz_id=None
+    )
+
+    if quiz_in.status == QuizStatus.PUBLISHED:
+        # Đề mới tạo chưa có câu hỏi nào thì không được để status là PUBLISHED
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": {"code": "EMPTY_QUIZ_PUBLISH", "message": "Đề thi mới tạo chưa có câu hỏi nào, không thể để trạng thái PUBLISHED. Hãy lưu nháp (DRAFT) trước."}}
+        )
+
     base_slug = slugify(quiz_in.title)
     slug = base_slug
     counter = 1
@@ -266,9 +388,41 @@ async def update_quiz(
             detail={"error": {"code": "QUIZ_NOT_FOUND", "message": "Quiz not found"}}
         )
 
+    # Validate quiz settings
+    new_title = quiz_in.title if quiz_in.title is not None else quiz.title
+    new_subject_id = quiz_in.subject_id if quiz_in.subject_id is not None else quiz.subject_id
+    new_topic_id = quiz_in.topic_id if quiz_in.topic_id is not None else quiz.topic_id
+    new_duration = quiz_in.duration_minutes if quiz_in.duration_minutes is not None else quiz.duration_minutes
+    new_pass_score = quiz_in.pass_score if quiz_in.pass_score is not None else quiz.pass_score
+    new_max_attempts = quiz_in.max_attempts if quiz_in.max_attempts is not None else quiz.max_attempts
+    new_status = quiz_in.status if quiz_in.status is not None else quiz.status
+
+    await validate_quiz_settings(
+        title=new_title,
+        subject_id=new_subject_id,
+        topic_id=new_topic_id,
+        duration_minutes=new_duration,
+        pass_score=new_pass_score,
+        max_attempts=new_max_attempts,
+        status_val=new_status,
+        db=db,
+        quiz_id=quiz.id
+    )
+
     update_data = quiz_in.model_dump(exclude_unset=True)
     if "title" in update_data and not update_data.get("slug"):
-        update_data["slug"] = slugify(update_data["title"])
+        base_slug = slugify(update_data["title"])
+        slug = base_slug
+        counter = 1
+        while True:
+            existing = await db.execute(
+                select(Quiz).where(and_(Quiz.slug == slug, Quiz.id != quiz_id))
+            )
+            if not existing.scalar_one_or_none():
+                break
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        update_data["slug"] = slug
 
     for field, val in update_data.items():
         setattr(quiz, field, val)
@@ -290,9 +444,83 @@ async def delete_quiz(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "QUIZ_NOT_FOUND", "message": "Quiz not found"}}
         )
+
+    # Bảo vệ dữ liệu lịch sử thi: chặn xóa cứng nếu bài thi đã có sinh viên làm bài
+    att_res = await db.execute(
+        select(func.count(Attempt.id)).where(Attempt.quiz_id == quiz_id)
+    )
+    attempt_count = att_res.scalar() or 0
+    if attempt_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": {
+                    "code": "QUIZ_HAS_ATTEMPTS",
+                    "message": f"Bài thi này đã có {attempt_count} lượt làm bài của học sinh. Để bảo vệ kết quả và lịch sử học tập, không thể xóa cứng bài thi. Vui lòng chuyển trạng thái sang 'Lưu trữ' (ARCHIVED)."
+                }
+            }
+        )
+
     await db.delete(quiz)
     await db.commit()
     return None
+
+
+@router.post("/{quiz_id}/questions", response_model=QuestionTeacherResponse, status_code=status.HTTP_201_CREATED)
+async def create_and_attach_question(
+    quiz_id: uuid.UUID,
+    q_in: QuestionCreate,
+    order: Optional[int] = None,
+    points_override: Optional[float] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.TEACHER, UserRole.ADMIN))
+):
+    """
+    Thực hiện TẠO câu hỏi và GẮN vào đề thi trong cùng một transaction nguyên tử (atomic),
+    tránh để lại câu hỏi mồ côi nếu bước gắn vào đề thi xảy ra lỗi.
+    """
+    quiz = await db.get(Quiz, quiz_id)
+    if not quiz:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": {"code": "QUIZ_NOT_FOUND", "message": "Không tìm thấy bài thi"}}
+        )
+
+    question = Question(
+        **q_in.model_dump(),
+        created_by=current_user.id
+    )
+    db.add(question)
+    await db.flush()  # Nhận question.id nhưng chưa commit
+
+    if order is None:
+        max_order_res = await db.execute(
+            select(func.coalesce(func.max(QuizQuestion.order), -1)).where(QuizQuestion.quiz_id == quiz_id)
+        )
+        order = max_order_res.scalar() + 1
+
+    qq = QuizQuestion(
+        quiz_id=quiz.id,
+        question_id=question.id,
+        order=order,
+        points_override=points_override
+    )
+    db.add(qq)
+    await db.commit()
+    await db.refresh(question)
+
+    return QuestionTeacherResponse(
+        id=question.id,
+        type=question.type,
+        title=question.title,
+        content=question.content,
+        points=points_override if points_override is not None else question.points,
+        difficulty=question.difficulty,
+        config=question.config or {},
+        explanation=question.explanation,
+        created_by=question.created_by,
+        order=order
+    )
 
 
 @router.post("/{quiz_id}/questions/{question_id}", status_code=status.HTTP_200_OK)
@@ -345,6 +573,24 @@ async def remove_question_from_quiz(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.TEACHER, UserRole.ADMIN))
 ):
+    # Bảo vệ dữ liệu thi: nếu đề thi đã có sinh viên làm bài thì không được gỡ câu hỏi
+    att_res = await db.execute(
+        select(func.count(Attempt.id)).where(
+            and_(Attempt.quiz_id == quiz_id, Attempt.status.in_([AttemptStatus.SUBMITTED, AttemptStatus.GRADED]))
+        )
+    )
+    attempt_count = att_res.scalar() or 0
+    if attempt_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": {
+                    "code": "QUIZ_HAS_ATTEMPTS",
+                    "message": f"Bài thi này đã có {attempt_count} lượt làm bài của học sinh. Để bảo vệ tính nhất quán của kết quả và xem lại bài thi, không thể gỡ câu hỏi khỏi đề thi."
+                }
+            }
+        )
+
     result = await db.execute(
         select(QuizQuestion).where(
             and_(QuizQuestion.quiz_id == quiz_id, QuizQuestion.question_id == question_id)
@@ -360,10 +606,29 @@ async def remove_question_from_quiz(
 @router.put("/{quiz_id}/questions/reorder", status_code=status.HTTP_200_OK)
 async def reorder_quiz_questions(
     quiz_id: uuid.UUID,
-    question_ids: List[uuid.UUID],
+    reorder_in: QuizQuestionReorderRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.TEACHER, UserRole.ADMIN))
 ):
+    # Bảo vệ thứ tự hiển thị của các bài thi đã có kết quả
+    att_res = await db.execute(
+        select(func.count(Attempt.id)).where(
+            and_(Attempt.quiz_id == quiz_id, Attempt.status.in_([AttemptStatus.SUBMITTED, AttemptStatus.GRADED]))
+        )
+    )
+    attempt_count = att_res.scalar() or 0
+    if attempt_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": {
+                    "code": "QUIZ_HAS_ATTEMPTS",
+                    "message": f"Bài thi này đã có {attempt_count} bài nộp của học sinh, không thể thay đổi thứ tự câu hỏi."
+                }
+            }
+        )
+
+    question_ids = reorder_in.question_ids
     for idx, q_id in enumerate(question_ids):
         result = await db.execute(
             select(QuizQuestion).where(

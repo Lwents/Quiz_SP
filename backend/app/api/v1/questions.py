@@ -104,6 +104,25 @@ async def delete_question(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "QUESTION_NOT_FOUND", "message": "Question not found"}}
         )
+
+    # Bảo vệ dữ liệu lịch sử thi: nếu câu hỏi này đã có trong lượt làm bài của học sinh thì không được xóa
+    from app.models.attempt import AttemptAnswer
+    from sqlalchemy import func
+    ans_res = await db.execute(
+        select(func.count(AttemptAnswer.id)).where(AttemptAnswer.question_id == question_id)
+    )
+    ans_count = ans_res.scalar() or 0
+    if ans_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": {
+                    "code": "QUESTION_HAS_ATTEMPTS",
+                    "message": f"Câu hỏi này đã được ghi nhận trong {ans_count} bài làm của học sinh. Không thể xóa để đảm bảo tính toàn vẹn của lịch sử và kết quả thi."
+                }
+            }
+        )
+
     await db.delete(question)
     await db.commit()
     return None
