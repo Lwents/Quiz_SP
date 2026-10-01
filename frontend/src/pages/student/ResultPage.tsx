@@ -6,6 +6,7 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { apiClient } from '../../api/client';
 import { AttemptResult } from '../../types';
+import { QuestionContent } from '../../components/QuestionContent';
 import {
   CheckCircle2,
   XCircle,
@@ -698,7 +699,11 @@ export const ResultPage: React.FC = () => {
                   </div>
 
                   {/* Question Content */}
-                  <div className="text-base font-medium text-slate-900 mb-4">{rev.question.content}</div>
+                  <QuestionContent
+                    content={rev.question.content}
+                    imageUrl={rev.question.config?.image_url}
+                    className="text-base font-medium text-slate-900 mb-4"
+                  />
 
                   {/* User Answer vs Correct Answer Summary */}
                   <AnswerReviewSummary rev={rev} isCorrect={isCorrect} />

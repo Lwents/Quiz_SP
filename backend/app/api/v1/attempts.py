@@ -234,6 +234,15 @@ async def start_quiz_attempt(
         sanitized_config = dict(q.config or {})
         sanitized_config.pop("correct", None)
         sanitized_config.pop("accepted_answers", None)
+
+        # Do not expose the correct order, but always provide the items the
+        # student must arrange. This also supports legacy questions that only
+        # persisted `correct_order`.
+        if q.type == "ordering":
+            sanitized_config["items"] = list(
+                sanitized_config.get("items")
+                or (q.config or {}).get("correct_order", [])
+            )
         sanitized_config.pop("correct_order", None)
 
         q_rng = random.Random(f"{attempt.id}_{q.id}")

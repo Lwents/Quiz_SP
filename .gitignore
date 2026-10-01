@@ -10,6 +10,7 @@ venv/
 node_modules/
 dist/
 .output/
+*.tsbuildinfo
 
 # Environment and Secrets (CRITICAL - DO NOT COMMIT)
 .env

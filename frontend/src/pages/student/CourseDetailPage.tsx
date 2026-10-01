@@ -258,6 +258,16 @@ export const CourseDetailPage: React.FC = () => {
                 <FileCheck2 className="w-4 h-4 text-blue-400" />
                 <span>Luyện đề trắc nghiệm</span>
               </Link>
+              {curriculum.subject_code === 'COMP303' && (
+                <Link
+                  to={`/network-lab?subject=${curriculum.subject_id}`}
+                  onClick={() => { if (!document.fullscreenElement) void document.documentElement.requestFullscreen().catch(() => {}); }}
+                  className="py-3 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-xl transition flex items-center gap-2 cursor-pointer"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  <span>Phòng thực hành RouterSim</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

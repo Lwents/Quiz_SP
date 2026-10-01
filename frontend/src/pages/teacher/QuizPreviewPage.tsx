@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { BaseQuestion } from '../../types';
 import { getQuestionRenderer } from '../../features/question/question-registry';
+import { QuestionContent } from '../../components/QuestionContent';
 import { useAuthStore } from '../../stores/authStore';
 import {
   ArrowLeft,
@@ -167,7 +168,7 @@ export const QuizPreviewPage: React.FC = () => {
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{showAnswer ? 'Ẩn đáp án chuẩn' : 'Hiện đáp án chuẩn'}</span>
+              <span>{showAnswer ? 'Ẩn thông tin đáp án' : 'Hiện thông tin đáp án'}</span>
             </button>
             <button
               type="button"
@@ -203,9 +204,11 @@ export const QuizPreviewPage: React.FC = () => {
               </div>
 
               {/* Question Content */}
-              <div className="text-base sm:text-lg font-semibold text-slate-900 leading-relaxed whitespace-pre-wrap">
-                {currentQ.content}
-              </div>
+              <QuestionContent
+                content={currentQ.content}
+                imageUrl={currentQ.config?.image_url}
+                className="text-base sm:text-lg font-semibold text-slate-900 leading-relaxed"
+              />
 
               {/* Interactive Renderer (Test interaction in sandbox) */}
               <div className="pt-2">
@@ -228,9 +231,12 @@ export const QuizPreviewPage: React.FC = () => {
                 <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm text-emerald-950 space-y-2 animate-in fade-in duration-150">
                   <div className="font-bold flex items-center gap-1.5 text-emerald-800 uppercase tracking-wide text-xs">
                     <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    Đáp án chuẩn & Lời giải (Chỉ Admin/Teacher thấy):
+                    Thông tin đáp án (chỉ Admin/Teacher thấy):
                   </div>
                   <div className="font-mono bg-white p-2.5 rounded-lg border border-emerald-200 text-slate-800 break-words">
+                    {currentQ.config?.import_review_only && (
+                      <div><strong>Đối chiếu:</strong> {currentQ.config?.answer_reference || 'Chưa có đáp án xác minh.'}</div>
+                    )}
                     {currentQ.config?.correct !== undefined && (
                       <div><strong>Đáp án (correct):</strong> {JSON.stringify(currentQ.config.correct)}</div>
                     )}

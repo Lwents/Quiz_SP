@@ -1,0 +1,2495 @@
+[
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 2,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 62",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 87"
+    ],
+    "content": "Những tín hiệu hoặc ứng dụng nào sau đây không sử dụng sóng vô tuyến tần số thấp, dưới 30 MHz?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tín hiệu được phản xạ bởi tầng điện ly để vượt khoảng cách hàng ngàn km"
+      },
+      {
+        "id": "B",
+        "text": "Truyền tín hiệu vì mục đích cấp cứu, tìm kiếm cứu nạn trên biển"
+      },
+      {
+        "id": "C",
+        "text": "Tín hiệu phát đi từ hộp đen máy bay"
+      },
+      {
+        "id": "D",
+        "text": "Hệ thống mạng 4G"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 3,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 10"
+    ],
+    "content": "Đâu không phải là mặt trái hay nhược điểm của mạng không dây?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Băng thông rộng như cáp quang"
+      },
+      {
+        "id": "B",
+        "text": "Dễ dàng bị nhiễu sóng từ xa"
+      },
+      {
+        "id": "C",
+        "text": "Dễ dàng bị thu trộm từ xa"
+      },
+      {
+        "id": "D",
+        "text": "Dễ dàng bị can thiệp từ xa"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 4,
+    "also_in": [
+      "Mạng máy tính nâng cao.docx: câu 51",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 31",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 95"
+    ],
+    "content": "Mô tả nào về cơ chế thực hiện của giao thức CSMA/CA là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tương tự như giao thức CSMA/CD của mạng hữu tuyến, CSMA/CA yêu cầu trạm phát phải \"lắng nghe để phát hiện sóng mang trước khi phát tin\""
+      },
+      {
+        "id": "B",
+        "text": "Là giao thức giải quyết vấn đề truy cập đường truyền trong mạng Wifi"
+      },
+      {
+        "id": "C",
+        "text": "Làm việc với họ chuẩn 802.11"
+      },
+      {
+        "id": "D",
+        "text": "Sau khi nhận được gói tin và kiểm tra checksum thấy lỗi, trạm thu sẽ gửi lại ACK cho trạm phát"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 6,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 51"
+    ],
+    "content": "Hình sau mô tả vấn đề nào của môi trường truyền không dây?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Roaming"
+      },
+      {
+        "id": "B",
+        "text": "Vấn đề khi thực hiện Site survey"
+      },
+      {
+        "id": "C",
+        "text": "Hidden station problem"
+      },
+      {
+        "id": "D",
+        "text": "Exposed station problem"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [
+      "network_a_006_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 7,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 72"
+    ],
+    "content": "Mô tả nào về dải tần số ISM là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Thiết bị sử dụng tần số ISM phải chấp nhận có thể bị nhiễu bởi nhiều thiết bị khác được cơ quan quản lý cho phép hoạt động."
+      },
+      {
+        "id": "B",
+        "text": "Ví dụ về thiết bị sử dụng dải tần ISM là mạng Wifi."
+      },
+      {
+        "id": "C",
+        "text": "Được sử dụng cho các hệ thống thông tin tầm xa."
+      },
+      {
+        "id": "D",
+        "text": "Ví dụ về thiết bị sử dụng dải tần ISM là các thiết bị thuộc chuẩn 802.11."
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 8,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 100"
+    ],
+    "content": "Mô tả nào về dải tần số ISM là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Viết tắt của Industrial - Scientific - Medical. Công nghiệp- Khoa học - Y tế"
+      },
+      {
+        "id": "B",
+        "text": "Được sử dụng cho các hệ thống thông tin tầm ngắn"
+      },
+      {
+        "id": "C",
+        "text": "Viết tắt của Information Scientific Media"
+      },
+      {
+        "id": "D",
+        "text": "Người sử dụng không phải xin giấy phép sử dụng tần số do Cục tần số vô tuyến điện cấp"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 10,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 1"
+    ],
+    "content": "Mệnh đề nào mô tả sai về họ chuẩn 802.11?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Chuẩn 802.11g là sự kết hợp các thông số kỹ thuật của hai chuẩn a và b trước đó"
+      },
+      {
+        "id": "B",
+        "text": "Chuẩn 802.11n không tương thích với chuẩn 802.11g trước đó"
+      },
+      {
+        "id": "C",
+        "text": "Tần số 5 GHz ít bị can nhiễu bởi các thiết bị điện tử gia dụng"
+      },
+      {
+        "id": "D",
+        "text": "Tín hiệu Infrared dễ bị chặn bởi các vật cản"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 11,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 59"
+    ],
+    "content": "Ứng dụng Bluezone cảnh báo COVID-19 trên điện thoại sử dụng môi trường truyền Bluetooth vì...",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Nguyên tắc của Bluezone là bảo mật, ẩn danh và minh bạch. Chỉ cơ quan y tế có thẩm quyền mới biết những người nhiễm và người nghi nhiễm do tiếp xúc gần với người nhiễm COVID-19"
+      },
+      {
+        "id": "B",
+        "text": "Nếu phát hiện ra một người nhiễm bệnh COVID-19 (F0), dữ liệu của người nhiễm bệnh đó sẽ được Cơ quan Y tế nhập lên hệ thống, từ đó chuyển xuống tất cả các thiết bị"
+      },
+      {
+        "id": "C",
+        "text": "Khoảng cách truyền phù hợp với khoảng cách cảnh báo tiếp xúc gần của bệnh COVID-19"
+      },
+      {
+        "id": "D",
+        "text": "Ứng dụng Bluezone trên máy sẽ so sánh dữ liệu của F0 với lịch sử tiếp xúc được ghi nhận từ trước. Nếu phát hiện đã từng tiếp xúc với F0 trong thời gian đủ dài, hệ thống sẽ bảo cho người sử dụng về nguy cơ có thể lây nhiễm bệnh (F1)"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 12,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 27"
+    ],
+    "content": "Những trường hợp thực tế nào không phù hợp để áp dụng môi trường truyền Bluetooth?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Gửi các mẫu quảng cáo nhỏ từ các pa-nô quảng cáo tới các thiết bị cầm tay của người qua đường"
+      },
+      {
+        "id": "B",
+        "text": "Cung cấp Internet làm việc hàng ngày cho Desktop PC"
+      },
+      {
+        "id": "C",
+        "text": "Giao tiếp giữa các thiết bị đo, thiết bị định vị dùng GPS, thiết bị y tế, máy quét mã vạch, và các thiết bị điều khiển giao thông"
+      },
+      {
+        "id": "D",
+        "text": "Kết nối với các thiết bị điều khiển từ xa dành cho thiết bị điện tử gia dụng, ví dụ như thiết bị điều khiển từ xa của tivi"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 13,
+    "also_in": [
+      "Mạng máy tính nâng cao.docx: câu 29",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 45",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 58"
+    ],
+    "content": "Mô tả nào về cơ chế thực hiện của giao thức CSMA/CA là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Là giao thức giải quyết vấn đề truy cập đường truyền trong các mạng không dây cự ly ngắn như mạng Wi-Fi"
+      },
+      {
+        "id": "B",
+        "text": "Là giao thức truy cập đường truyền, cùng hoạt động ở tầng con MAC như giao thức ALOHA"
+      },
+      {
+        "id": "C",
+        "text": "Là giao thức giải quyết vấn đề truy cập đường truyền ở tầng con MAC"
+      },
+      {
+        "id": "D",
+        "text": "Sau khi lắng nghe và thấy đường truyền đang rảnh, trạm phát sẽ áp dụng chiến thuật p-persistent và phát ngay gói tin với xác suất là p"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 14,
+    "also_in": [
+      "Mạng máy tính nâng cao.docx: câu 31",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 25",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 78"
+    ],
+    "content": "Access Point 1 trong hình hoạt động ở chế độ nào?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Access Point mode"
+      },
+      {
+        "id": "B",
+        "text": "Repeater mode"
+      },
+      {
+        "id": "C",
+        "text": "Bridge mode"
+      },
+      {
+        "id": "D",
+        "text": "Root mode"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [
+      "network_a_014_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 15,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 19"
+    ],
+    "content": "Mệnh đề nào mô tả sai về họ chuẩn 802.11?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Công nghệ MIMO dùng nhiều ăng-ten thu phát giúp vùng phủ sóng rộng hơn, khắc phục các vật cản"
+      },
+      {
+        "id": "B",
+        "text": "Tần số 5 GHz thường bị can nhiễu bởi các thiết bị điện tử gia dụng"
+      },
+      {
+        "id": "C",
+        "text": "Chuẩn 802.11g là sự kết hợp các thông số kỹ thuật của hai chuẩn a và b trước đó"
+      },
+      {
+        "id": "D",
+        "text": "Công nghệ MIMO dùng nhiều ăng-ten thu phát làm tăng tính ổn định của đường truyền, giúp khả năng chịu nhiễu tốt hơn"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 16,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 6"
+    ],
+    "content": "Mệnh đề nào mô tả sai về vấn đề trạm lộ?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Trong khi C đang phát tới D thì B bắt đầu muốn truyền cho A."
+      },
+      {
+        "id": "B",
+        "text": "Sóng vô tuyến của B không cản trở việc thu tín hiệu của D."
+      },
+      {
+        "id": "C",
+        "text": "Vì hiểu nhầm là đường truyền bận nên C không phát tín hiệu tới D."
+      },
+      {
+        "id": "D",
+        "text": "Việc B truyền tin cho A không ảnh hưởng tới việc C phát tin cho D."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [
+      "network_a_016_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 17,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 49"
+    ],
+    "content": "Mệnh đề nào mô tả sai về họ chuẩn 802.11?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Chuẩn 802.11g ra đời sau chuẩn 802.11n và có tốc độ truyền cao hơn"
+      },
+      {
+        "id": "B",
+        "text": "Tần số 5 GHz ít bị can nhiễu bởi các thiết bị điện tử gia dụng"
+      },
+      {
+        "id": "C",
+        "text": "Tín hiệu infrared dễ bị chặn bởi các vật cản"
+      },
+      {
+        "id": "D",
+        "text": "Chuẩn 802.11g là sự kết hợp các thông số kỹ thuật của hai chuẩn a và b trước đó"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 18,
+    "also_in": [],
+    "content": "Những trường hợp thực tế nào không phù hợp để áp dụng môi trường truyền Bluetooth?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Mạng không dây trong một không gian hẹp, cô lập, chỉ truyền nội dung text"
+      },
+      {
+        "id": "B",
+        "text": "Giao tiếp giữa PC với các thiết bị I/O của nó như chuột, bàn phím và máy in"
+      },
+      {
+        "id": "C",
+        "text": "Giao tiếp giữa điện thoại di động và tai nghe không dây"
+      },
+      {
+        "id": "D",
+        "text": "Cung cấp Internet cho người dùng trên các phương tiện giao công"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 19,
+    "also_in": [
+      "Mạng máy tính nâng cao.docx: câu 39",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 66",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 74"
+    ],
+    "content": "Mô tả nào về tên gọi, chức năng và hoạt động của Access Point là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Hoạt động ở chế độ song công (full-duplex) như switch"
+      },
+      {
+        "id": "B",
+        "text": "Trong khi các chuẩn Wifi tiên tiến như 802.11 ac, 802.11ax không ngừng cải thiện tốc độ truyền dữ liệu thì phạm vi vùng phủ sóng lại hầu như không thay đổi, chỉ vào khoảng 100 foot xung quanh Access Point"
+      },
+      {
+        "id": "C",
+        "text": "Mục đích của việc Site survey là khảo sát, tìm vị trí tối ưu để lắp đặt các Access Point sao cho chất lượng phủ sóng là tối ưu"
+      },
+      {
+        "id": "D",
+        "text": "Tủ tài liệu lớn bằng kim loại, những thiết bị điện gia dụng như lò vi sóng, tivi, thiết bị điều khiển từ xa đều là những vật cản hoặc gây nhiều nhiễu cho tín hiệu Wifi"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 20,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 8"
+    ],
+    "content": "Sau khi lắp đặt mạng không dây ở trường hợp trong hình, cáp mạng sẽ được sử dụng ở đâu?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Không ở đâu cả"
+      },
+      {
+        "id": "B",
+        "text": "Cáp mạng sẽ được dùng kết nối H1 với H2"
+      },
+      {
+        "id": "C",
+        "text": "Cáp mạng sẽ được dùng để kết nối H1 với các tòa nhà còn lại, trừ nhà A"
+      },
+      {
+        "id": "D",
+        "text": "Trong nội bộ các tòa nhà"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [
+      "network_a_020_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 21,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 4"
+    ],
+    "content": "Mô tả nào về công nghệ truyền Beamforming là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Công nghệ truyền Beamforming truyền dữ liệu với tốc độ không đổi, không phụ thuộc vào khoảng cách tới trạm thu."
+      },
+      {
+        "id": "B",
+        "text": "Công nghệ truyền Beamforming được triển khai bắt đầu từ chuẩn 802.11ac."
+      },
+      {
+        "id": "C",
+        "text": "Mục đích của beamforming là giảm nhiễu và hỗ trợ công nghệ truyền đa luồng MU-MIMO."
+      },
+      {
+        "id": "D",
+        "text": "Với Beamforming trạm thu phát (Access Point) có thể bám theo hướng của trạm thu khi nó di chuyển."
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 22,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 35"
+    ],
+    "content": "Mệnh đề nào mô tả sai về vấn đề trạm ẩn?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "A và C vẫn tiếp tục truyền mà không biết rằng tín hiệu của chúng bị xung đột"
+      },
+      {
+        "id": "B",
+        "text": "Khi thấy tín hiệu phát đi bị xung đột, A sẽ dừng lại không phát tiếp nữa và chờ một khoảng thời gian ngẫu nhiên"
+      },
+      {
+        "id": "C",
+        "text": "A và C vẫn tiếp tục truyền mà không biết rằng B không thể thu được tín hiệu của chúng"
+      },
+      {
+        "id": "D",
+        "text": "Hai trạm A và C bị ẩn lẫn nhau"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [
+      "network_a_022_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 23,
+    "also_in": [],
+    "content": "Mô tả nào về việc quản lý và sử dụng tần số vô tuyến là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Việc lắp đặt các hệ thống vệ tinh luôn phải có giấy phép sử dụng vì tần số nằm trong miền tần số được quản lý"
+      },
+      {
+        "id": "B",
+        "text": "Dù đã trả tiền thuê trước đầy đủ nhưng nếu không sử dụng hoặc sử dụng không đúng mục đích đã đăng ký thì nhà cung cấp dịch vụ mạng vẫn sẽ bị thu hồi giấy phép sử dụng tần số vô tuyến"
+      },
+      {
+        "id": "C",
+        "text": "Tần số vô tuyến cũng là một tài nguyên quốc gia. Giấy phép sử dụng một tần số vô tuyến do Cục tần số vô tuyến điện cấp ghi rõ phạm vi địa lý được phép sử dụng và thời gian sử dụng"
+      },
+      {
+        "id": "D",
+        "text": "Bất kỳ ai cũng có thể mua và sử dụng những thiết bị thu phát sóng vô tuyến hoạt động ngoài dải tần số ISM mà không cần làm thủ tục đăng ký sử dụng"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 25,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 88"
+    ],
+    "content": "Mô tả nào về dải tần số ISM là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ví dụ về thiết bị sử dụng dải tần ISM là điện thoại cố định không dây sử dụng trong phạm vi gia đình"
+      },
+      {
+        "id": "B",
+        "text": "Ví dụ về thiết bị sử dụng dải tần ISM là mạng Wi-Fi"
+      },
+      {
+        "id": "C",
+        "text": "Thiết bị sử dụng tần số ISM phải chấp nhận có thể bị nhiễu từ nhiều thiết bị được cơ quan quản lý cho phép hoạt động"
+      },
+      {
+        "id": "D",
+        "text": "Thiết bị sử dụng tần số ISM có quyền khởi kiện nếu bị nhiễu từ những thiết bị khác"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 26,
+    "also_in": [
+      "Mạng máy tính nâng cao.docx: câu 49",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 3",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 15"
+    ],
+    "content": "Mô tả nào về những vấn đề của môi trường truyền không dây là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Để có thể roaming, các máy trạm phải sử dụng cùng một địa chỉ mạng con (subnet IP)"
+      },
+      {
+        "id": "B",
+        "text": "Đặt cấu hình AP để vùng phủ sóng hẹp sẽ khắc phục tình trạng thiếu cổng kết nối để phục vụ máy trạm, đồng thời làm tăng băng thông dành cho máy trạm"
+      },
+      {
+        "id": "C",
+        "text": "Vùng phủ sóng của AP càng lớn thì số lượng máy trạm kết nối vào càng nhiều, dẫn đến băng thông dành cho mỗi máy trạm càng nhiều"
+      },
+      {
+        "id": "D",
+        "text": "Khi các cell chồng lên nhau, các AP láng giềng không thể dùng cùng tần số nếu không sẽ gây nhiễu lẫn nhau"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 30,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 47"
+    ],
+    "content": "Mệnh đề nào mô tả sai về vấn đề trạm lộ?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Vùng phủ sóng của B không chứa D, vì vậy tín hiệu của B không thể gây ra xung đột tại D"
+      },
+      {
+        "id": "B",
+        "text": "Việc C phát tín cho D, nếu diễn ra, sẽ không ảnh hưởng tới việc B truyền cho A"
+      },
+      {
+        "id": "C",
+        "text": "Tín hiệu của B sẽ không gây ra xung đột tại D"
+      },
+      {
+        "id": "D",
+        "text": "Sóng vô tuyến từ B cản trở việc thu tín hiệu của D, khiến cho tín hiệu từ C bị xung đột"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [
+      "network_a_030_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 32,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 43"
+    ],
+    "content": "Mô tả nào về các giao thức bảo mật của Access Point là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cho tới nay WPA3 là giao thức bảo mật Wifi mới nhất và đang được áp dụng rộng rãi nhất"
+      },
+      {
+        "id": "B",
+        "text": "WPA là giao thức bảo mật được công bố để thay thế cho WEP"
+      },
+      {
+        "id": "C",
+        "text": "WEP là giao thức bảo mật WiFi được áp dụng sớm nhất"
+      },
+      {
+        "id": "D",
+        "text": "Cho tới nay WPA3 chưa bị phát hiện có lỗ hổng bảo mật nào"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 33,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 40"
+    ],
+    "content": "Mô tả nào về giải pháp kết nối không dây đã được áp dụng trong hình là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Là giải pháp hỗn hợp áp dụng cả kết nối hữu tuyến và vô tuyến. Vì vướng đường ô tô nên phải lắp thiết bị thu phát không dây EZ-Bridge LT2 cho tòa nhà A và H1, còn những tòa nhà còn lại (H2, B, C) được nối với tòa nhà chính H1 bằng cáp UTP Cat 5"
+      },
+      {
+        "id": "B",
+        "text": "Nhà H1 lắp hai loại thiết bị thu phát không dây: EZ-GO2 và EZ-Bridge LT2"
+      },
+      {
+        "id": "C",
+        "text": "Vì vướng đường ô tô nên phải lắp thiết bị thu phát không dây EZ-Bridge LT2 cho tòa nhà A và H1"
+      },
+      {
+        "id": "D",
+        "text": "Lắp thiết bị thu phát không dây EZ-GO2 cho các tòa nhà H2, B, C để kết nối với H1"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [
+      "network_a_033_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 35,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 90"
+    ],
+    "content": "Mệnh đề nào mô tả sai về họ chuẩn 802.11?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Công nghệ MIMO dùng nhiều ăng-ten thu phát giúp vùng phủ sóng rộng hơn, khắc phục các vật cản"
+      },
+      {
+        "id": "B",
+        "text": "Công nghệ MIMO dùng nhiều ăng-ten thu phát làm tăng tính ổn định của đường truyền, giúp khả năng chịu nhiễu tốt hơn"
+      },
+      {
+        "id": "C",
+        "text": "Chuẩn 802.11g là sự kết hợp các thông số kỹ thuật của hai chuẩn a và b trước đó"
+      },
+      {
+        "id": "D",
+        "text": "Tín hiệu Infrared dễ dàng xuyên hoặc vòng qua các vật cản"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 37,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 96"
+    ],
+    "content": "Mô tả nào về cơ chế thực hiện của giao thức CSMA/CA là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sau khi lắng nghe và thấy đường truyền đang rảnh, trạm phát phải tiếp tục chờ thêm khoảng thời gian SIFS nếu dự định phát gói tin điều khiển"
+      },
+      {
+        "id": "B",
+        "text": "Tương tự như giao thức CSMA/CD của mạng hữu tuyến, trạm thu của giao thức CSMA/CA cũng sử dụng thông điệp ACK để báo nhận tốt"
+      },
+      {
+        "id": "C",
+        "text": "Là giao thức giải quyết vấn đề truy cập đường truyền trong mạng Ethernet hữu tuyến"
+      },
+      {
+        "id": "D",
+        "text": "Sau khi chờ hết khoảng thời gian SIFS, nếu đường truyền vẫn rảnh thì trạm phát sẽ gửi gói tin RTS để thăm dò xem trạm thu có sẵn sàng nhận hay không"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 38,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 41"
+    ],
+    "content": "Chuẩn Wifi nào có thông lượng là 11Mbps, được ban hành gần như đồng thời với chuẩn 802.11a nhưng tốc độ truyền thấp hơn?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "802.11g"
+      },
+      {
+        "id": "B",
+        "text": "802.11a"
+      },
+      {
+        "id": "C",
+        "text": "802.11 gốc"
+      },
+      {
+        "id": "D",
+        "text": "802.11b"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 40,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 89"
+    ],
+    "content": "Kiến trúc 802.11 tập trung vào 2 tầng nào của mô hình mạng OSI?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tầng Vật lý và tầng Transport"
+      },
+      {
+        "id": "B",
+        "text": "Tầng Vật lý và tầng Application"
+      },
+      {
+        "id": "C",
+        "text": "Tầng Vật lý và tầng Datalink"
+      },
+      {
+        "id": "D",
+        "text": "Tầng Vật lý và tầng Network"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 41,
+    "also_in": [],
+    "content": "Những tín hiệu hoặc ứng dụng nào sau đây không sử dụng sóng vô tuyến tần số thấp, dưới 30 MHz?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tín hiệu được phản xạ bởi tầng điện ly để vượt khoảng cách hàng ngàn km"
+      },
+      {
+        "id": "B",
+        "text": "Tín hiệu phát đi từ hộp đen máy bay"
+      },
+      {
+        "id": "C",
+        "text": "Mạng WLAN"
+      },
+      {
+        "id": "D",
+        "text": "Truyền tín hiệu vì mục đích cấp cứu, tìm kiếm cứu nạn trên biển"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 42,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 65"
+    ],
+    "content": "Mô tả nào về quá trình Site survey là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sau khi tìm ra vị trí tối ưu cho các Access Point, bước tiếp theo tiếp tục khảo sát để tìm vị trí đặt máy tính cho nhân viên và các thiết bị không dây khác"
+      },
+      {
+        "id": "B",
+        "text": "Khảo sát để tìm vị trí tối ưu đặt Access Point"
+      },
+      {
+        "id": "C",
+        "text": "Thử đặt Access Point tại các vị trí dự kiến, sau đó đo cường độ tín hiệu tại tất cả mọi nơi để tìm ra những điểm không có tín hiệu hoặc tín hiệu bị yếu"
+      },
+      {
+        "id": "D",
+        "text": "Khảo sát để tìm vị trí tối ưu đặt các Access Point và những máy trạm không dây"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 43,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 50"
+    ],
+    "content": "Mô tả nào về chuẩn 802.11ax là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Áp dụng công nghệ MU-MIMO nâng cấp, cho phép 8 luồng cho cả chiều upload và download"
+      },
+      {
+        "id": "B",
+        "text": "Còn gọi là chuẩn WiFi 6 (Wifi thế hệ 6)"
+      },
+      {
+        "id": "C",
+        "text": "Ra đời sau 802.11ac"
+      },
+      {
+        "id": "D",
+        "text": "Thông lượng tối đa 4Gbps"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 44,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 92"
+    ],
+    "content": "Mô tả nào về những vấn đề của môi trường truyền không dây là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Các mạng LAN không dây ở vị trí cạnh nhau, cùng thuộc một cơ quan nhưng phục vụ các bộ phận phòng ban khác nhau thì phải được gán Tên SSID (Service Set Identifier) giống nhau"
+      },
+      {
+        "id": "B",
+        "text": "Mỗi máy trạm chỉ kết nối với 1 Access Point tại mỗi thời điểm"
+      },
+      {
+        "id": "C",
+        "text": "Đặt cấu hình AP để vùng phủ sóng hẹp sẽ khắc phục tình trạng thiếu cổng kết nối để phục vụ máy trạm, đồng thời làm tăng băng thông dành cho máy trạm"
+      },
+      {
+        "id": "D",
+        "text": "Khi các cell chồng lấn nhau, các AP lãng giềng không thể dùng cùng tần số nếu không sẽ gây nhiễu lẫn nhau"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [
+      "network_a_044_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 45,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 20"
+    ],
+    "content": "Trường hợp thực tế nào trong đó kết nối mạng bằng đường truyền hữu tuyến hiệu quả hơn so với đường truyền vô tuyến?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cung cấp mạng cho các công trình kiến trúc cổ, hạn chế sửa chữa động chạm"
+      },
+      {
+        "id": "B",
+        "text": "Cung cấp mạng cho vùng núi non, hải đảo"
+      },
+      {
+        "id": "C",
+        "text": "Cung cấp kết nối mạng tạm thời trong thời gian ngắn"
+      },
+      {
+        "id": "D",
+        "text": "Khi lắp mạng LAN cho một công sở đặt tại vị trí gần nguồn nhiễu điện từ lớn, chẳng hạn như cột BTS"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 46,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 85"
+    ],
+    "content": "Mệnh đề nào mô tả sai về vấn đề Trạm ẩn?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Đồng thời A và C cùng muốn truyền tin cho B"
+      },
+      {
+        "id": "B",
+        "text": "B không thể thu được tín hiệu của A và C do hiện tượng collision"
+      },
+      {
+        "id": "C",
+        "text": "Khi thấy tín hiệu phát đi bị xung đột, C sẽ dừng lại không phát tiếp nữa và chờ một khoảng thời gian ngẫu nhiên"
+      },
+      {
+        "id": "D",
+        "text": "Tín hiệu từ A và C bị xung đột tại B"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [
+      "network_a_046_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 47,
+    "also_in": [
+      "Mạng máy tính nâng cao.docx: câu 50",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 67",
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 81"
+    ],
+    "content": "Access Point trong hình hoạt động ở chế độ nào?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Root mode"
+      },
+      {
+        "id": "B",
+        "text": "Bridge mode"
+      },
+      {
+        "id": "C",
+        "text": "Repeater mode"
+      },
+      {
+        "id": "D",
+        "text": "Router mode"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [
+      "network_a_047_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 48,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 77"
+    ],
+    "content": "So sánh nào giữa sóng tần số thấp và sóng tần số cao là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sóng radio có thể phát ngang trên mặt đất (LoS) mà không bị giới hạn bởi đường chân trời"
+      },
+      {
+        "id": "B",
+        "text": "Sóng tần số cao thường có độ suy hao trong không khí thấp hơn, do đó khoảng cách truyền xa hơn sóng tần số thấp"
+      },
+      {
+        "id": "C",
+        "text": "Sóng tần số thấp thường có tốc độ truyền dữ liệu thấp hơn sóng tần số cao"
+      },
+      {
+        "id": "D",
+        "text": "Sóng tần số thấp thường vượt qua các vật cản tốt hơn sóng tần số cao"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 52,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 53"
+    ],
+    "content": "Mệnh đề nào mô tả sai về chuẩn 802.11b?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sử dụng tần số 2,4 GHz"
+      },
+      {
+        "id": "B",
+        "text": "Thông lượng tối đa 11 Mbps"
+      },
+      {
+        "id": "C",
+        "text": "Phạm vi tín hiệu kém hơn chuẩn 802.11a"
+      },
+      {
+        "id": "D",
+        "text": "Không tương thích với chuẩn 802.11a"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 53,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 63"
+    ],
+    "content": "Mô tả nào về cơ chế thực hiện của giao thức CSMA/CA là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tương tự như giao thức CSMA/CD của mạng hữu tuyến, CSMA/CA yêu cầu trạm phát phải \"nghe trong khi nói\", nghĩa là \"nghe\" đường truyền trong khi phát tin"
+      },
+      {
+        "id": "B",
+        "text": "Khác với giao thức CSMA/CD của mạng hữu tuyến, CSMA/CA không yêu cầu trạm phát phải \"nghe đường truyền\" trong khi phát tin"
+      },
+      {
+        "id": "C",
+        "text": "Sau khi \"nghe\" và thấy đường truyền đang rảnh, trạm phát phải tiếp tục chờ thêm khoảng thời gian DIFS nếu dự định phát gói tin dữ liệu"
+      },
+      {
+        "id": "D",
+        "text": "Tương tự như giao thức CSMA/CD của mạng hữu tuyến, trạm thu của giao thức CSMA/CA cũng sử dụng thông điệp NAK để báo lỗi khi nhận gói tin"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 54,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 64"
+    ],
+    "content": "Biết rằng giá trị DIFS của chuẩn 802.11 góc là 128 µs, ngoài ra chuẩn này quy định mỗi slot time bằng 50 µs. Hỏi thời gian chờ cố định mà trạm phát phải chờ trước khi phát gói tin CTS là bao nhiêu?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tất cả đều sai"
+      },
+      {
+        "id": "B",
+        "text": "28 µs"
+      },
+      {
+        "id": "C",
+        "text": "78 µs"
+      },
+      {
+        "id": "D",
+        "text": "178 µs"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [
+      "network_a_054_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 56,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 39"
+    ],
+    "content": "Mô tả nào về những vấn đề của môi trường truyền không dây là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Để có thể roaming các máy trạm phải sử dụng cùng một địa chỉ mạng con (subnet IP)"
+      },
+      {
+        "id": "B",
+        "text": "Khi các cell chồng lên nhau, các AP lân cận không thể dùng cùng tần số nếu không sẽ gây nhiễu lẫn nhau"
+      },
+      {
+        "id": "C",
+        "text": "Đặt cấu hình AP để vùng phủ sóng hẹp sẽ khắc phục tình trạng thiếu cổng kết nối để phục vụ máy trạm, đồng thời làm tăng băng thông dành cho máy trạm"
+      },
+      {
+        "id": "D",
+        "text": "Khi giảm công suất phát của AP xuống, vùng phủ sóng bị thu hẹp dẫn tới số máy trạm có thể kết nối vào cũng giảm xuống, dẫn đến băng thông dành cho mỗi máy trạm cũng giảm"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 57,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 99"
+    ],
+    "content": "Đâu không phải là mặt trái hay nhược điểm của mạng không dây?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phù hợp với các triển lãm ngắn ngày, các khu vực vừa bị ảnh hưởng bởi thiên tai"
+      },
+      {
+        "id": "B",
+        "text": "Cường độ tín hiệu bị hạn chế bởi tường, sàn nhà và các vật cản"
+      },
+      {
+        "id": "C",
+        "text": "Trong một số trường hợp có thể gây hại cho sức khỏe người dùng"
+      },
+      {
+        "id": "D",
+        "text": "Tín hiệu bị gây nhiễu bởi các thiết bị điện tử gia dụng như lò vi song"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 58,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 16"
+    ],
+    "content": "Mệnh đề nào mô tả sai về họ chuẩn 802.11?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Công nghệ MIMO cho phép dùng nhiều ăng ten thu và ăng ten phát để truyền đồng thời nhiều luồng dữ liệu"
+      },
+      {
+        "id": "B",
+        "text": "Chuẩn 802.11n sử dụng tần số 2,4 GHz hoặc 5 GHz"
+      },
+      {
+        "id": "C",
+        "text": "Công nghệ SU-MIMO cho phép Access Point giao tiếp đồng thời với nhiều máy trạm"
+      },
+      {
+        "id": "D",
+        "text": "Chuẩn 802.11n ra đời sau chuẩn 802.11g và có tốc độ truyền cao hơn"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 59,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 24"
+    ],
+    "content": "Trước khi sử dụng kết nối không dây giữa hai tòa nhà, hiện trạng của hệ thống mạng trong hình là gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cả A và B đều có kết nối vào Internet, nhưng vướng đường quốc lộ xen giữa nên dữ liệu từ A không truyền được sang B và ngược lại"
+      },
+      {
+        "id": "B",
+        "text": "Cả A và B đều có kết nối vào Internet, luồng thông tin giữa 2 tòa nhà được truyền qua Internet nên chất lượng đường truyền không ổn định"
+      },
+      {
+        "id": "C",
+        "text": "Cước thuê bao Internet gấp hai lần, đồng thời không chuyển được thông tin từ A sang B"
+      },
+      {
+        "id": "D",
+        "text": "Chỉ B có kết nối vào Internet, còn A không có"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [
+      "network_a_059_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 61,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 75"
+    ],
+    "content": "Mệnh đề nào mô tả sai về họ chuẩn 802.11?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Công nghệ MIMO bắt đầu xuất hiện từ chuẩn 802.11n"
+      },
+      {
+        "id": "B",
+        "text": "Công nghệ MIMO của chuẩn 802.11g cho phép dùng nhiều ăng ten để Access Point có thể giao tiếp cùng lúc với nhiều máy trạm, làm giảm thời gian chờ"
+      },
+      {
+        "id": "C",
+        "text": "Công nghệ MIMO cho phép dùng nhiều ăng ten thu và ăng ten phát để truyền đồng thời nhiều luồng dữ liệu"
+      },
+      {
+        "id": "D",
+        "text": "Chuẩn 802.11n sử dụng tần số 2.4 GHz hoặc 5GHz"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 62,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 48"
+    ],
+    "content": "Hình sau mô tả vấn đề nào của môi trường truyền không dây?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Vấn đề khi thực hiện khảo sát mạng"
+      },
+      {
+        "id": "B",
+        "text": "Trạm ẩn"
+      },
+      {
+        "id": "C",
+        "text": "Chuyển vùng"
+      },
+      {
+        "id": "D",
+        "text": "Trạm lộ"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [
+      "network_a_062_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 63,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 97"
+    ],
+    "content": "Kiến trúc 802.11 tập trung vào 2 tầng nào của mô hình mạng OSI?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tầng Vật lý và tầng Network"
+      },
+      {
+        "id": "B",
+        "text": "Tầng Liên kết dữ liệu và tầng Giao vận"
+      },
+      {
+        "id": "C",
+        "text": "Tầng Vật lý và tầng con Truy cập đường truyền (MAC) của tầng Datalink"
+      },
+      {
+        "id": "D",
+        "text": "Tầng Datalink và tầng Transport"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "Mạng máy tính nâng cao.docx",
+    "source_number": 66,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 68"
+    ],
+    "content": "So sánh nào giữa sóng tần số thấp và sóng tần số cao là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sóng tần số thấp thường có tốc độ truyền dữ liệu thấp hơn sóng tần số cao"
+      },
+      {
+        "id": "B",
+        "text": "Một số loại sóng tần số cao có thể phản xạ với tầng điện ly để vượt qua đường chân trời"
+      },
+      {
+        "id": "C",
+        "text": "Sóng tần số thấp thường vượt qua các vật cản tốt hơn sóng tần số cao"
+      },
+      {
+        "id": "D",
+        "text": "Một số loại sóng tần số thấp có khả năng xuyên qua lớp nước biển để liên lạc với tàu ngầm"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 2,
+    "also_in": [],
+    "content": "Áp dụng thuật toán Dijkstra cho đồ thị sau đây với đỉnh xuất phát là A. Hãy cho biết nhãn ở vị trí dấu hỏi là gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "(9,E)"
+      },
+      {
+        "id": "B",
+        "text": "(8,E)"
+      },
+      {
+        "id": "C",
+        "text": "(15,C)"
+      },
+      {
+        "id": "D",
+        "text": "(9,D)"
+      },
+      {
+        "id": "E",
+        "text": "(18,C)"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [
+      "network_b_002_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 5,
+    "also_in": [],
+    "content": "Mô tả nào đúng về mạng cảm biến không dây?",
+    "type": "multiple_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Còn được gọi là mạng không dây thấp và chậm vì các nút mạng, chẳng hạn camera an ninh, thường đứng yên hoặc di chuyển chậm"
+      },
+      {
+        "id": "B",
+        "text": "Phải sử dụng những giao thức kết nối không dây đặc thù, chẳng hạn như IEEE 802.11, vì các nút có kích thước nhỏ nên ít năng lượng"
+      },
+      {
+        "id": "C",
+        "text": "Có thể sử dụng chuẩn IEEE 802.15.4 để liên lạc. Đây là chuẩn công nghệ dành cho các node có cấu hình yếu, tốc độ truyền chậm"
+      },
+      {
+        "id": "D",
+        "text": "Còn được gọi là mạng không dây thấp và chậm vì các nút mạng có tiêu thụ ít năng lượng và truyền dữ liệu chậm, chỉ vài Kbps"
+      }
+    ],
+    "correct": [
+      "C",
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 7,
+    "also_in": [],
+    "content": "Xét tình huống sau đây: tại thời điểm bảng định tuyến của node 3 có nội dung như hình vẽ, nó nhận được yêu cầu chuyển một gói tin data với thông tin như trong hình vẽ tới node đích. Trong trường hợp này theo qui định của AODV node 3 phải làm gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phát đi thông điệp hỏi đường vì không biết đường để chuyển gói tin data"
+      },
+      {
+        "id": "B",
+        "text": "Phát đi thông điệp báo lỗi vì không biết đường để chuyển gói tin data"
+      },
+      {
+        "id": "C",
+        "text": "Chuyển gói tin data tới node đích như bình thường"
+      },
+      {
+        "id": "D",
+        "text": "Phát đi thông điệp chào hỏi các node xung quanh, sau đó nhờ chuyển tiếp gói tin"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [
+      "network_b_007_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 9,
+    "also_in": [],
+    "content": "Sự cố nào khiến một node phải xóa đi 2 dòng trong bảng định tuyến như hình vẽ rồi phát đi thông điệp RERR để báo lỗi tuyến?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sau khi chờ hết khoảng thời gian qui định mà node vẫn không nhận được thông điệp HELLO từ node số 3, vốn là hàng xóm"
+      },
+      {
+        "id": "B",
+        "text": "Node số 3 vừa xuất hiện và trở thành hàng xóm mới"
+      },
+      {
+        "id": "C",
+        "text": "Node nhận được thông điệp RERR thông báo về nút lỗi số 3, vốn không phải là node hàng xóm"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [
+      "network_b_009_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 11,
+    "also_in": [],
+    "content": "Nút nhận được thông điệp báo rằng nút 3 bị lỗi như hình vẽ, khi đó nút cần làm gì?",
+    "type": "multiple_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phát đi thông điệp RREQ tìm đường tới vị trí mới của nút 3"
+      },
+      {
+        "id": "B",
+        "text": "Phát đi thông điệp RERR báo nút 3 đã hỏng"
+      },
+      {
+        "id": "C",
+        "text": "Phát đi thông điệp RERR báo tuyến đường tới nút 3 đã hỏng"
+      },
+      {
+        "id": "D",
+        "text": "Không cần làm gì"
+      }
+    ],
+    "correct": [
+      "B",
+      "C"
+    ],
+    "images": [
+      "network_b_011_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 13,
+    "also_in": [],
+    "content": "Những trường hợp thực tế nào không phù hợp để áp dụng môi trường truyền Bluetooth?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cung cấp Internet cho người dùng trên các phương tiện giao thông"
+      },
+      {
+        "id": "B",
+        "text": "Giao tiếp giữa PC với các thiết bị I/O của nó như chuột, bàn phím và máy in"
+      },
+      {
+        "id": "C",
+        "text": "Giao tiếp giữa điện thoại di động và tai nghe không dây"
+      },
+      {
+        "id": "D",
+        "text": "Mạng không dây trong một không gian hẹp, cỡ một vài mét, chỉ truyền nội dung text"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 14,
+    "also_in": [],
+    "content": "Mô tả nào không đúng về những vấn đề năng lượng của mạng MANET?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Tìm ra các thuật toán định tuyến phù hợp sẽ góp phần giải quyết vấn đề năng lượng của mạng MANET"
+      },
+      {
+        "id": "B",
+        "text": "Khi người dùng không gửi hay nhận tin tức, node mạng MANET sẽ gần như không tiêu thụ năng lượng"
+      },
+      {
+        "id": "C",
+        "text": "Các node mạng thường là thiết bị đeo hay thiết bị cầm tay, vì vậy năng lượng dự trữ không nhiều"
+      },
+      {
+        "id": "D",
+        "text": "Ngay cả khi người dùng không gửi hay nhận tin tức, node mạng MANET vẫn phải hoạt động và tiêu thụ năng lượng ở mức thông thường"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 18,
+    "also_in": [],
+    "content": "Xét tình huống sau đây: tại thời điểm bảng định tuyến của node 5 có nội dung như hình vẽ, nó nhận được thông điệp RREP có nội dung như hình vẽ. Trong trường hợp này theo qui định của AODV node 5 phải làm gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Giữ nguyên bảng định tuyến"
+      },
+      {
+        "id": "B",
+        "text": "Cập nhật lại dòng thứ hai trong bảng định tuyến theo các thông tin trong thông điệp RREP"
+      },
+      {
+        "id": "C",
+        "text": "Bổ sung thêm một dòng trong bảng định tuyến theo các thông tin trong thông điệp RREP"
+      },
+      {
+        "id": "D",
+        "text": "Cập nhật lại dòng thứ nhất trong bảng định tuyến theo các thông tin trong thông điệp RREP"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [
+      "network_b_018_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 21,
+    "also_in": [],
+    "content": "Khi một node muốn gửi dữ liệu nhưng không tìm thấy node đích trong bảng định tuyến của mình, nó sẽ phát đi thông điệp ...",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "RREP"
+      },
+      {
+        "id": "B",
+        "text": "RREQ"
+      },
+      {
+        "id": "C",
+        "text": "RERR"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "K74 slide 6 pp. 8-10: unknown route -> RREQ"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 22,
+    "also_in": [],
+    "content": "Xét trường hợp node A nhận được RREQ hỏi đường đi tới node X. Giả sử A không tìm thấy X trong routing table của mình, khi đó A sẽ ...",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phát tiếp thông điệp RREQ ra xung quanh để hỏi đường các hàng xóm của mình, nếu lifespan vẫn còn"
+      },
+      {
+        "id": "B",
+        "text": "Phát thông điệp RREP ra xung quanh để hỏi đường các hàng xóm của mình, nếu lifespan vẫn còn"
+      },
+      {
+        "id": "C",
+        "text": "Phát thông điệp RERR để báo lỗi cho toàn mạng"
+      },
+      {
+        "id": "D",
+        "text": "Phát thông điệp HELLO để hỏi đường các hàng xóm của mình"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "K74 slide 6 p. 10: forward RREQ when route unknown"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 23,
+    "also_in": [],
+    "content": "Mô tả nào không đúng về mạng MANET?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Các nút mạng có khả năng giao tiếp không dây và luôn trong trạng thái di chuyển"
+      },
+      {
+        "id": "B",
+        "text": "Không có hạ tầng truyền thông, các node mạng kiêm nhiệm vai trò của bộ định tuyến"
+      },
+      {
+        "id": "C",
+        "text": "Các node mạng thường đồng đều về mặt chủng loại và có cấu hình cao như Laptop PC"
+      },
+      {
+        "id": "D",
+        "text": "Có tính tùy biến, không yêu cầu cơ sở hạ tầng nên có thể được triển khai một cách nhanh chóng"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 26,
+    "also_in": [],
+    "content": "Khi một node muốn chào hỏi các node hàng xóm để tự giới thiệu mình, nó phát đi thông điệp ...",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "RREP"
+      },
+      {
+        "id": "B",
+        "text": "RERR"
+      },
+      {
+        "id": "C",
+        "text": "HELLO"
+      },
+      {
+        "id": "D",
+        "text": "RREQ"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 28,
+    "also_in": [],
+    "content": "Sau khi máy bay rơi, hộp đen phát tín hiệu bằng sóng tần số thấp vì lý do gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Đạt được thông lượng cao"
+      },
+      {
+        "id": "B",
+        "text": "Tín hiệu có khả năng vượt qua vật cản"
+      },
+      {
+        "id": "C",
+        "text": "Đạt được băng thông rộng"
+      },
+      {
+        "id": "D",
+        "text": "Người dân ở gần đó có thể thu được tín hiệu qua radio"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 29,
+    "also_in": [],
+    "content": "Giao thức bảo mật Wifi tốt nhất và được sử dụng rộng rãi nhất trên các thiết bị Wifi hiện nay là ...",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "WEP"
+      },
+      {
+        "id": "B",
+        "text": "AES"
+      },
+      {
+        "id": "C",
+        "text": "Open WiFi network"
+      },
+      {
+        "id": "D",
+        "text": "WPA3"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 30,
+    "also_in": [],
+    "content": "Áp dụng thuật toán Dijkstra cho đồ thị sau đây với đỉnh xuất phát là A. Hãy cho biết nhãn ở vị trí dấu hỏi là gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "(7,B)"
+      },
+      {
+        "id": "B",
+        "text": "(8,A)"
+      },
+      {
+        "id": "C",
+        "text": "(8,D)"
+      },
+      {
+        "id": "D",
+        "text": "(7,A)"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [
+      "network_b_030_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 32,
+    "also_in": [],
+    "content": "Mệnh đề nào mô tả sai về thông điệp HELLO?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Chỉ được phát ra khi một node phát hiện bị mất liên lạc với node lân cận"
+      },
+      {
+        "id": "B",
+        "text": "Giúp mỗi node biết các node hàng xóm của mình là ai"
+      },
+      {
+        "id": "C",
+        "text": "Được phát đi một cách định kỳ"
+      },
+      {
+        "id": "D",
+        "text": "Khi node A phát ra, chỉ những node lân cận (nằm trong vùng phủ sóng) của A nhận được"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 38,
+    "also_in": [],
+    "content": "Một nút nhận được gói tin dữ liệu, lúc đó bảng định tuyến của nó có nội dung như trong hình vẽ. Nút cần phải làm gì trong tình huống này?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phát đi thông điệp RREQ"
+      },
+      {
+        "id": "B",
+        "text": "Phát đi thông điệp RERR"
+      },
+      {
+        "id": "C",
+        "text": "Gửi gói tin về nút số 1"
+      },
+      {
+        "id": "D",
+        "text": "Chuyển gói tin tới nút số 3"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [
+      "network_b_038_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 46,
+    "also_in": [],
+    "content": "Xét tình huống sau đây: tại thời điểm bảng định tuyến của node 1 có nội dung như hình vẽ, nó bị mất liên lạc với node 2 và không còn coi node 2 là node láng giềng của mình nữa. Trong trường hợp này theo qui định của AODV node 1 phải làm gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Xóa dòng thứ hai trong bảng định tuyến, sau đó phát đi thông điệp RERR cảnh báo toàn mạng rằng tuyến đường tương ứng đã bị hỏng"
+      },
+      {
+        "id": "B",
+        "text": "Xóa cả hai dòng trong bảng định tuyến, sau đó phát đi thông điệp RERR cảnh báo toàn mạng rằng 2 tuyến đường tương ứng đã bị hỏng"
+      },
+      {
+        "id": "C",
+        "text": "Xóa dòng thứ nhất trong bảng định tuyến, sau đó phát đi thông điệp RERR cảnh báo toàn mạng rằng tuyến đường tương ứng đã bị hỏng"
+      },
+      {
+        "id": "D",
+        "text": "Phát đi thông điệp RERR cảnh báo toàn mạng rằng node 2 không còn là láng giềng của mình nữa"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [
+      "network_b_046_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 54,
+    "also_in": [],
+    "content": "Mô tả nào về WSN là đúng?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Các nút mạng thường hoạt động theo giờ giấc của chủ nhân, nghĩa là chúng thường có một khoảng thời gian nghỉ ngơi trong ngày khi chủ nhân đi vắng hoặc ngủ."
+      },
+      {
+        "id": "B",
+        "text": "Trong đa số trường hợp, các nút mạng là các máy tính cá nhân như máy tính để bàn, điện thoại thông minh hay smart tivi"
+      },
+      {
+        "id": "C",
+        "text": "Các nút mạng có thể liên lạc với nhau thông qua chuẩn IEEE 802.15.4 dành cho mạng không dây thấp và chậm"
+      },
+      {
+        "id": "D",
+        "text": "Trong đa số trường hợp, các nút mạng được cung cấp năng lượng từ lưới điện sinh hoạt"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "K74 slide 4 pp. 10-15: WSN can use 802.15.4"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 55,
+    "also_in": [
+      "ôn luyện mạng máy tính nâng cao ngày 17.docx: câu 76"
+    ],
+    "content": "Mô tả nào không đúng về những vấn đề khó khăn của mạng MANET?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Khác với Wifi, thiếu năng lượng cho các node mạng để hoạt động lâu dài là vấn đề khó khăn đối với mạng MANET"
+      },
+      {
+        "id": "B",
+        "text": "Do đặc thù của mạng MANET, vấn đề roaming được giải quyết dễ dàng hơn so với ở mạng Wifi"
+      },
+      {
+        "id": "C",
+        "text": "Vì không sử dụng thiết bị thu phát trung gian nên các node mạng không bao giờ được đặt ở trạng thái “sleep/standby”, do đó năng lượng dự trữ càng bị tiêu hao nhanh"
+      },
+      {
+        "id": "D",
+        "text": "Các node luôn di chuyển trong quá trình thu phát nên vấn đề định tuyến của mạng MANET khó giải quyết hơn ở mạng Wifi"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 56,
+    "also_in": [],
+    "content": "Mô tả nào về việc quản lý và sử dụng các tần số vô tuyến là sai?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Bất kỳ ai cũng có thể mua và sử dụng những thiết bị thu phát sóng vô tuyến hoạt động ngoài dải tần số ISM mà không cần làm thủ tục đăng ký sử dụng"
+      },
+      {
+        "id": "B",
+        "text": "Tần số vô tuyến cũng là một tài nguyên quốc gia. Giấy phép sử dụng một tần số vô tuyến do Cục tần số vô tuyến điện cấp ghi rõ phạm vi địa lý được phép sử dụng dải tần số đó"
+      },
+      {
+        "id": "C",
+        "text": "Dù đã trả tiền thuê trước đầy đủ nhưng nếu không sử dụng hoặc sử dụng không đúng mục đích đã đăng ký thì nhà cung cấp dịch vụ mạng vẫn sẽ bị thu hồi giấy phép sử dụng tần số vô tuyến"
+      },
+      {
+        "id": "D",
+        "text": "Việc lắp đặt các hệ thống Viba vệ tinh luôn phải có giấy phép sử dụng vì tần số nằm trong miền tần số được quản lý"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 57,
+    "also_in": [],
+    "content": "Access Point 2 trong hình hoạt động ở chế độ nào?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Access Point mode"
+      },
+      {
+        "id": "B",
+        "text": "Root mode"
+      },
+      {
+        "id": "C",
+        "text": "Bridge mode"
+      },
+      {
+        "id": "D",
+        "text": "Repeater mode"
+      }
+    ],
+    "correct": [
+      "D"
+    ],
+    "images": [
+      "network_b_057_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 61,
+    "also_in": [],
+    "content": "Mô tả nào không đúng về cơ chế hoạt động của giao thức AODV và các thông điệp tương ứng?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Giao thức AODV theo dõi quá trình truyền các message để khám phá và bảo trì tuyến đường"
+      },
+      {
+        "id": "B",
+        "text": "Khi một node có nhu cầu truyền dữ liệu và không tìm thấy node đích trong bảng định tuyến của mình, nó sẽ phát đi thông điệp RREP"
+      },
+      {
+        "id": "C",
+        "text": "Thông điệp và các gói dữ liệu được truyền được truyền từ nút này sang nút lân cận khác cho tới nút đích"
+      },
+      {
+        "id": "D",
+        "text": "Giao thức AODV sử dụng trường lifespan nhằm loại bỏ hiện tượng thông điệp bị lặp vô hạn (loop)"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 69,
+    "also_in": [],
+    "content": "Mô tả nào chính xác về mạng cảm biến không dây?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Được sử dụng rộng rãi trong lĩnh vực nhà thông minh và nông nghiệp thông minh, nhưng không có ứng dụng trong giao thông thông minh vì các xe di chuyển với tốc độ cao"
+      },
+      {
+        "id": "B",
+        "text": "Sensor (Trạm gốc) là trung tâm cung cấp liên lạc giữa các Base station với nhau và với trung tâm điều khiển"
+      },
+      {
+        "id": "C",
+        "text": "Các nút mạng thường phải hoạt động 24/7 trong những môi trường độc hại, nhiệt độ cao, ô nhiễm ...mà con người khó thích nghi"
+      },
+      {
+        "id": "D",
+        "text": "Tên tiếng Anh là Wireless Sensor Network, luôn sử dụng chuẩn IEEE 802.11 để kết nối các thiết bị cảm biến trong mọi trường hợp"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "K74 slide 4 pp. 9-11: WSN works in harsh settings"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 70,
+    "also_in": [],
+    "content": "Xét tình huống sau đây: tại thời điểm bảng định tuyến của node 5 có nội dung như hình vẽ, nó bị mất liên lạc với node 6 và không còn coi node 6 là node láng giềng của mình nữa. Trong trường hợp này theo qui định của AODV node 5 phải làm gì?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phát đi thông điệp RERR cảnh báo toàn mạng rằng node 6 không còn là láng giềng của mình nữa"
+      },
+      {
+        "id": "B",
+        "text": "Xóa dòng thứ hai trong bảng định tuyến, sau đó phát đi thông điệp RERR cảnh báo toàn mạng rằng tuyến đường tương ứng đã bị hỏng"
+      },
+      {
+        "id": "C",
+        "text": "Xóa dòng thứ nhất trong bảng định tuyến, sau đó phát đi thông điệp RERR cảnh báo toàn mạng rằng tuyến đường tương ứng đã bị hỏng"
+      },
+      {
+        "id": "D",
+        "text": "Xóa cả hai dòng trong bảng định tuyến, sau đó phát đi thông điệp RERR cảnh báo toàn mạng rằng 2 tuyến đường tương ứng đã bị hỏng"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [
+      "network_b_070_1.png"
+    ],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 80,
+    "also_in": [],
+    "content": "Mô tả nào chính xác về chuẩn công nghệ NB-IoT?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Qui định về các thiết bị IoT sử dụng miền tần số (đo bằng đơn vị bps) hẹp"
+      },
+      {
+        "id": "B",
+        "text": "Là chuẩn về các thiết bị IoT sử dụng miền tần số (đo bằng đơn vị Hz) hẹp, có công suất (đo bằng đơn vị W) thấp"
+      },
+      {
+        "id": "C",
+        "text": "Qui định về các thiết bị IoT sử dụng trong các lĩnh vực như nhà thông minh, xe tự hành ... Các thiết bị này sử dụng dải tần ISM để liên lạc."
+      },
+      {
+        "id": "D",
+        "text": "Qui định về các thiết bị liên lạc viễn thông sử dụng sóng điện thoại 4G, 5G. Các thiết bị này có nhiều ứng dụng trong IoT như giao thông thông minh, y tế thông minh, nông nghiệp thông minh"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "K74 slide 2 p. 41: NB-IoT uses narrow bandwidth"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 84,
+    "also_in": [],
+    "content": "Sau khi node A phát đi RREQ, nếu nhận được nhiều gói tin RREP thì A sẽ so sánh các tuyến đường nhận được dựa trên ...",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Chỉ dựa trên chiều dài tuyến (đo bằng hop count)"
+      },
+      {
+        "id": "B",
+        "text": "Chiều dài tuyến (đo bằng hop count) và độ mới của tuyến (dựa trên Sequence number)"
+      },
+      {
+        "id": "C",
+        "text": "Chiều dài tuyến (đo bằng km)"
+      },
+      {
+        "id": "D",
+        "text": "Độ mới của tuyến (dựa trên Sequence number)"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 86,
+    "also_in": [],
+    "content": "Ứng dụng nào không phải của mạng MANET?",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Mạng LAN"
+      },
+      {
+        "id": "B",
+        "text": "Mạng phục vụ mục đích tìm kiếm cứu nạn"
+      },
+      {
+        "id": "C",
+        "text": "Mạng kết nối các xe taxi"
+      },
+      {
+        "id": "D",
+        "text": "Mạng kết nối các đơn vị quân sự trên chiến trường"
+      }
+    ],
+    "correct": [
+      "A"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 91,
+    "also_in": [],
+    "content": "Khi node A nhận được gói tin data yêu cầu chuyển tới một node đích mà nó không biết đường tới đó, A sẽ ...",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phát đi thông điệp HELLO"
+      },
+      {
+        "id": "B",
+        "text": "Phát đi thông điệp RERR"
+      },
+      {
+        "id": "C",
+        "text": "Phát đi thông điệp RREQ"
+      },
+      {
+        "id": "D",
+        "text": "Phát đi thông điệp RERP"
+      }
+    ],
+    "correct": [
+      "C"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  },
+  {
+    "source": "ôn luyện mạng máy tính nâng cao ngày 17.docx",
+    "source_number": 98,
+    "also_in": [],
+    "content": "Mô tả nào SAI về hệ thống Fuel Injection trong xe máy, xe hơi? (nhiều )",
+    "type": "single_choice",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sử dụng cảm biến để tự động thu thập thông tin về tốc độ và tải trọng của xe"
+      },
+      {
+        "id": "B",
+        "text": "Hệ thống này sẽ lựa chọn tỷ lệ pha trộn nhiên liệu (xăng, dầu) với không khí phù hợp nhất để đảm bảo nhiên liệu không bị cháy hết"
+      },
+      {
+        "id": "C",
+        "text": "Sử dụng cảm biến để tự động thu thập thông tin về nhiệt độ của động cơ và của không khí bên ngoài xe"
+      },
+      {
+        "id": "D",
+        "text": "Dựa vào những thông tin về tốc độ và tải trọng của xe, nhiệt độ của động cơ và không khí bên ngoài, bộ phận FI sẽ chọn thời điểm tốt nhất để kích hoạt bộ phận đánh lửa (bugi) trong buồng đốt nhiên liệu"
+      },
+      {
+        "id": "E",
+        "text": "Còn gọi là hệ thống phun xăng điện tử"
+      }
+    ],
+    "correct": [
+      "B"
+    ],
+    "images": [],
+    "answer_basis": "Word yellow highlight"
+  }
+]

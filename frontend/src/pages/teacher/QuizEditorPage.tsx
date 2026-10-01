@@ -4,7 +4,7 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { apiClient } from '../../api/client';
 import { Quiz, BaseQuestion, QuestionType, DifficultyLevel, QuizStatus, Subject, Topic } from '../../types';
 import { getQuestionEditor } from '../../features/question/question-editor-registry';
-import { ArrowLeft, Save, Plus, Trash2, ArrowUp, ArrowDown, Check, Eye, Layers } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, ArrowUp, ArrowDown, Check, Eye, Layers, ImagePlus } from 'lucide-react';
 
 export const QuizEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -552,8 +552,42 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ initialData, onClose, onS
   const [difficulty, setDifficulty] = useState<DifficultyLevel>(initialData.difficulty || 'MEDIUM');
   const [explanation, setExplanation] = useState(initialData.explanation || '');
   const [config, setConfig] = useState<Record<string, any>>(initialData.config || {});
+  const [imageUrl, setImageUrl] = useState<string>(initialData.config?.image_url || '');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const EditorComponent = getQuestionEditor(type);
+
+  const setQuestionImageUrl = (value: string) => {
+    const normalized = value.trim();
+    setImageUrl(normalized);
+    setConfig((previous) => {
+      const next = { ...previous };
+      if (normalized) next.image_url = normalized;
+      else delete next.image_url;
+      return next;
+    });
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await apiClient.post('/media/question-images', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setQuestionImageUrl(response.data.url);
+      toast.success('Đã tải ảnh lên máy chủ local.');
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Không thể tải ảnh lên. Chỉ nhận JPG, PNG, GIF, WEBP tối đa 8 MB.');
+    } finally {
+      setUploadingImage(false);
+      event.target.value = '';
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -647,6 +681,41 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ initialData, onClose, onS
               className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
               placeholder="Nhập nội dung câu hỏi..."
             />
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <ImagePlus className="w-4 h-4 text-blue-600" />
+              Ảnh câu hỏi (không bắt buộc)
+            </div>
+            <p className="text-xs text-slate-500">Tải ảnh chụp câu gốc lên local hoặc dán URL ảnh. Ảnh local sẽ được ưu tiên hiển thị thay cho ảnh Markdown cũ.</p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(event) => setQuestionImageUrl(event.target.value)}
+                placeholder="https://..."
+                className="min-w-0 flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <label className="inline-flex items-center justify-center px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100 whitespace-nowrap">
+                <ImagePlus className="w-4 h-4 mr-1.5" />
+                {uploadingImage ? 'Đang tải...' : 'Tải ảnh'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt="Xem trước ảnh câu hỏi"
+                className="max-h-56 max-w-full rounded-lg border border-slate-200 bg-white object-contain"
+              />
+            )}
           </div>
 
           {/* Dynamic Question Config Editor */}

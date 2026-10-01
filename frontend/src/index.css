@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+.rs-submenu:hover > .rs-submenu-panel,
+.rs-submenu:focus-within > .rs-submenu-panel {
+  display: block;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

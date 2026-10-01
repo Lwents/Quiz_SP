@@ -1,0 +1,1472 @@
+[
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 8,
+    "source_word_number": "8",
+    "type": "multiple_choice",
+    "content": "Video call là ứng dụng gì?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Virtual greeting card"
+        },
+        {
+          "id": "B",
+          "text": "Real time conferencing"
+        },
+        {
+          "id": "C",
+          "text": "Online movies"
+        },
+        {
+          "id": "D",
+          "text": "Image catalogs"
+        }
+      ],
+      "correct": [
+        "B"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 11,
+    "source_word_number": "11",
+    "type": "multiple_choice",
+    "content": "Chọn lý do chính để giao tiếp",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Để cung cấp sự yên tâm"
+        },
+        {
+          "id": "B",
+          "text": "Để bày tỏ cảm xúc và / hoặc mối quan tâm"
+        },
+        {
+          "id": "C",
+          "text": "Để hình thành / xây dựng các mối quan hệ"
+        },
+        {
+          "id": "D",
+          "text": "Để làm việc hiệu quả"
+        }
+      ],
+      "correct": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 14,
+    "source_word_number": "14",
+    "type": "multiple_choice",
+    "content": "Đâu không phải là thành phần đa phương tiện",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Audio"
+        },
+        {
+          "id": "B",
+          "text": "Video"
+        },
+        {
+          "id": "C",
+          "text": "Text"
+        },
+        {
+          "id": "D",
+          "text": "Picture"
+        },
+        {
+          "id": "E",
+          "text": "Movie"
+        },
+        {
+          "id": "F",
+          "text": "Music"
+        },
+        {
+          "id": "G",
+          "text": "Link"
+        },
+        {
+          "id": "H",
+          "text": "PowerPoint"
+        }
+      ],
+      "correct": [
+        "E",
+        "F",
+        "G",
+        "H"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 15,
+    "source_word_number": "15",
+    "type": "multiple_choice",
+    "content": "Đâu là phát biểu đúng về video?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Một nguồn trình bày thông tin hiệu quả cao"
+        },
+        {
+          "id": "B",
+          "text": "Sản phẩm của ảo ảnh chuyển động được tạo ra bằng cách hiển thị liên tiếp các hình ảnh của các yếu tố tĩnh"
+        },
+        {
+          "id": "C",
+          "text": "Sản phẩm của ảo ảnh chuyển động được tạo thành từ một loạt hình ảnh tĩnh khi nó được hiển thị nhanh chóng"
+        },
+        {
+          "id": "D",
+          "text": "Sản phẩm ghi lại hình ảnh chuyển động bằng máy ảnh hoặc máy quay phim"
+        }
+      ],
+      "correct": [
+        "D"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 16,
+    "source_word_number": "16",
+    "type": "multiple_choice",
+    "content": "Ví dụ nào sau đây về tính đa phương tiện trong giải trí?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Trò chơi"
+        },
+        {
+          "id": "B",
+          "text": "Tin nhắn tức thời"
+        },
+        {
+          "id": "C",
+          "text": "Trạm vận chuyển"
+        },
+        {
+          "id": "D",
+          "text": "Học liệu"
+        }
+      ],
+      "correct": [
+        "B"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 17,
+    "source_word_number": "17",
+    "type": "fill_blank",
+    "content": "IMC là viết tắt của gì? _________",
+    "config": {
+      "accepted_answers": [
+        "integrated marketing communication"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 18,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu là ưu điểm của ảnh bitmap",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Dễ dàng chuyển đổi"
+        },
+        {
+          "id": "B",
+          "text": "Không có nền"
+        },
+        {
+          "id": "C",
+          "text": "Dễ dàng mở rộng"
+        },
+        {
+          "id": "D",
+          "text": "Hỗ trợ sự trong suốt tối thiểu"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 19,
+    "source_word_number": "18",
+    "type": "multiple_choice",
+    "content": "Video có minh họa hiệu quả các khái niệm trừu tượng hay không?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Có"
+        },
+        {
+          "id": "B",
+          "text": "Không"
+        }
+      ],
+      "correct": [
+        "B"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 20,
+    "source_word_number": "19",
+    "type": "multiple_choice",
+    "content": "Mô tả ngắn gọn tiếp thị trực tuyến là gì?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Tiếp thị trực tuyến là một tập hợp các công cụ và phương pháp luận mạnh mẽ được sử dụng để quảng cáo sản phẩm"
+        },
+        {
+          "id": "B",
+          "text": "Tiếp thị trực tuyến là một tập hợp các công cụ và phương pháp luận mạnh mẽ được sử dụng để quảng bá dịch vụ thông qua internet"
+        },
+        {
+          "id": "C",
+          "text": "Tiếp thị trực tuyến là một tập hợp các công cụ và phương pháp luận mạnh mẽ được sử dụng để quảng bá sản phẩm và dịch vụ thông qua Internet"
+        },
+        {
+          "id": "D",
+          "text": "Tiếp thị trực tuyến là một tập hợp các công cụ và phương pháp luận mạnh mẽ được sử dụng để quảng bá sản phẩm thông qua Internet"
+        }
+      ],
+      "correct": [
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 28,
+    "source_word_number": "27",
+    "type": "multiple_choice",
+    "content": "Đâu là vai trò của hoạt ảnh",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Hoạt ảnh thường xuyên được sử dụng trong các trò chơi để thu hút sự chú ý của người dùng."
+        },
+        {
+          "id": "B",
+          "text": "Kể một câu chuyện"
+        },
+        {
+          "id": "C",
+          "text": "Các nút dưới dạng tương tác"
+        },
+        {
+          "id": "D",
+          "text": "Là yếu tố bổ sung"
+        }
+      ],
+      "correct": [
+        "A",
+        "B"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 36,
+    "source_word_number": "35",
+    "type": "multiple_choice",
+    "content": "Vẽ, biểu đồ, sơ đồ, tranh vẽ, tranh ảnh hoặc ảnh chụp là tất cả các ví dụ về",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Graphics"
+        },
+        {
+          "id": "B",
+          "text": "Images"
+        },
+        {
+          "id": "C",
+          "text": "Animation"
+        },
+        {
+          "id": "D",
+          "text": "Medium"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 42,
+    "source_word_number": "41",
+    "type": "multiple_choice",
+    "content": "Đâu là ưu điểm của ảnh vecto",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Không có nền"
+        },
+        {
+          "id": "B",
+          "text": "Hỗ trợ sự trong suốt tối thiểu"
+        },
+        {
+          "id": "C",
+          "text": "Dễ dàng chuyển đổi"
+        },
+        {
+          "id": "D",
+          "text": "Dễ dàng mở rộng"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 43,
+    "source_word_number": "42",
+    "type": "multiple_choice",
+    "content": "Khi sử dụng các yếu tố âm thanh trong dự án đa phương tiện của bạn, phát biểu nào sau đây không đúng?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Sử dụng càng nhiều hiệu ứng đặc biệt càng tốt."
+        },
+        {
+          "id": "B",
+          "text": "Luôn cung cấp công tắc bật tắt để tắt âm thanh."
+        },
+        {
+          "id": "C",
+          "text": "Chọn nhạc phù hợp với bầu không khí bạn muốn tạo."
+        },
+        {
+          "id": "D",
+          "text": "Luôn thử nghiệm một dự án với những người dùng tiềm năng."
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 46,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "E-Book là gì",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Sách đặt trong thư viện"
+        },
+        {
+          "id": "B",
+          "text": "Sách in"
+        },
+        {
+          "id": "C",
+          "text": "Sách có sẵn dưới dạng điện tử."
+        }
+      ],
+      "correct": [
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 47,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Sự tích hợp của các yếu tố tương tác như văn bản, đồ họa, hình ảnh động, âm thanh và video bằng công nghệ máy tính.",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "multimedia"
+        },
+        {
+          "id": "B",
+          "text": "interactive media"
+        },
+        {
+          "id": "C",
+          "text": "Java"
+        },
+        {
+          "id": "D",
+          "text": "rich media"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 49,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Voice call là ứng dụng gì?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Real time conferencing"
+        },
+        {
+          "id": "B",
+          "text": "Image catalogs"
+        },
+        {
+          "id": "C",
+          "text": "Online movies"
+        },
+        {
+          "id": "D",
+          "text": "Virtual greeting card"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 51,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Netflix là ứng dụng gì",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Image catalogs"
+        },
+        {
+          "id": "B",
+          "text": "Virtual greeting card"
+        },
+        {
+          "id": "C",
+          "text": "Online movies"
+        },
+        {
+          "id": "D",
+          "text": "Real time conferencing"
+        }
+      ],
+      "correct": [
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 52,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Theo văn bản, câu nào sau đây mô tả một cách tiếp cận đồ họa thành công?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Áp dụng nhiều loại đường viền hoa văn trang trí"
+        },
+        {
+          "id": "B",
+          "text": "Sử dụng ít nhất năm phông chữ khác nhau"
+        },
+        {
+          "id": "C",
+          "text": "Sử dụng màn hình đơn giản với nhiều khoảng trắng"
+        },
+        {
+          "id": "D",
+          "text": "Tạo hình nền với nhiều màu sắc"
+        }
+      ],
+      "correct": [
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 55,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Nó là một bản ghi lại các hình ảnh trực quan chuyển động được thực hiện bằng kỹ thuật số.",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Picture"
+        },
+        {
+          "id": "B",
+          "text": "Text"
+        },
+        {
+          "id": "C",
+          "text": "Video"
+        },
+        {
+          "id": "D",
+          "text": "Audio"
+        }
+      ],
+      "correct": [
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 57,
+    "source_word_number": "43",
+    "type": "fill_blank",
+    "content": "Để biểu diễn 10 giá trị cần ít nhất bao nhiêu mức tín hiệu? (Nhập đáp án trả lời dạng số)",
+    "config": {
+      "accepted_answers": [
+        "10"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 58,
+    "source_word_number": "44",
+    "type": "multiple_choice",
+    "content": "Sử dụng 8 bit để mã hóa 15 mức tín hiệu có được hay không?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Được"
+        },
+        {
+          "id": "B",
+          "text": "Không được"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 59,
+    "source_word_number": "45",
+    "type": "multiple_choice",
+    "content": "Tần số của tín hiệu khi truyền dẫn có ảnh hưởng tới?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Độ to của tín hiệu"
+        },
+        {
+          "id": "B",
+          "text": "Băng thông"
+        },
+        {
+          "id": "C",
+          "text": "Cao độ của tín hiệu"
+        },
+        {
+          "id": "D",
+          "text": "Chu kì của tín hiệu"
+        }
+      ],
+      "correct": [
+        "B",
+        "C",
+        "D"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 60,
+    "source_word_number": "46",
+    "type": "fill_blank",
+    "content": "Một hệ thống truyền tin theo phương thức truyền song công giữa A và B. A có 22 gói tin. B có 13 gói tin. Hỏi cần ít nhất bao nhiêu lần truyền khi A và B trao đổi xong dữ liệu? (Nhập đáp án dạng số)",
+    "config": {
+      "accepted_answers": [
+        "22"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 61,
+    "source_word_number": "47",
+    "type": "fill_blank",
+    "content": "Có 100 ký tự cần truyền theo phương pháp dị bộ và có số bit parity, bit stop bằng với bit start. Hỏi cần bao nhiêu bit truyền? (Nhập đáp án dạng số)",
+    "config": {
+      "accepted_answers": [
+        "1100"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 62,
+    "source_word_number": "48",
+    "type": "fill_blank",
+    "content": "Đơn vị dữ liệu của tầng 2 mô hình truyền dẫn là gì? (Ghi thuật ngữ tiếng Anh)",
+    "config": {
+      "accepted_answers": [
+        "frame"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 63,
+    "source_word_number": "49",
+    "type": "multiple_choice",
+    "content": "Hệ thống truyền thông cần sự tham gia tối thiểu của những thành phần nào?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Bộ khuếch đại"
+        },
+        {
+          "id": "B",
+          "text": "Nguồn tin"
+        },
+        {
+          "id": "C",
+          "text": "Không gian"
+        },
+        {
+          "id": "D",
+          "text": "Không gian truyền"
+        },
+        {
+          "id": "E",
+          "text": "Kênh truyền"
+        },
+        {
+          "id": "F",
+          "text": "Thu nhận tin"
+        },
+        {
+          "id": "G",
+          "text": "Bộ lọc"
+        }
+      ],
+      "correct": [
+        "B",
+        "E",
+        "F"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 65,
+    "source_word_number": "51",
+    "type": "multiple_choice",
+    "content": "Trong mã hóa PCM, số bit để mã hóa cho một ký tự phụ thuộc vào?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Gía trị biên độ nhỏ nhất"
+        },
+        {
+          "id": "B",
+          "text": "Giá trị biên độ lớn nhất"
+        },
+        {
+          "id": "C",
+          "text": "Bước lượng tử"
+        },
+        {
+          "id": "D",
+          "text": "Số giá trị rời rạc"
+        }
+      ],
+      "correct": [
+        "A",
+        "B",
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 68,
+    "source_word_number": "54",
+    "type": "fill_blank",
+    "content": "Số bit tối đa là bao nhiêu trong mỗi lần truyền ở chế độ dị bộ khi cần truyền 10 ký tự? (Nhập đáp án trả lời dạng số)",
+    "config": {
+      "accepted_answers": [
+        "130"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 70,
+    "source_word_number": "56",
+    "type": "fill_blank",
+    "content": "Phương tiện trong truyền thông email là loại phương tiện nào? (Ghi thuật ngữ TA)",
+    "config": {
+      "accepted_answers": [
+        "text"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 72,
+    "source_word_number": "58",
+    "type": "multiple_choice",
+    "content": "Đâu là thuộc tính của đa phương tiện?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Số hóa"
+        },
+        {
+          "id": "B",
+          "text": "Truyền tải"
+        },
+        {
+          "id": "C",
+          "text": "Tương tác"
+        },
+        {
+          "id": "D",
+          "text": "Tích hợp"
+        },
+        {
+          "id": "E",
+          "text": "Lưu trữ"
+        },
+        {
+          "id": "F",
+          "text": "Chuyển tiếp"
+        },
+        {
+          "id": "G",
+          "text": "Bảo toàn năng lượng"
+        },
+        {
+          "id": "H",
+          "text": "Kết nối Internet"
+        }
+      ],
+      "correct": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 74,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Khoảng cách Haming giữa 2 từ mã sau bằng bao nhiêu? (trả lời bằng số) 0100 1001 0100 1111 , 0111 0011 1001 0101",
+    "config": {
+      "accepted_answers": [
+        "9"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 76,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Có 100 ký tự cần truyền theo phương pháp dị bộ và có số bit parity và bit stop bằng nhau và khác với bit start. Hỏi cần truyền bao nhiêu bit? 1 ký tự là 8 bit(Nhập đáp án dạng số)",
+    "config": {
+      "accepted_answers": [
+        "1300"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 77,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Trong 2 quá trình Trao đổi thông tin và Truyền thông thì quá trình nào có ý nghĩa bao hàm quá trình còn lại?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Truyền thông"
+        },
+        {
+          "id": "B",
+          "text": "Trao đổi thông tin"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 79,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Một hệ thống truyền tin theo phương thức truyền đơn công từ B tới A. A có 22 gói tin. B có 13 gói tin. Hỏi cần ít nhất bao nhiêu lần truyền khi A và B trao đổi xong dữ liệu? (Nhập đáp án dạng số)",
+    "config": {
+      "accepted_answers": [
+        "13"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 81,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Quá trình truyền thông tin từ nơi gửi tới nơi phát có những loại thời gian nào luôn tồn tại?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Trễ thu phát"
+        },
+        {
+          "id": "B",
+          "text": "Trễ đóng gói"
+        },
+        {
+          "id": "C",
+          "text": "Trễ truyền dẫn"
+        },
+        {
+          "id": "D",
+          "text": "Trễ xử lý"
+        }
+      ],
+      "correct": [
+        "A",
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 83,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Số bit tối thiểu là bao nhiêu trong mỗi lần truyền ở chế độ dị bộ? (Nhập đáp án trả lời dạng số)",
+    "config": {
+      "accepted_answers": [
+        "7"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 84,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Số bit tối đa là bao nhiêu trong mỗi lần truyền ở chế độ dị bộ? (Nhập đáp án trả lời dạng số)",
+    "config": {
+      "accepted_answers": [
+        "13"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 85,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu là băng tần của tín hiệu thoại?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "20Hz-20KHz"
+        },
+        {
+          "id": "B",
+          "text": "300KHz-400KHz"
+        },
+        {
+          "id": "C",
+          "text": "300Hz-400Hz"
+        },
+        {
+          "id": "D",
+          "text": "300Hz-400Khz"
+        },
+        {
+          "id": "E",
+          "text": "16KHz-20KHz"
+        },
+        {
+          "id": "F",
+          "text": "300Hz-3400Hz"
+        }
+      ],
+      "correct": [
+        "F"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 87,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu là đặc điểm của các từ mã sau khi được mã hóa PCM từ một nguồn?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Các từ mã thu được chỉ chứa các ký tự 0 và 1"
+        },
+        {
+          "id": "B",
+          "text": "Các từ mã có khoảng cách Haming bằng 0 được tạo thành từ các tín hiệu có mức biên độ giống nhau"
+        },
+        {
+          "id": "C",
+          "text": "Các từ mã có khoảng cách Haming khác 0 được tạo thành từ các tín hiệu có mức biên độ khác nhau"
+        },
+        {
+          "id": "D",
+          "text": "Các từ mã có khoảng cách Haming khác 0"
+        },
+        {
+          "id": "E",
+          "text": "Các từ mã có chiều dài từ mã khác nhau"
+        },
+        {
+          "id": "F",
+          "text": "Các từ mã có chiều dài từ mã giống nhau"
+        }
+      ],
+      "correct": [
+        "A",
+        "F"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 88,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Bộ mã gồm 20 từ mã thì cần bao nhiêu từ mã cơ sở? (trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "5"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 89,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Trong truyền dẫn số, khi sử dụng 5 bit để biểu diễn cho một mức tín hiệu thì tối đa có thể biểu diễn được bao nhiêu mức tín hiệu?",
+    "config": {
+      "accepted_answers": [
+        "32"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 90,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu là các giá trị được lượng tử thành 2.5 nếu sử dụng bước lượng tử là 0.4",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "2.5"
+        },
+        {
+          "id": "B",
+          "text": "2.24"
+        },
+        {
+          "id": "C",
+          "text": "2.69"
+        },
+        {
+          "id": "D",
+          "text": "2.99"
+        },
+        {
+          "id": "E",
+          "text": "2.19"
+        },
+        {
+          "id": "F",
+          "text": "2.299999"
+        }
+      ],
+      "correct": [
+        "A",
+        "C",
+        "F"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 91,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Thời gian để trao đổi giữa 2 thiết bị phụ thuộc vào những yếu tố nào?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Dung lượng thông tin truyền"
+        },
+        {
+          "id": "B",
+          "text": "Môi trường truyền dẫn"
+        },
+        {
+          "id": "C",
+          "text": "Chế độ truyền dẫn"
+        },
+        {
+          "id": "D",
+          "text": "Khoảng cách truyền dẫn"
+        },
+        {
+          "id": "E",
+          "text": "Hình thức truyền dẫn"
+        }
+      ],
+      "correct": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 94,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Dữ liệu của người dùng được biểu diễn ở tầng mấy theo mô hình OSI? (Chỉ ghi số)",
+    "config": {
+      "accepted_answers": [
+        "7"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 95,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Có 100 ký tự cần truyền theo phương pháp dị bộ và có số bit parity, bit stop bằng với bit start. Hỏi cần bao giây để phát xong dữ liệu biết vận tốc phát là 100 (b/s)? (Nhập đáp án dạng số)",
+    "config": {
+      "accepted_answers": [
+        "11"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 96,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Trong biểu diễn mã theo phương pháp cây, một nhánh cây có thể chia ra bao nhiêu nhánh đối với mã cơ số q?",
+    "config": {
+      "accepted_answers": [
+        "Q"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 97,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Khi biểu diễn tín hiệu số cần 130 mức giá trị thì phải sử dụng bao nhiêu bit để biểu diễn cho mức tín hiệu để tối ưu thông lượng truyền dẫn? 2⁸ = 256 ≥ 130 (đủ)",
+    "config": {
+      "accepted_answers": [
+        "8"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 98,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Từ mã có chiều dài là m thì bậc bé nhất của đa thức biểu diễn mã là bao nhiêu?",
+    "config": {
+      "accepted_answers": [
+        "0"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 99,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Có 100 ký tự cần truyền theo phương pháp dị bộ và có số bit parity, bit stop bằng với bit start. Hỏi cần bao nhiêu lần truyền? (Nhập đáp án dạng số)",
+    "config": {
+      "accepted_answers": [
+        "100"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 100,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu không phải là đặc điểm của ảnh đồ họa?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Được biểu diễn bằng điểm ảnh theo nhị phân"
+        },
+        {
+          "id": "B",
+          "text": "Được biểu diễn bằng điểm ảnh theo RGB"
+        },
+        {
+          "id": "C",
+          "text": "Ảnh có thể chỉnh sửa được"
+        },
+        {
+          "id": "D",
+          "text": "Ảnh có cấu trúc"
+        },
+        {
+          "id": "E",
+          "text": "Được biểu diễn bằng điểm ảnh theo đa mức xám"
+        },
+        {
+          "id": "F",
+          "text": "Ảnh được biểu diễn theo đối tượng"
+        },
+        {
+          "id": "G",
+          "text": "Nội dung được bảo toàn khi trình chiếu"
+        }
+      ],
+      "correct": [
+        "A",
+        "B",
+        "E"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 101,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Sử dụng 5 bit để mã hóa cho một giá trị tự nhiên từ -5 thì giá trị lớn nhất sẽ mã hóa được có giá trị là bao nhiêu nếu mã hóa liên tiếp các giá trị tự nhiên?",
+    "config": {
+      "accepted_answers": [
+        "26"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 103,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Từ mã 0000 1111 sẽ đi qua bao nhiêu nhánh của cây mã? (Nhập đáp án trả lời dạng số)",
+    "config": {
+      "accepted_answers": [
+        "8"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 104,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Có mấy loại phương tiện truyền tải? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "2"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 105,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Một tín hiệu y = 3.3*x - 5 trong khoảng (-5;5) sử dụng bước lượng tử bằng 0.5 thì giá trị nhỏ nhất nhận được của tín hiệu sau khi lượng tử là bao nhiêu? (Đáp án dạng số)",
+    "config": {
+      "accepted_answers": [
+        "-21.5"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 106,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu là đặc điểm cần có trong truyền thông email?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Giao thức truyền tải email"
+        },
+        {
+          "id": "B",
+          "text": "Địa chỉ email người nhận"
+        },
+        {
+          "id": "C",
+          "text": "Địa chỉ email người gửi"
+        },
+        {
+          "id": "D",
+          "text": "Mạng truyền dẫn"
+        },
+        {
+          "id": "E",
+          "text": "Địa chỉ người nhận"
+        },
+        {
+          "id": "F",
+          "text": "Địa chỉ người gửi"
+        },
+        {
+          "id": "G",
+          "text": "Số điện thoại người nhận"
+        },
+        {
+          "id": "H",
+          "text": "Thiết bị đầu cuối kết nối Internet"
+        }
+      ],
+      "correct": [
+        "A",
+        "B",
+        "D"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 107,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Điểm giống nhau giữ truyền thông email và truyền thông di động là gì?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Thiết bị thu tin"
+        },
+        {
+          "id": "B",
+          "text": "Địa chỉ email người gửi"
+        },
+        {
+          "id": "C",
+          "text": "Mạng truyền dẫn"
+        },
+        {
+          "id": "D",
+          "text": "Thiết bị đầu cuối kết nối Internet có loa và mic"
+        },
+        {
+          "id": "E",
+          "text": "Địa chỉ người nhận"
+        },
+        {
+          "id": "F",
+          "text": "Mạng vô tuyến"
+        },
+        {
+          "id": "G",
+          "text": "Kết nối mạng di động"
+        },
+        {
+          "id": "H",
+          "text": "Mạng hữu tuyến"
+        }
+      ],
+      "correct": [
+        "A",
+        "D",
+        "E"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 108,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Phương tiện trong truyền thông di động là loại phương tiện nào? (Ghi thuật ngữ TA)",
+    "config": {
+      "accepted_answers": [
+        "Voice"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 109,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu là yếu tố ảnh hưởng tới sai khác tín hiệu?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Méo"
+        },
+        {
+          "id": "B",
+          "text": "Trễ phát tin"
+        },
+        {
+          "id": "C",
+          "text": "Nhiễu"
+        },
+        {
+          "id": "D",
+          "text": "Trễ truyền dẫn"
+        },
+        {
+          "id": "E",
+          "text": "Trễ điều chế"
+        }
+      ],
+      "correct": [
+        "A",
+        "C"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 110,
+    "source_word_number": "?",
+    "type": "fill_blank",
+    "content": "Thời gian truyền một mức tín hiệu gọi là gì?",
+    "config": {
+      "accepted_answers": [
+        "baud"
+      ]
+    }
+  },
+  {
+    "source": "ttdpt_1.docx",
+    "source_index": 111,
+    "source_word_number": "?",
+    "type": "multiple_choice",
+    "content": "Đâu không phải đặc điểm của ảnh tĩnh?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Được biểu diễn bằng điểm ảnh theo RGB"
+        },
+        {
+          "id": "B",
+          "text": "Được biểu diễn bằng điểm ảnh theo đa mức xám"
+        },
+        {
+          "id": "C",
+          "text": "Ảnh có cấu trúc"
+        },
+        {
+          "id": "D",
+          "text": "Ảnh có thể chỉnh sửa được"
+        },
+        {
+          "id": "E",
+          "text": "Ảnh được biểu diễn theo đối tượng"
+        },
+        {
+          "id": "F",
+          "text": "Được biểu diễn bằng điểm ảnh theo nhị phân"
+        },
+        {
+          "id": "G",
+          "text": "Nội dung được bảo toàn khi trình chiếu"
+        }
+      ],
+      "correct": [
+        "C",
+        "D",
+        "E",
+        "G"
+      ]
+    }
+  }
+]

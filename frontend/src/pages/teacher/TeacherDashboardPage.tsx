@@ -9,6 +9,8 @@ export const TeacherDashboardPage: React.FC = () => {
   const [overview, setOverview] = useState<any>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
+  const [quizzesError, setQuizzesError] = useState(false);
 
   useEffect(() => {
     fetchTeacherData();
@@ -17,14 +19,24 @@ export const TeacherDashboardPage: React.FC = () => {
   const fetchTeacherData = async () => {
     setLoading(true);
     try {
-      const [statsRes, quizzesRes] = await Promise.all([
+      const [statsRes, quizzesRes] = await Promise.allSettled([
         apiClient.get('/stats/teacher/overview'),
         apiClient.get('/quizzes'),
       ]);
-      setOverview(statsRes.data);
-      setQuizzes(quizzesRes.data);
-    } catch (err) {
-      console.error('Error fetching teacher data:', err);
+      if (statsRes.status === 'fulfilled') {
+        setOverview(statsRes.value.data);
+        setStatsError(false);
+      } else {
+        setStatsError(true);
+        console.error('Error fetching teacher overview:', statsRes.reason);
+      }
+      if (quizzesRes.status === 'fulfilled') {
+        setQuizzes(quizzesRes.value.data);
+        setQuizzesError(false);
+      } else {
+        setQuizzesError(true);
+        console.error('Error fetching teacher quizzes:', quizzesRes.reason);
+      }
     } finally {
       setLoading(false);
     }
@@ -51,6 +63,12 @@ export const TeacherDashboardPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {(statsError || quizzesError) && (
+        <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-amber-900 flex flex-wrap items-center justify-between gap-3">
+          <span>Không tải được {statsError && quizzesError ? 'số liệu và danh sách đề thi' : statsError ? 'số liệu' : 'danh sách đề thi'}. Dữ liệu chưa được xác nhận là trống.</span>
+          <button type="button" onClick={fetchTeacherData} className="rounded-lg bg-amber-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-amber-800">Thử lại</button>
+        </div>
+      )}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -93,25 +111,25 @@ export const TeacherDashboardPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Tổng số đề thi</div>
-          <div className="text-3xl font-black text-slate-900">{overview?.total_quizzes ?? 0}</div>
-          <span className="text-xs text-emerald-600 mt-1 block">Đã publish: {overview?.published_quizzes ?? 0}</span>
+          <div className="text-3xl font-black text-slate-900">{overview?.total_quizzes ?? '—'}</div>
+          <span className="text-xs text-emerald-600 mt-1 block">Đã publish: {overview?.published_quizzes ?? '—'}</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Ngân hàng câu hỏi</div>
-          <div className="text-3xl font-black text-slate-900">{overview?.total_questions ?? 0}</div>
+          <div className="text-3xl font-black text-slate-900">{overview?.total_questions ?? '—'}</div>
           <span className="text-xs text-slate-400 mt-1 block">Tất cả các dạng</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Học sinh tham gia</div>
-          <div className="text-3xl font-black text-slate-900">{overview?.total_students ?? 0}</div>
+          <div className="text-3xl font-black text-slate-900">{overview?.total_students ?? '—'}</div>
           <span className="text-xs text-slate-400 mt-1 block">Tài khoản sinh viên</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Lượt nộp bài</div>
-          <div className="text-3xl font-black text-slate-900">{overview?.total_attempts ?? 0}</div>
+          <div className="text-3xl font-black text-slate-900">{overview?.total_attempts ?? '—'}</div>
           <span className="text-xs text-blue-600 mt-1 block">Đã hoàn thành chấm điểm</span>
         </div>
       </div>
@@ -141,7 +159,13 @@ export const TeacherDashboardPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {quizzes.length === 0 ? (
+              {quizzesError ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-amber-800">
+                    Không tải được danh sách đề thi. Hãy thử lại sau khi kiểm tra kết nối backend.
+                  </td>
+                </tr>
+              ) : quizzes.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-slate-400">
                     Chưa có bài thi nào. Hãy nhấn{' '}

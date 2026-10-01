@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { AttemptStart, AttemptStatus, BaseQuestion } from '../../types';
 import { getQuestionRenderer } from '../../features/question/question-registry';
+import { QuestionContent } from '../../components/QuestionContent';
 import {
   Clock,
   Bookmark,
@@ -349,9 +350,11 @@ export const QuizPlayerPage: React.FC = () => {
               </div>
 
               {/* Question Content */}
-              <div className="text-slate-900 text-lg font-medium leading-relaxed mb-8">
-                {currentQuestion.content}
-              </div>
+              <QuestionContent
+                content={currentQuestion.content}
+                imageUrl={currentQuestion.config?.image_url}
+                className="text-slate-900 text-lg font-medium leading-relaxed mb-8"
+              />
 
               {/* Question Interactive Component */}
               <div className="flex-1 mb-8">

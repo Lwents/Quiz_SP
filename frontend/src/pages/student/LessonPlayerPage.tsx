@@ -732,10 +732,15 @@ export const LessonPlayerPage: React.FC = () => {
                 {lesson.title}
               </h1>
 
-              {lesson.description && (
+            {lesson.description && (
                 <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
                   {lesson.description}
                 </p>
+              )}
+              {curriculum?.subject_code === 'COMP303' && (
+                <Link to={`/network-lab?subject=${subjectId}`} onClick={() => { if (!document.fullscreenElement) void document.documentElement.requestFullscreen().catch(() => {}); }} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700">
+                  <PlayCircle className="h-4 w-4" /> Mở phòng thực hành mạng
+                </Link>
               )}
             </div>
 

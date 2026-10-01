@@ -1,8 +1,11 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons, users, backups
+from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons, users, backups, media
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -19,6 +22,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Question screenshots and illustrations live outside the application image so
+# they remain available after a backend rebuild/restart.
+MEDIA_DIR = Path("/app/media")
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 
 # Standardized Error Handling
 @app.exception_handler(Exception)
@@ -39,6 +48,7 @@ app.include_router(stats.router, prefix=settings.API_V1_STR)
 app.include_router(ai.router, prefix=settings.API_V1_STR)
 app.include_router(lessons.router, prefix=settings.API_V1_STR)
 app.include_router(backups.router, prefix=settings.API_V1_STR)
+app.include_router(media.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health")

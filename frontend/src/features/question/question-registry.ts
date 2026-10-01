@@ -5,6 +5,7 @@ import { SingleChoiceQuestion } from './renderers/SingleChoiceQuestion';
 import { MultipleChoiceQuestion } from './renderers/MultipleChoiceQuestion';
 import { TrueFalseQuestion } from './renderers/TrueFalseQuestion';
 import { FillBlankQuestion } from './renderers/FillBlankQuestion';
+import { MultipleBlankQuestion } from './renderers/MultipleBlankQuestion';
 import { MatchingQuestion } from './renderers/MatchingQuestion';
 import { OrderingQuestion } from './renderers/OrderingQuestion';
 import { NumericQuestion } from './renderers/NumericQuestion';
@@ -15,7 +16,7 @@ export const questionRenderers: Record<string, React.FC<QuestionRendererProps>> 
   multiple_choice: MultipleChoiceQuestion,
   true_false: TrueFalseQuestion,
   fill_blank: FillBlankQuestion,
-  multiple_blank: FillBlankQuestion,
+  multiple_blank: MultipleBlankQuestion,
   matching: MatchingQuestion,
   drag_drop: MatchingQuestion,
   ordering: OrderingQuestion,

@@ -14,7 +14,7 @@ from enum import Enum as PythonEnum
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
-from sqlalchemy import Boolean, DateTime, Enum, Float, Integer, String, UniqueConstraint, delete, insert, select, text
+from sqlalchemy import Boolean, DateTime, Enum, Float, Integer, String, UniqueConstraint, delete, func, insert, select, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,8 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import require_role
 from app.core.database import AsyncSessionLocal, get_db
 from app.models import (
-    Attempt, AttemptAnswer, Lesson, Question, Quiz, QuizQuestion,
-    Subject, Topic, User, UserLessonProgress, UserRole,
+    Base, User, UserRole,
 )
 
 
@@ -33,11 +32,34 @@ FORMAT = "quiz-sp-backup"
 VERSION = 1
 MAX_BACKUP_BYTES = 50 * 1024 * 1024
 MAX_ROWS = 200_000
-MODELS = (
-    User, Subject, Topic, Quiz, Question, Lesson, QuizQuestion,
-    Attempt, AttemptAnswer, UserLessonProgress,
-)
-TABLES = {model.__tablename__: model.__table__ for model in MODELS}
+# Use SQLAlchemy's dependency-sorted metadata instead of a hand-maintained model
+# list. New application tables are therefore included automatically once their
+# model is imported by app.models.
+TABLES = {table.name: table for table in Base.metadata.sorted_tables}
+
+BACKUP_CONTENTS = {
+    "accounts": ["users"],
+    "curriculum": ["subjects", "topics", "lessons"],
+    "assessment": ["questions", "quizzes", "quiz_questions"],
+    "learning_records": ["attempts", "attempt_answers", "user_lesson_progress"],
+}
+
+
+def _build_summary(created_at: str, checksum: str, counts: dict[str, int]) -> dict:
+    return {
+        "format": FORMAT,
+        "version": VERSION,
+        "created_at": created_at,
+        "checksum": checksum,
+        "counts": counts,
+        "total_rows": sum(counts.values()),
+        "included_tables": list(TABLES),
+        "database_complete": set(counts) == set(TABLES),
+        "content_groups": BACKUP_CONTENTS,
+        # Lessons store their authored content in the database. Media fields are
+        # URLs, so the URL is backed up but the remote/static file is not copied.
+        "external_files_included": False,
+    }
 
 
 async def _authorize_admin(
@@ -179,13 +201,11 @@ def parse_backup(raw: bytes) -> tuple[dict, dict]:
         if not hmac.compare_digest(data["checksum"], actual_checksum):
             raise ValueError("Backup checksum does not match")
         parsed = _validate_rows(data["tables"])
-        return parsed, {
-            "format": FORMAT,
-            "version": VERSION,
-            "created_at": data["created_at"],
-            "checksum": data["checksum"],
-            "counts": {name: len(rows) for name, rows in parsed.items()},
-        }
+        return parsed, _build_summary(
+            data["created_at"],
+            data["checksum"],
+            {name: len(rows) for name, rows in parsed.items()},
+        )
     except (UnicodeError, json.JSONDecodeError, TypeError, KeyError, OverflowError) as exc:
         raise ValueError("Invalid backup file") from exc
 
@@ -235,6 +255,21 @@ async def export_backup(admin_id: uuid.UUID = Depends(_authorize_admin)):
             "X-Content-Type-Options": "nosniff",
         },
     )
+
+
+@router.get("/status")
+async def backup_status(admin_id: uuid.UUID = Depends(_authorize_admin)):
+    """Show exactly what a backup made now would contain."""
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY"))
+            counts = {
+                name: (await session.execute(select(func.count()).select_from(table))).scalar_one()
+                for name, table in TABLES.items()
+            }
+
+    created_at = datetime.now(timezone.utc).isoformat()
+    return _build_summary(created_at, "", counts)
 
 
 @router.post("/preview")

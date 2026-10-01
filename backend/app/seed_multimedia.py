@@ -259,7 +259,7 @@ async def seed():
             # Q16: IMAGE Question - 2D Animation con ngựa
             {
                 "type": QuestionType.SINGLE_CHOICE,
-                "content": "Quan sát hình ảnh minh họa chuyển động đồ họa phẳng từng khung hình (frame-by-frame) dưới đây. Đây là ví dụ đại diện cho thể loại nào?\n\n![Minh họa chuyển động 2D Animation](https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80)",
+                "content": "Quan sát hình con ngựa dạng đồ họa phẳng dưới đây. Đây là ví dụ về loại hoạt ảnh nào?\n\n![Hình con ngựa 2D](http://localhost:8000/media/question-images/ttdpt_source_horse_2d.png)",
                 "config": {
                     "options": [
                         {"id": "A", "text": "2D Animation (Hoạt ảnh hai chiều)"},
@@ -274,7 +274,7 @@ async def seed():
             # Q17: IMAGE Question - 3D Animation khối lập phương
             {
                 "type": QuestionType.SINGLE_CHOICE,
-                "content": "Quan sát mô hình khối đa diện lập phương trong không gian ba chiều với các trục tọa độ X-Y-Z dưới đây. Hình ảnh này minh họa cho kỹ thuật đồ họa nào?\n\n![Mô hình không gian 3D Cube Mesh](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80)",
+                "content": "Quan sát hình khối lập phương dạng khung dây trong không gian ba chiều dưới đây. Hình này minh họa cho kỹ thuật đồ họa nào?\n\n![Khối lập phương 3D](http://localhost:8000/media/question-images/ttdpt_source_cube_3d.png)",
                 "config": {
                     "options": [
                         {"id": "A", "text": "3D Animation / 3D Modeling"},
@@ -284,12 +284,12 @@ async def seed():
                     ],
                     "correct": "A"
                 },
-                "explanation": "Khảo thí xác nhận ĐÚNG (q1546): Hình khối lập phương có trục tọa độ chiều sâu đại diện cho 3D animation / 3D graphics."
+                "explanation": "Khảo thí xác nhận ĐÚNG (q1546): Hình khối lập phương dạng khung dây đại diện cho 3D modeling / 3D graphics."
             },
             # Q18: IMAGE Question - Cáp quang sợi quang
             {
                 "type": QuestionType.SINGLE_CHOICE,
-                "content": "Quan sát hình ảnh đường truyền dẫn ánh sáng xuyên qua các bó sợi thủy tinh tinh khiết dưới đây. Đây là phương tiện truyền dẫn nào?\n\n![Cáp quang phát sáng](https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80)",
+                "content": "Phương tiện truyền dẫn nào sử dụng các sợi thủy tinh để truyền dữ liệu bằng xung ánh sáng?",
                 "config": {
                     "options": [
                         {"id": "A", "text": "Cáp quang (Fiber Optic Cable)"},

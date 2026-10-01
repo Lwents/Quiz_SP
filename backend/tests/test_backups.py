@@ -5,6 +5,13 @@ from datetime import datetime, timezone
 import pytest
 
 from app.api.v1.backups import FORMAT, TABLES, VERSION, _json_bytes, parse_backup
+from app.models import Base
+
+
+EXPECTED_TABLES = {
+    "users", "subjects", "topics", "lessons", "questions", "quizzes",
+    "quiz_questions", "attempts", "attempt_answers", "user_lesson_progress",
+}
 
 
 def sample_backup():
@@ -33,7 +40,15 @@ def sample_backup():
 def test_valid_backup_preview_counts():
     parsed, summary = parse_backup(_json_bytes(sample_backup()))
     assert summary["counts"]["users"] == 1
+    assert summary["total_rows"] == 1
+    assert summary["database_complete"] is True
+    assert set(summary["included_tables"]) == EXPECTED_TABLES
     assert parsed["users"][0]["id"]
+
+
+def test_backup_covers_every_application_database_table():
+    assert set(TABLES) == EXPECTED_TABLES
+    assert set(TABLES) == set(Base.metadata.tables)
 
 
 def test_modified_backup_is_rejected():

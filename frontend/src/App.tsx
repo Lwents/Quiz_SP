@@ -17,6 +17,7 @@ import { QuizPreviewPage } from './pages/teacher/QuizPreviewPage';
 import { CourseListPage } from './pages/student/CourseListPage';
 import { CourseDetailPage } from './pages/student/CourseDetailPage';
 import { LessonPlayerPage } from './pages/student/LessonPlayerPage';
+import { RouterSimPage } from './pages/student/RouterSimPage';
 import { BackupSettingsPage } from './pages/admin/BackupSettingsPage';
 import { useAuthStore } from './stores/authStore';
 import type { UserRole } from './types';
@@ -34,6 +35,8 @@ const PageTitleHandler: React.FC = () => {
       document.title = 'Bài giảng | HNUE PRO';
     } else if (path.startsWith('/courses/')) {
       document.title = 'Chi tiết khóa học | HNUE PRO';
+    } else if (path.startsWith('/network-lab')) {
+      document.title = 'RouterSim Network Visualizer';
     } else if (path.startsWith('/courses')) {
       document.title = 'Khóa học môn học | HNUE PRO';
     } else if (path.includes('/preview')) {
@@ -117,6 +120,15 @@ const RoleRoute: React.FC<{ allowedRoles: UserRole[]; roleLabel: string }> = ({ 
   return <Outlet />;
 };
 
+const AppFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isNetworkLab = useLocation().pathname.startsWith('/network-lab');
+  return <div className={isNetworkLab ? 'min-h-screen bg-[#ece9d8]' : 'min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased font-sans'}>
+    <ToastContainer />
+    {!isNetworkLab && <Navbar />}
+    <main className={isNetworkLab ? '' : 'flex-1'}>{children}</main>
+  </div>;
+};
+
 export const App: React.FC = () => {
   const { initAuth } = useAuthStore();
 
@@ -141,10 +153,7 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <PageTitleHandler />
-      <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased font-sans">
-        <ToastContainer />
-        <Navbar />
-        <main className="flex-1">
+      <AppFrame>
           <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
@@ -152,6 +161,7 @@ export const App: React.FC = () => {
             <Route path="/courses" element={<CourseListPage />} />
             <Route path="/courses/:subjectId" element={<CourseDetailPage />} />
             <Route path="/courses/:subjectId/lessons/:lessonId" element={<LessonPlayerPage />} />
+            <Route path="/network-lab" element={<RouterSimPage />} />
             <Route element={<StudentPracticeGuard />}>
               <Route path="/practice" element={<QuizListPage />} />
               <Route path="/practice/:quizId" element={<QuizPlayerPage />} />
@@ -171,8 +181,7 @@ export const App: React.FC = () => {
             </Route>
             <Route path="*" element={<RootRedirect />} />
           </Routes>
-        </main>
-      </div>
+      </AppFrame>
     </BrowserRouter>
   );
 };

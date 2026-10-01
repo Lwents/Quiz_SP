@@ -212,4 +212,28 @@ async def seed_data():
 
 
 if __name__ == "__main__":
-    asyncio.run(seed_data())
+    from app.fix_published_quiz_images import repair_question_images
+    from app.add_verified_source_questions import (
+        add_verified_source_questions,
+        add_verified_word_questions,
+        add_verified_pdf_questions,
+        add_verified_matrix_question,
+    )
+    from app.seed_network_advanced import seed_network_quiz
+    from app.seed_network_course import seed_network_course
+    from app.seed_network_admin import seed_network_admin_course
+    from app.seed_discrete_sets import seed_discrete_sets_quiz
+
+    async def startup_seed_and_repair():
+        await seed_data()
+        print("Sửa ảnh câu hỏi đa phương tiện:", await repair_question_images())
+        print("Bổ sung câu có ảnh và đáp án từ Word:", await add_verified_source_questions())
+        print("Bổ sung câu còn thiếu có đáp án từ Word:", await add_verified_word_questions())
+        print("Bổ sung câu ma trận có hình:", await add_verified_matrix_question())
+        print("Bổ sung bài tập PDF có đáp án rõ ràng:", await add_verified_pdf_questions())
+        print("Nạp đề Mạng máy tính nâng cao đã lọc trùng:", await seed_network_quiz())
+        print("Nạp khóa học K74 Mạng máy tính nâng cao:", await seed_network_course())
+        print("Nạp khóa học COMP303 Tuần 1:", await seed_network_admin_course())
+        print("Nạp Quiz 2.1 Toán rời rạc lọc trùng:", await seed_discrete_sets_quiz())
+
+    asyncio.run(startup_seed_and_repair())

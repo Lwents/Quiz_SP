@@ -1,0 +1,452 @@
+[
+  {
+    "source_index": "154-1",
+    "type": "fill_blank",
+    "content": "Trạm A có 8 gói tin, trạm B có 12 gói tin. Truyền đơn công từ B sang A. Cần ít nhất bao nhiêu lần phát để trao đổi hết dữ liệu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "12"
+      ]
+    }
+  },
+  {
+    "source_index": "154-2",
+    "type": "fill_blank",
+    "content": "Trạm A có 13 gói tin, trạm B có 9 gói tin. Truyền đơn công từ A sang B. Cần ít nhất bao nhiêu lần phát để trao đổi hết dữ liệu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "13"
+      ]
+    }
+  },
+  {
+    "source_index": "154-3",
+    "type": "fill_blank",
+    "content": "Lấy mẫu tín hiệu f(t) trong khoảng thời gian [-3, 3] với chu kỳ lấy mẫu 0,2. Có bao nhiêu giá trị mẫu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "31"
+      ]
+    }
+  },
+  {
+    "source_index": "154-4",
+    "type": "fill_blank",
+    "content": "Lấy mẫu tín hiệu f(t) trong khoảng thời gian [-3, 3] với chu kỳ lấy mẫu 0,3. Có bao nhiêu giá trị mẫu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "21"
+      ]
+    }
+  },
+  {
+    "source_index": "154-5",
+    "type": "fill_blank",
+    "content": "Lấy mẫu tín hiệu f(t) trong khoảng thời gian [-3, 3] với chu kỳ lấy mẫu 0,4. Có bao nhiêu giá trị mẫu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "16"
+      ]
+    }
+  },
+  {
+    "source_index": "154-6",
+    "type": "fill_blank",
+    "content": "Lấy mẫu tín hiệu f(t) trong khoảng thời gian [-3, 3] với chu kỳ lấy mẫu 0,5. Có bao nhiêu giá trị mẫu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "13"
+      ]
+    }
+  },
+  {
+    "source_index": "154-23",
+    "type": "fill_blank",
+    "content": "Một gói tin có dung lượng 250 byte. Tốc độ phát của thiết bị nguồn là 16.000 bit/giây. Thời gian phát hết gói dữ liệu là bao nhiêu mili giây? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "125"
+      ]
+    }
+  },
+  {
+    "source_index": "36",
+    "type": "multiple_choice",
+    "content": "Đồng hồ hiển thị theo số là dạng thông tin nào?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Rời rạc"
+        },
+        {
+          "id": "B",
+          "text": "Số"
+        },
+        {
+          "id": "C",
+          "text": "Tương tự"
+        },
+        {
+          "id": "D",
+          "text": "Liên tục"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source_index": "37",
+    "type": "multiple_choice",
+    "content": "Tín hiệu tương tự có truyền trực tiếp trong hệ thống số được không?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Không"
+        },
+        {
+          "id": "B",
+          "text": "Có"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source_index": "40",
+    "type": "multiple_choice",
+    "content": "Quá trình lấy mẫu thu được loại tín hiệu nào?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Tín hiệu thông thấp"
+        },
+        {
+          "id": "B",
+          "text": "Tín hiệu thông cao"
+        },
+        {
+          "id": "C",
+          "text": "Tín hiệu tương tự"
+        },
+        {
+          "id": "D",
+          "text": "Tín hiệu liên tục"
+        },
+        {
+          "id": "E",
+          "text": "Tín hiệu số"
+        },
+        {
+          "id": "F",
+          "text": "Tín hiệu rời rạc"
+        }
+      ],
+      "correct": [
+        "F"
+      ]
+    }
+  },
+  {
+    "source_index": "44",
+    "type": "fill_blank",
+    "content": "Bộ mã có các từ mã cơ sở 0001, 0010, 0100 và 1000. Có tối đa bao nhiêu từ mã? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "16"
+      ]
+    }
+  },
+  {
+    "source_index": "48",
+    "type": "fill_blank",
+    "content": "Truyền đơn công từ A đến B. A có 22 gói tin, B có 13 gói tin. Cần ít nhất bao nhiêu lần truyền để trao đổi xong dữ liệu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "22"
+      ]
+    }
+  },
+  {
+    "source_index": "58",
+    "type": "fill_blank",
+    "content": "Từ mã có chiều dài m thì bậc lớn nhất của đa thức biểu diễn mã là bao nhiêu?",
+    "config": {
+      "accepted_answers": [
+        "m-1",
+        "m - 1"
+      ]
+    }
+  },
+  {
+    "source_index": "65",
+    "type": "multiple_choice",
+    "content": "Chọn các loại truyền thông vô hướng.",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Vệ tinh"
+        },
+        {
+          "id": "B",
+          "text": "LAN"
+        },
+        {
+          "id": "C",
+          "text": "Voice IP"
+        },
+        {
+          "id": "D",
+          "text": "VPN"
+        },
+        {
+          "id": "E",
+          "text": "Viba"
+        },
+        {
+          "id": "F",
+          "text": "FAX"
+        }
+      ],
+      "correct": [
+        "A",
+        "E"
+      ]
+    }
+  },
+  {
+    "source_index": "72",
+    "type": "fill_blank",
+    "content": "Dùng 8 bit để mã hóa một mức tín hiệu có thể biểu diễn tối đa bao nhiêu mức tín hiệu khác nhau? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "256"
+      ]
+    }
+  },
+  {
+    "source_index": "75",
+    "type": "fill_blank",
+    "content": "Đơn vị dữ liệu của tầng 3 mô hình OSI là gì? (Ghi thuật ngữ tiếng Anh)",
+    "config": {
+      "accepted_answers": [
+        "Packet"
+      ]
+    }
+  },
+  {
+    "source_index": "77",
+    "type": "fill_blank",
+    "content": "Quá trình Transmission thuộc tầng mấy của mô hình OSI? (Chỉ ghi số)",
+    "config": {
+      "accepted_answers": [
+        "1"
+      ]
+    }
+  },
+  {
+    "source_index": "89",
+    "type": "fill_blank",
+    "content": "Để biểu diễn 12 mức tín hiệu cần ít nhất bao nhiêu bit để mã hóa một mức? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "4"
+      ]
+    }
+  },
+  {
+    "source_index": "91",
+    "type": "multiple_choice",
+    "content": "Cho ma trận từ mã cơ sở cho A, B, C trong hình và D = A XOR C. Từ mã D là gì?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "101"
+        },
+        {
+          "id": "B",
+          "text": "0"
+        },
+        {
+          "id": "C",
+          "text": "1"
+        },
+        {
+          "id": "D",
+          "text": "10"
+        },
+        {
+          "id": "E",
+          "text": "11"
+        },
+        {
+          "id": "F",
+          "text": "100"
+        },
+        {
+          "id": "G",
+          "text": "110"
+        },
+        {
+          "id": "H",
+          "text": "111"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    },
+    "image_asset": "ttdpt_source_code_matrix.png"
+  },
+  {
+    "source_index": "93",
+    "type": "fill_blank",
+    "content": "Hai từ mã 0000 1111 và 0101 1010 có khoảng cách Hamming bằng bao nhiêu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "4"
+      ]
+    }
+  },
+  {
+    "source_index": "94",
+    "type": "fill_blank",
+    "content": "Dùng 5 bit mã hóa các giá trị tự nhiên liên tiếp bắt đầu từ 5. Giá trị lớn nhất mã hóa được là bao nhiêu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "36"
+      ]
+    }
+  },
+  {
+    "source_index": "103",
+    "type": "multiple_choice",
+    "content": "Một chương trình truyền hình tương tác trực tiếp với khán giả qua sóng truyền hình sử dụng chế độ truyền nào?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "Đơn công"
+        },
+        {
+          "id": "B",
+          "text": "Bán song công"
+        },
+        {
+          "id": "C",
+          "text": "Song công toàn phần"
+        },
+        {
+          "id": "D",
+          "text": "Song công một phần"
+        }
+      ],
+      "correct": [
+        "A"
+      ]
+    }
+  },
+  {
+    "source_index": "104",
+    "type": "multiple_choice",
+    "content": "Trong phương pháp truyền dị bộ, số bit parity trong một lần truyền có thể là bao nhiêu?",
+    "config": {
+      "options": [
+        {
+          "id": "A",
+          "text": "0"
+        },
+        {
+          "id": "B",
+          "text": "1"
+        },
+        {
+          "id": "C",
+          "text": "2"
+        },
+        {
+          "id": "D",
+          "text": "3"
+        },
+        {
+          "id": "E",
+          "text": "4"
+        },
+        {
+          "id": "F",
+          "text": "5"
+        }
+      ],
+      "correct": [
+        "A",
+        "B",
+        "C"
+      ]
+    }
+  },
+  {
+    "source_index": "110",
+    "type": "fill_blank",
+    "content": "Truyền bán song công giữa A và B: A có 22 gói, B có 13 gói. Cần ít nhất bao nhiêu lần truyền để trao đổi xong dữ liệu? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "43"
+      ]
+    }
+  },
+  {
+    "source_index": "128",
+    "type": "fill_blank",
+    "content": "Dựa vào cây mã trong hình, từ mã ở mức 5 là gì?",
+    "config": {
+      "accepted_answers": [
+        "11001"
+      ]
+    },
+    "image_asset": "ttdpt_source_code_tree.png"
+  },
+  {
+    "source_index": "129",
+    "type": "fill_blank",
+    "content": "Có mấy loại đa phương tiện? (Trả lời bằng số)",
+    "config": {
+      "accepted_answers": [
+        "6"
+      ]
+    }
+  },
+  {
+    "source_index": "135",
+    "type": "matching",
+    "content": "Quan sát bốn biểu tượng trong hình. Ghép từng biểu tượng với loại dữ liệu tương ứng.",
+    "image_asset": "ttdpt_source_data_icons.png",
+    "config": {
+      "pairs": [
+        {
+          "left": "Biểu tượng 1",
+          "right": "Tạo ra bởi máy tính, liên tục"
+        },
+        {
+          "left": "Biểu tượng 2",
+          "right": "Thu nhận từ thế giới thực, rời rạc"
+        },
+        {
+          "left": "Biểu tượng 3",
+          "right": "Thu nhận từ thế giới thực, liên tục"
+        },
+        {
+          "left": "Biểu tượng 4",
+          "right": "Tạo ra bởi máy tính, rời rạc"
+        }
+      ]
+    }
+  }
+]

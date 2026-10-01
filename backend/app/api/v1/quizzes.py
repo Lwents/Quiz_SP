@@ -308,6 +308,15 @@ async def get_quiz_detail(
             sanitized_config = dict(q.config or {})
             sanitized_config.pop("correct", None)
             sanitized_config.pop("accepted_answers", None)
+
+            # Keep the visible ordering items while hiding the answer key.
+            # Older seeded questions only stored `correct_order`, so derive
+            # the display list before removing that field.
+            if q.type == QuestionType.ORDERING:
+                sanitized_config["items"] = list(
+                    sanitized_config.get("items")
+                    or (q.config or {}).get("correct_order", [])
+                )
             sanitized_config.pop("correct_order", None)
 
             # For matching pairs, hide right-side mapping association
