@@ -40,12 +40,12 @@ export function makeDevice(id: string, kind: DeviceKind, name: string, x: number
     id, kind, name, x, y,
     ...(kind === 'switch' ? { switchModel } : {}),
     gateway: '', ripNetworks: [],
-    ports: names.map(port => ({ name: port, ip: '', mask: '255.255.255.0', enabled: true })),
+    ports: names.map(port => ({ name: port, ip: '', mask: '255.255.255.0', enabled: kind !== 'router' })),
   };
 }
 
 function setPort(device: Device, name: string, ip: string, mask: string): Device {
-  return { ...device, ports: device.ports.map(port => port.name === name ? { ...port, ip, mask } : port) };
+  return { ...device, ports: device.ports.map(port => port.name === name ? { ...port, ip, mask, enabled: true } : port) };
 }
 
 function pc(id: string, name: string, x: number, y: number, ip: string, mask: string, gateway = ''): Device {

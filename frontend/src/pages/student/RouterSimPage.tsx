@@ -97,6 +97,7 @@ export const RouterSimPage: React.FC = () => {
   const [popup, setPopup] = useState<Popup>(null);
   const [canvasMenu, setCanvasMenu] = useState<{ x: number; y: number } | null>(null);
   const [pending, setPending] = useState<Endpoint | null>(null);
+  const [cableCursor, setCableCursor] = useState<{ x: number; y: number } | null>(null);
   const [dceEnd, setDceEnd] = useState<'first' | 'second' | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hostConfigId, setHostConfigId] = useState<string | null>(null);
@@ -255,13 +256,19 @@ export const RouterSimPage: React.FC = () => {
   const choosePort = (point: Endpoint) => {
     const key = `${point.deviceId}:${point.port}`;
     if (occupied.has(key)) { setStatus('This port already has a cable. Disconnect it before connecting another.'); setPopup(null); return; }
-    if (!pending) { setPending(point); setDceEnd(point.port.startsWith('S') ? null : 'first'); setStatus(`Connect ${point.port} to a port on another device.`); }
-    else if (pending.deviceId === point.deviceId) { setPending(null); setDceEnd(null); setStatus('Cable canceled.'); }
+    if (!pending) {
+      setPending(point);
+      setDceEnd('first');
+      const source = topology.devices.find(device => device.id === point.deviceId);
+      if (source) setCableCursor(dot(source, point.port));
+      setStatus(`Connect ${point.port} to a port on another device.`);
+    }
+    else if (pending.deviceId === point.deviceId) { setPending(null); setCableCursor(null); setDceEnd(null); setStatus('Cable canceled.'); }
     else {
       const serial = pending.port.startsWith('S') || point.port.startsWith('S');
       if (serial && dceEnd === null) { setStatus('Choose which end of the serial cable is DCE first.'); setPopup(null); return; }
       setTopology(old => ({ ...old, cables: [...old.cables, { id: `c${Date.now()}`, a: pending, b: point, ...(serial ? { dce: dceEnd === 'second' ? point : pending } : {}) }] }));
-      setPending(null); setDceEnd(null); setStatus(serial ? 'Serial cable connected. Set clock rate on the DCE interface.' : 'Cable connected.'); setPing(null);
+      setPending(null); setCableCursor(null); setDceEnd(null); setStatus(serial ? 'Serial cable connected. Set clock rate on the DCE interface.' : 'Cable connected.'); setPing(null);
     }
     setPopup(null);
   };
@@ -331,17 +338,25 @@ export const RouterSimPage: React.FC = () => {
     if (!input) { setLines(old => [...old, prompt()]); return; }
     setCommandHistory(old => [...old.slice(-49), input]);
     setCommandHistoryIndex(-1);
-    const cmd = input.toLowerCase().replace(/\s+/g, ' ');
+    const typed = input.toLowerCase().replace(/\s+/g, ' ');
+    const cmd = typed.replace(/^sh\b/, 'show').replace(/^show run$/, 'show running-config').replace(/^show start$/, 'show startup-config').replace(/^show ip int br(?:ief)?$/, 'show ip interface brief').replace(/^show int br(?:ief)?$/, 'show ip interface brief').replace(/^config t$/, 'configure terminal').replace(/^copy run start$/, 'copy running-config startup-config');
     const output: string[] = [];
+    const runningConfig = () => [
+      'Building configuration...', 'Current configuration:', '!', `hostname ${consoleDevice.name.replace(/\s/g, '')}`,
+      ...consoleDevice.ports.flatMap(port => ['!', `interface ${port.name}`, ...(port.ip ? [` ip address ${port.ip} ${port.mask}`] : [' no ip address']), ...(port.clockRate ? [` clock rate ${port.clockRate}`] : []), port.enabled ? ' no shutdown' : ' shutdown']),
+      ...(consoleDevice.ripNetworks.length ? ['!', 'router rip', ...consoleDevice.ripNetworks.map(net => ` network ${net}`)] : []), '!', 'end',
+    ];
+    const interfaces = () => consoleDevice.ports.flatMap(port => [`${port.name} is ${port.enabled ? 'up' : 'administratively down'}, line protocol is ${port.enabled && occupied.has(`${consoleDevice.id}:${port.name}`) ? 'up' : 'down'}`, `  Internet address is ${port.ip || 'unassigned'}${port.ip ? `/${networkInfo(port.ip, port.mask)?.prefix ?? ''}` : ''}`, `  MTU 1500 bytes${port.clockRate ? `, clock rate ${port.clockRate}` : ''}`]);
     if (consoleDevice.kind === 'pc') {
-      if (cmd === 'ipconfig' || cmd === 'ipconfig /all') output.push(`IP Address . . . . . . : ${consoleDevice.ports[0].ip || '0.0.0.0'}`, `Subnet Mask  . . . . . : ${consoleDevice.ports[0].mask}`, `Default Gateway . . . : ${consoleDevice.gateway || '0.0.0.0'}`);
+      if (cmd === 'ipconfig' || cmd === 'ipconfig /all') output.push('Ethernet adapter Local Area Connection:', '', ...(cmd.endsWith('/all') ? ['   Description . . . . . . : RouterSim Host Adapter', '   DHCP Enabled. . . . . . : No'] : []), `   IP Address . . . . . . : ${consoleDevice.ports[0].ip || '0.0.0.0'}`, `   Subnet Mask  . . . . . : ${consoleDevice.ports[0].mask}`, `   Default Gateway . . . : ${consoleDevice.gateway || '0.0.0.0'}`);
       else if (cmd.startsWith('ping ')) {
         const result = simulatePing(topology, consoleDevice.id, input.split(/\s+/)[1] || '');
         output.push(`Pinging ${input.split(/\s+/)[1]}...`, result.ok ? 'Reply from destination: bytes=32 time<1ms TTL=128' : 'Request timed out.', result.ok ? 'Packets: Sent = 1, Received = 1, Lost = 0' : `Packets: Sent = 1, Received = 0, Lost = 1`, `Why: ${result.why}`);
       } else if (cmd === 'help' || cmd === '?') output.push('Commands: ipconfig, ipconfig /all, ping IP');
       else output.push('Bad command or file name. Type help.');
     } else if (consoleDevice.kind === 'router') {
-      if (cmd === 'enable' || cmd === 'ena') { setConsoleMode('privileged'); }
+      if (cmd === 'enable' || cmd === 'ena' || cmd === 'en') { setConsoleMode('privileged'); }
+      else if (cmd === 'disable') setConsoleMode('user');
       else if (cmd === 'conf t' || cmd === 'configure terminal') { setConsoleMode('config'); output.push('Enter configuration commands, one per line.'); }
       else if (cmd === 'end') setConsoleMode('privileged');
       else if (cmd === 'exit') setConsoleMode(consoleMode === 'interface' || consoleMode === 'rip' ? 'config' : 'privileged');
@@ -370,13 +385,24 @@ export const RouterSimPage: React.FC = () => {
         const net = cmd.split(' ').at(-1)!;
         if (ipNumber(net) === null) output.push('% Invalid network address.');
         else updateDevice(consoleDevice.id, d => ({ ...d, ripNetworks: cmd.startsWith('no ') ? d.ripNetworks.filter(n => n !== net) : [...new Set([...d.ripNetworks, net])] }));
-      } else if (cmd === 'show ip route') output.push(...(routesFor(consoleDevice).length ? routesFor(consoleDevice) : ['Gateway of last resort is not set', 'No routes.']));
-      else if (cmd === 'show ip interface brief') output.push('Interface       IP-Address      Status', ...consoleDevice.ports.map(p => `${p.name.padEnd(15)} ${String(p.ip || 'unassigned').padEnd(15)} ${p.enabled ? 'up' : 'down'}`));
-      else if (cmd === 'wr' || cmd === 'write memory') output.push('Building configuration...', '[OK]');
-      else if (cmd === 'help' || cmd === '?') output.push('enable, conf t, hostname, int F0/0, ip add IP MASK, no shut, clock rate 64000, router rip, network NET, show ip route, show ip interface brief, end, wr');
+      } else if (cmd === 'show ip route') output.push('Codes: C - connected, R - RIP', 'Gateway of last resort is not set', ...(routesFor(consoleDevice).length ? routesFor(consoleDevice) : ['No routes.']));
+      else if (cmd === 'show ip interface brief') output.push('Interface       IP-Address      OK? Method Status                Protocol', ...consoleDevice.ports.map(p => `${p.name.padEnd(15)} ${String(p.ip || 'unassigned').padEnd(15)} YES manual ${p.enabled ? 'up'.padEnd(21) : 'administratively down'} ${p.enabled && occupied.has(`${consoleDevice.id}:${p.name}`) ? 'up' : 'down'}`));
+      else if (cmd === 'show interfaces' || cmd === 'show interface') output.push(...interfaces());
+      else if (/^show (interfaces?|int)\s+/.test(cmd)) { const name = cmd.split(' ').slice(2).join('').toUpperCase().replace(/^FASTETHERNET/, 'F').replace(/^FA/, 'F').replace(/^SERIAL/, 'S'); const port = consoleDevice.ports.find(p => p.name === name); if (port) output.push(`${port.name} is ${port.enabled ? 'up' : 'administratively down'}, line protocol is ${port.enabled && occupied.has(`${consoleDevice.id}:${port.name}`) ? 'up' : 'down'}`, `  Internet address is ${port.ip || 'unassigned'}`, `  MTU 1500 bytes${port.clockRate ? `, clock rate ${port.clockRate}` : ''}`); else output.push('% Invalid interface.'); }
+      else if (cmd === 'show running-config' || cmd === 'show startup-config') output.push(...runningConfig());
+      else if (cmd === 'show ip protocols') output.push(consoleDevice.ripNetworks.length ? 'Routing Protocol is "rip"' : 'Routing Protocol is not configured', ...consoleDevice.ripNetworks.map(net => `  Routing for Networks: ${net}`));
+      else if (cmd === 'show version') output.push('RouterSim Network Visualizer · Cisco 2600 command practice', `${consoleDevice.name} uptime is simulated`, `${consoleDevice.ports.length} network interfaces`);
+      else if (cmd === 'show arp') output.push('Protocol  Address          Interface', ...consoleDevice.ports.filter(p => p.ip).map(p => `Internet  ${p.ip.padEnd(16)} ${p.name}`));
+      else if (cmd === 'show cdp neighbors') output.push('Device ID          Local Intrfce      Port ID', ...topology.cables.flatMap(cable => { const end = cable.a.deviceId === consoleDevice.id ? cable.a : cable.b.deviceId === consoleDevice.id ? cable.b : null; if (!end) return []; const peer = end === cable.a ? cable.b : cable.a; const device = topology.devices.find(d => d.id === peer.deviceId); return device && device.kind !== 'pc' ? [`${device.name.padEnd(18)} ${end.port.padEnd(18)} ${peer.port}`] : []; }));
+      else if (cmd === 'show ?') output.push('arp  cdp  interfaces  ip  running-config  startup-config  version');
+      else if (cmd === 'show ip ?') output.push('interface  protocols  route');
+      else if (cmd === 'interface ?' && consoleMode === 'config') output.push(consoleDevice.ports.map(p => p.name).join('  '));
+      else if (cmd === 'wr' || cmd === 'write memory' || cmd === 'copy running-config startup-config') output.push('Building configuration...', '[OK]');
+      else if (cmd === 'help' || cmd === '?') output.push('enable  configure terminal  interface  router rip  show  copy  write memory  exit', 'Use show ? or show ip ? for available display commands.');
       else output.push('% Invalid input detected. Type help for supported commands.');
     } else {
-      if (cmd === 'enable' || cmd === 'ena') setConsoleMode('privileged');
+      if (cmd === 'enable' || cmd === 'ena' || cmd === 'en') setConsoleMode('privileged');
+      else if (cmd === 'disable') setConsoleMode('user');
       else if (cmd === 'conf t' || cmd === 'configure terminal') { setConsoleMode('config'); output.push('Enter configuration commands, one per line.'); }
       else if (cmd === 'end') setConsoleMode('privileged');
       else if (cmd === 'exit') setConsoleMode(consoleMode === 'interface' ? 'config' : 'privileged');
@@ -386,7 +412,10 @@ export const RouterSimPage: React.FC = () => {
       else if (cmd === 'shutdown' && consoleMode === 'interface') updatePort(consoleDevice.id, consolePort, { enabled: false });
       else if (cmd === 'show interfaces status' || cmd === 'show int status') output.push('Port   Status       VLAN', ...consoleDevice.ports.map(port => `${port.name.padEnd(6)} ${port.enabled ? 'connected' : 'disabled '}    1`));
       else if (cmd === 'show vlan brief') output.push('VLAN Name                             Status    Ports', `1    default                          active    ${consoleDevice.ports.filter(port => port.enabled).map(port => port.name).join(', ')}`);
-      else if (cmd === 'wr' || cmd === 'write memory') output.push('Building configuration...', '[OK]');
+      else if (cmd === 'show running-config' || cmd === 'show startup-config') output.push(...runningConfig());
+      else if (cmd === 'show ip interface brief') output.push('Interface       IP-Address      Status', ...consoleDevice.ports.map(p => `${p.name.padEnd(15)} ${String(p.ip || 'unassigned').padEnd(15)} ${p.enabled ? 'up' : 'down'}`));
+      else if (cmd === 'show ?') output.push('interfaces  ip  running-config  startup-config  vlan');
+      else if (cmd === 'wr' || cmd === 'write memory' || cmd === 'copy running-config startup-config') output.push('Building configuration...', '[OK]');
       else if (cmd === 'help' || cmd === '?') output.push('enable, conf t, hostname NAME, int P1, shutdown, no shut, show interfaces status, show vlan brief, end, wr');
       else output.push('% Invalid input detected. Type help for supported commands.');
     }
@@ -515,8 +544,9 @@ export const RouterSimPage: React.FC = () => {
         {toolbarGroups.tools && <><ToolButton title="Net Assessment (Ctrl+A)" onClick={() => setShowAssessment(true)}><img src="/routersim/assessment_up.png" alt="Net Assessment" /></ToolButton><ToolButton title="Net Configs (Ctrl+F)" onClick={() => setShowNetConfigs(true)}><img src="/routersim/netconfig_up.png" alt="Net Configs" /></ToolButton><ToolButton title="Net Packet Monitor (Ctrl+T)" onClick={() => setShowPing(true)}><img src="/routersim/netpacket_up.png" alt="Net Packet Monitor" /></ToolButton></>}
       </div>
       <div className="min-h-0 flex-1 overflow-auto" style={{ backgroundColor: canvasColor }}>
-        <div ref={canvasRef} className="relative" style={{ width: canvasWidth, height: canvasHeight, backgroundColor: canvasColor }} onClick={() => { setPopup(null); setMenu(null); setCanvasMenu(null); }} onContextMenu={e => { e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); setPopup(null); setCanvasMenu({ x: Math.min(canvasWidth - 190, e.clientX - rect.left), y: Math.min(canvasHeight - 360, e.clientY - rect.top) }); }} onDragOver={e => { if (e.dataTransfer.types.includes('application/x-routersim-device')) e.preventDefault(); }} onDrop={e => { const kind = e.dataTransfer.getData('application/x-routersim-device'); if (!['pc', 'router', 'switch', 'netconnect'].includes(kind)) return; e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); const model = e.dataTransfer.getData('application/x-routersim-model'); addDeviceAt(kind as DeviceKind, { x: Math.max(2, Math.min(canvasWidth - PICTURE_SIZE[kind as DeviceKind].width, e.clientX - rect.left - 25)), y: Math.max(2, Math.min(canvasHeight - 55, e.clientY - rect.top - 20)) }, model === '1900' || model === '3550' ? model : '2950'); }}>
+        <div ref={canvasRef} className="relative" style={{ width: canvasWidth, height: canvasHeight, backgroundColor: canvasColor }} onPointerMove={e => { if (!pending) return; const rect = e.currentTarget.getBoundingClientRect(); setCableCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top }); }} onClick={() => { setPopup(null); setMenu(null); setCanvasMenu(null); }} onContextMenu={e => { e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); setPopup(null); setCanvasMenu({ x: Math.min(canvasWidth - 190, e.clientX - rect.left), y: Math.min(canvasHeight - 360, e.clientY - rect.top) }); }} onDragOver={e => { if (e.dataTransfer.types.includes('application/x-routersim-device')) e.preventDefault(); }} onDrop={e => { const kind = e.dataTransfer.getData('application/x-routersim-device'); if (!['pc', 'router', 'switch', 'netconnect'].includes(kind)) return; e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); const model = e.dataTransfer.getData('application/x-routersim-model'); addDeviceAt(kind as DeviceKind, { x: Math.max(2, Math.min(canvasWidth - PICTURE_SIZE[kind as DeviceKind].width, e.clientX - rect.left - 25)), y: Math.max(2, Math.min(canvasHeight - 55, e.clientY - rect.top - 20)) }, model === '1900' || model === '3550' ? model : '2950'); }}>
           <svg className="pointer-events-none absolute inset-0" width={canvasWidth} height={canvasHeight}>
+            <defs><marker id="routersim-cable-arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M 0 0 L 9 4.5 L 0 9 z" fill="#ff3030" /></marker></defs>
             {topology.cables.map(link => {
               const a = topology.devices.find(d => d.id === link.a.deviceId); const b = topology.devices.find(d => d.id === link.b.deviceId);
               if (!a || !b) return null;
@@ -531,13 +561,20 @@ export const RouterSimPage: React.FC = () => {
               const serialPath = `M ${one.x} ${one.y} L ${middle.x - 28} ${middle.y} L ${middle.x + 10} ${middle.y - 11} L ${middle.x - 8} ${middle.y + 9} L ${middle.x + 28} ${middle.y} L ${two.x} ${two.y}`;
               return <g key={link.id}>{serial ? <path d={serialPath} fill="none" stroke="#f32525" strokeWidth={lineThickness} strokeDasharray={!cableIsActive(topology, link) ? '6 3' : undefined} /> : <line x1={one.x} y1={one.y} x2={two.x} y2={two.y} stroke="#f0f0f0" strokeWidth={lineThickness} />}<circle cx={one.x} cy={one.y} r="2" fill="white" /><circle cx={two.x} cy={two.y} r="2" fill="white" />{(showPort || showIp) && <><text x={firstLabel.x} y={firstLabel.y} fill={serial ? '#ff3333' : 'white'} fontSize="11">{label(link.a.port, firstPort)}</text><text x={secondLabel.x} y={secondLabel.y} fill={serial ? '#ff3333' : 'white'} fontSize="11">{label(link.b.port, secondPort)}</text></>}</g>;
             })}
+            {pending && cableCursor && (() => {
+              const source = topology.devices.find(device => device.id === pending.deviceId);
+              if (!source) return null;
+              const start = dot(source, pending.port);
+              return <line data-testid="pending-cable" x1={start.x} y1={start.y} x2={cableCursor.x} y2={cableCursor.y} stroke="#ff3030" strokeWidth="2" markerEnd="url(#routersim-cable-arrow)" />;
+            })()}
           </svg>
-          {topology.devices.map(device => <div key={device.id} title={showTooltips ? `${device.name} · right-click for ports, double-click for console` : undefined} className="absolute select-none text-center text-white" style={{ left: device.x, top: device.y, width: PICTURE_SIZE[device.kind].width, touchAction: 'none', cursor: 'move' }}
-            onPointerDown={event => { if (event.button !== 0) return; event.currentTarget.setPointerCapture(event.pointerId); dragRef.current = { id: device.id, x: device.x, y: device.y, clientX: event.clientX, clientY: event.clientY }; setSelectedId(device.id); }}
+          {topology.devices.map(device => <div key={device.id} title={showTooltips ? `${device.name} · ${pending ? 'click for connection ports' : 'right-click for ports, double-click for console'}` : undefined} className="absolute select-none text-center text-white" style={{ left: device.x, top: device.y, width: PICTURE_SIZE[device.kind].width, touchAction: 'none', cursor: pending ? 'crosshair' : 'move' }}
+            onPointerDown={event => { if (event.button !== 0 || pending) return; event.currentTarget.setPointerCapture(event.pointerId); dragRef.current = { id: device.id, x: device.x, y: device.y, clientX: event.clientX, clientY: event.clientY }; setSelectedId(device.id); }}
             onPointerMove={event => { const drag = dragRef.current; if (!drag || drag.id !== device.id) return; updateDevice(device.id, d => ({ ...d, x: Math.max(3, Math.min(canvasWidth - PICTURE_SIZE[d.kind].width - 4, drag.x + event.clientX - drag.clientX)), y: Math.max(3, Math.min(canvasHeight - 60, drag.y + event.clientY - drag.clientY)) })); }}
             onPointerUp={() => { dragRef.current = null; }}
+            onClick={event => { if (!pending) return; event.stopPropagation(); if (device.id === pending.deviceId) return; if (device.kind === 'pc' && !occupied.has(`${device.id}:Eth0`)) choosePort({ deviceId: device.id, port: 'Eth0' }); else setPopup({ deviceId: device.id, x: Math.max(0, Math.min(canvasWidth - (device.kind === 'router' ? 497 : device.kind === 'pc' ? 355 : 430), device.x + 25)), y: Math.max(0, Math.min(canvasHeight - 110, device.y + 30)) }); }}
             onDoubleClick={event => { event.stopPropagation(); if (device.kind === 'netconnect') setShowNetConnectManager(true); else openConsole(device); }}
-            onContextMenu={event => { event.preventDefault(); event.stopPropagation(); setSelectedId(device.id); setCanvasMenu(null); setPopup({ deviceId: device.id, x: Math.min(canvasWidth - 510, device.x + 25), y: Math.min(canvasHeight - 170, device.y + 30) }); }}>
+            onContextMenu={event => { event.preventDefault(); event.stopPropagation(); setSelectedId(device.id); setCanvasMenu(null); setPopup({ deviceId: device.id, x: Math.max(0, Math.min(canvasWidth - (device.kind === 'router' ? 497 : device.kind === 'pc' ? 355 : 430), device.x + 25)), y: Math.max(0, Math.min(canvasHeight - 110, device.y + 30)) }); }}>
             {showHostnames && <div className="mb-1 truncate text-[11px]" style={{ textShadow: '1px 1px black' }}>{device.name}</div>}
             <img src={pictureFor(device)} alt={device.kind} width={PICTURE_SIZE[device.kind].width} height={PICTURE_SIZE[device.kind].height} className={`mx-auto block ${selectedId === device.id ? 'outline outline-1 outline-dotted outline-white' : ''}`} draggable={false} style={{ imageRendering: 'pixelated' }} />
             {showIp && device.kind !== 'switch' && device.kind !== 'netconnect' && <div className="mt-1 whitespace-nowrap text-[10px]">{device.ports.find(p => p.ip)?.ip || 'unassigned'}</div>}
@@ -549,11 +586,13 @@ export const RouterSimPage: React.FC = () => {
                 ['F0/1', 103, 41, 68, 29], ['F0/0', 182, 41, 68, 29],
               ] as const).map(([name, x, y, w, h]) => <PortHotspot key={name} name={name} x={x} y={y} w={w} h={h} connected={occupied.has(`${popupDevice.id}:${name}`)} onChoose={() => choosePort({ deviceId: popupDevice.id, port: name })} onDisconnect={() => disconnect({ deviceId: popupDevice.id, port: name })} />)}
               <button className="absolute bottom-2 left-3 h-5 w-11" title="Close" onClick={() => setPopup(null)} />
-            </div> : popupDevice.kind === 'pc' ? <div className="relative flex h-[86px] w-[355px] items-center justify-between border-[3px] border-[#2085db] bg-gradient-to-b from-[#67aadb] to-[#abd9fa] px-3 shadow-inner">
-              <button className="self-end rounded border border-slate-600 bg-gradient-to-b from-white to-[#c0cad3] px-3 py-0.5 text-xs" onClick={() => setPopup(null)}>Close</button>
-              <div className="absolute left-3 top-1 text-lg font-bold text-white">Host</div>
-              <div className="flex flex-col items-center gap-1"><span className="text-sm font-bold">F0/0</span><button title="F0/0 · click to connect" onClick={() => choosePort({ deviceId: popupDevice.id, port: 'Eth0' })} className="flex h-8 w-9 items-center justify-center border border-slate-700 bg-gradient-to-b from-slate-200 to-slate-500 text-xl hover:outline hover:outline-yellow-400">▣</button>{occupied.has(`${popupDevice.id}:Eth0`) && <button onClick={() => disconnect({ deviceId: popupDevice.id, port: 'Eth0' })} className="text-[10px] text-red-800 underline">Disconnect</button>}</div>
-              <button onClick={() => openHostConfig(popupDevice)} className="self-end rounded border border-slate-700 bg-gradient-to-b from-white to-[#c0cad3] px-3 py-0.5 text-xs font-bold">Configs</button>
+            </div> : popupDevice.kind === 'pc' ? <div className="relative h-[86px] w-[355px] border-[3px] border-[#2189d8] bg-gradient-to-r from-[#78b8e2] to-[#a8d7f7] font-[Tahoma] shadow-inner">
+              <strong className="absolute left-3 top-2 text-lg text-white">Host</strong>
+              <span className="absolute left-[145px] top-1 text-sm font-bold">F0/0</span>
+              <button title="F0/0 · click to connect" aria-label="F0/0 · connect cable" onClick={() => choosePort({ deviceId: popupDevice.id, port: 'Eth0' })} className="absolute left-[149px] top-[27px] grid h-8 w-9 place-items-center border border-[#333b44] bg-gradient-to-b from-[#dce9f2] to-[#7c9cba] shadow-[inset_1px_1px_0_white] hover:outline hover:outline-2 hover:outline-yellow-400"><span className="grid h-[17px] w-[17px] place-items-center border-2 border-black bg-[#1b4d73] text-[8px] text-white">▣</span></button>
+              {occupied.has(`${popupDevice.id}:Eth0`) && <button onClick={() => disconnect({ deviceId: popupDevice.id, port: 'Eth0' })} className="absolute left-[139px] top-[61px] text-[10px] font-bold text-red-700 underline">Disconnect</button>}
+              <button className="absolute bottom-1 left-3 rounded border border-slate-600 bg-gradient-to-b from-white to-[#c0cad3] px-4 py-0.5 text-xs" onClick={() => setPopup(null)}>Close</button>
+              <button onClick={() => openHostConfig(popupDevice)} className="absolute bottom-1 right-3 rounded border border-slate-700 bg-gradient-to-b from-white to-[#c0cad3] px-3 py-0.5 text-xs font-bold">Configs</button>
             </div> : popupDevice.kind === 'netconnect' ? <div className="w-52 overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] p-2"><strong>{popupDevice.name}</strong><p className="my-1 text-[10px]">Local two-port bridge</p><div className="flex gap-2">{popupDevice.ports.map(port => <button key={port.name} onClick={() => choosePort({ deviceId: popupDevice.id, port: port.name })} className="border border-slate-600 bg-white px-2 py-1">{port.name}</button>)}</div><button className="mt-2 underline" onClick={() => { setPopup(null); setShowNetConnectManager(true); }}>Configure...</button></div> : <div className="relative h-[100px] w-[430px] border-[3px] border-slate-500 bg-gradient-to-b from-[#f5f7f6] via-[#8fa1a4] to-[#4a6168] p-2">
               <div className="mb-1 font-bold text-slate-800">{popupDevice.switchModel || '2950'} Switch · {popupDevice.name}</div>
               <div className="flex flex-wrap gap-1">{popupDevice.ports.map(port => <div key={port.name} className="group relative text-center"><button title={`${port.name} · click to connect`} onClick={() => choosePort({ deviceId: popupDevice.id, port: port.name })} className={`h-5 w-7 border border-slate-700 text-[10px] text-white hover:outline hover:outline-yellow-300 ${occupied.has(`${popupDevice.id}:${port.name}`) ? 'bg-emerald-800' : 'bg-slate-950'}`}>▣</button>{occupied.has(`${popupDevice.id}:${port.name}`) && <button title={`Disconnect ${port.name}`} onClick={() => disconnect({ deviceId: popupDevice.id, port: port.name })} className="absolute -right-1 -top-2 hidden rounded bg-red-600 px-1 text-[9px] text-white group-hover:block">×</button>}<div className="text-[9px] font-bold text-white">{port.name}</div></div>)}</div>
@@ -570,7 +609,7 @@ export const RouterSimPage: React.FC = () => {
             <MenuSubmenu label="Insert"><MenuItem label="Host" onClick={() => { setCanvasMenu(null); addDeviceAt('pc', canvasMenu); }} /><MenuItem label="Net Connect" onClick={() => { setCanvasMenu(null); addDeviceAt('netconnect', canvasMenu); }} /><MenuItem label="Router 2600" onClick={() => { setCanvasMenu(null); addDeviceAt('router', canvasMenu); }} />{(['1900', '2950', '3550'] as const).map(model => <MenuItem key={model} label={`Switch ${model}`} onClick={() => { setCanvasMenu(null); addDeviceAt('switch', canvasMenu, model); }} />)}</MenuSubmenu>
             <MenuItem label="Device List" onClick={() => { setCanvasMenu(null); setShowDeviceList(true); }} /><MenuItem label="Net Assessment" onClick={() => { setCanvasMenu(null); setShowAssessment(true); }} /><MenuItem label="Net Configs" onClick={() => { setCanvasMenu(null); setShowNetConfigs(true); }} /><MenuItem label="Net Connect Manager" onClick={() => { setCanvasMenu(null); setShowNetConnectManager(true); }} /><MenuItem label="Net Packet Monitor" onClick={() => { setCanvasMenu(null); setShowPing(true); }} /><MenuItem label="Preferences" onClick={() => { setCanvasMenu(null); setShowPreferences(true); }} /><MenuItem label="Help" onClick={() => { setCanvasMenu(null); setShowGuide(true); }} />
           </div>}
-          {pending && <div className="absolute bottom-2 left-2 rounded bg-yellow-100 px-2 py-1 text-xs text-black">Cable: {topology.devices.find(d => d.id === pending.deviceId)?.name} {pending.port} → right-click another device, then choose its port. {(pending.port.startsWith('S') || dceEnd === null) && <span className="ml-2">DCE end: <button className={`px-1 ${dceEnd === 'first' ? 'font-bold underline' : ''}`} onClick={e => { e.stopPropagation(); setDceEnd('first'); }}>This end</button> / <button className={`px-1 ${dceEnd === 'second' ? 'font-bold underline' : ''}`} onClick={e => { e.stopPropagation(); setDceEnd('second'); }}>Other end</button></span>} <button className="underline" onClick={e => { e.stopPropagation(); setPending(null); setDceEnd(null); }}>Cancel</button></div>}
+          {pending && <div className="absolute bottom-2 left-2 rounded bg-yellow-100 px-2 py-1 text-xs text-black">Cable: {topology.devices.find(d => d.id === pending.deviceId)?.name} {pending.port} → click another device, then choose its port. {pending.port.startsWith('S') && <span className="ml-2">DCE end: <button className={`px-1 ${dceEnd === 'first' ? 'font-bold underline' : ''}`} onClick={e => { e.stopPropagation(); setDceEnd('first'); }}>This end</button> / <button className={`px-1 ${dceEnd === 'second' ? 'font-bold underline' : ''}`} onClick={e => { e.stopPropagation(); setDceEnd('second'); }}>Other end</button></span>} <button className="underline" onClick={e => { e.stopPropagation(); setPending(null); setCableCursor(null); setDceEnd(null); }}>Cancel</button></div>}
         </div>
       </div>
       <div className="flex h-7 items-center justify-between border-t border-slate-500 bg-[#ece9d8] px-2 text-[11px]"><span className="truncate">{status}</span><span className="ml-3 whitespace-nowrap">{topology.devices.length} devices · {topology.cables.length} cables</span></div>
