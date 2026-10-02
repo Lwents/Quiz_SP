@@ -79,16 +79,18 @@ function dot(device: Device, port: string, otherCenterX?: number): { x: number; 
 }
 
 function CableEndLabel({ device, port, point, other, serial, showPort, showIp }: { device: Device; port?: Port; point: { x: number; y: number }; other: { x: number; y: number }; serial: boolean; showPort: boolean; showIp: boolean }) {
-  if (!port || device.kind === 'pc' || (!showPort && !showIp)) return null;
-  const towardRight = other.x >= point.x;
-  const x = point.x + (towardRight ? 10 : -10);
-  const portY = point.y - 27;
-  const ipY = point.y - 43;
+  if (!port || (!showPort && !showIp)) return null;
+  const dx = other.x - point.x;
+  const dy = other.y - point.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const distance = Math.min(85, length * 0.22);
+  const x = point.x + dx / length * distance;
+  const y = point.y + dy / length * distance;
   const color = serial ? '#ff3030' : '#f8fbff';
   const ip = port.ip && networkInfo(port.ip, port.mask);
-  return <g fill={color} fontFamily="Arial, sans-serif" fontSize="11" textAnchor={towardRight ? 'start' : 'end'} style={{ paintOrder: 'stroke', stroke: '#000064', strokeWidth: 2 }}>
-    {showPort && <text x={x} y={portY}>{port.name}</text>}
-    {showIp && ip && <text x={x} y={ipY}>{port.ip}/{ip.prefix}</text>}
+  return <g fill={color} fontFamily="Arial, sans-serif" fontSize="11" textAnchor="middle" style={{ paintOrder: 'stroke', stroke: '#000064', strokeWidth: 2 }}>
+    {showPort && <text x={x} y={y - 7}>{port.name}</text>}
+    {showIp && ip && device.kind !== 'pc' && <text x={x} y={y + 13}>{port.ip}/{ip.prefix}</text>}
   </g>;
 }
 
