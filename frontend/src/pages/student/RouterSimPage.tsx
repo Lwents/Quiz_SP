@@ -67,11 +67,29 @@ function loadNewTab(id: string | null): { preset: LabPreset; topology: Topology;
   return { preset: 'blank', topology: { devices: [], cables: [] }, loadedNetworkName: null };
 }
 
-function dot(device: Device, port: string): { x: number; y: number } {
+function dot(device: Device, port: string, otherCenterX?: number): { x: number; y: number } {
   const index = Math.max(0, device.ports.findIndex(item => item.name === port));
   if (device.kind === 'pc' || device.kind === 'netconnect') return { x: device.x + 25, y: device.y + 42 };
   if (device.kind === 'switch') return { x: device.x + 13 + index * 11, y: device.y + 32 };
+  if (otherCenterX !== undefined) {
+    const rightSide = otherCenterX > device.x + PICTURE_SIZE[device.kind].width / 2;
+    return { x: device.x + (rightSide ? port.startsWith('S') ? 110 : 96 : port.startsWith('S') ? 40 : 35), y: device.y + 39 };
+  }
   return { x: device.x + 22 + index * 31, y: device.y + 39 };
+}
+
+function CableEndLabel({ device, port, point, other, serial, showPort, showIp }: { device: Device; port?: Port; point: { x: number; y: number }; other: { x: number; y: number }; serial: boolean; showPort: boolean; showIp: boolean }) {
+  if (!port || device.kind === 'pc' || (!showPort && !showIp)) return null;
+  const towardRight = other.x >= point.x;
+  const x = point.x + (towardRight ? 10 : -10);
+  const portY = point.y - 27;
+  const ipY = point.y - 43;
+  const color = serial ? '#ff3030' : '#f8fbff';
+  const ip = port.ip && networkInfo(port.ip, port.mask);
+  return <g fill={color} fontFamily="Arial, sans-serif" fontSize="11" textAnchor={towardRight ? 'start' : 'end'} style={{ paintOrder: 'stroke', stroke: '#000064', strokeWidth: 2 }}>
+    {showPort && <text x={x} y={portY}>{port.name}</text>}
+    {showIp && ip && <text x={x} y={ipY}>{port.ip}/{ip.prefix}</text>}
+  </g>;
 }
 
 function buttonStyle(active = false): React.CSSProperties {
@@ -550,21 +568,18 @@ export const RouterSimPage: React.FC = () => {
             {topology.cables.map(link => {
               const a = topology.devices.find(d => d.id === link.a.deviceId); const b = topology.devices.find(d => d.id === link.b.deviceId);
               if (!a || !b) return null;
-              const one = dot(a, link.a.port); const two = dot(b, link.b.port);
+              const one = dot(a, link.a.port, b.x + PICTURE_SIZE[b.kind].width / 2); const two = dot(b, link.b.port, a.x + PICTURE_SIZE[a.kind].width / 2);
               const serial = link.a.port.startsWith('S') || link.b.port.startsWith('S');
-              const firstLabel = { x: one.x + (two.x - one.x) * 0.34, y: one.y + (two.y - one.y) * 0.34 - 8 };
-              const secondLabel = { x: two.x + (one.x - two.x) * 0.34, y: two.y + (one.y - two.y) * 0.34 - 8 };
               const firstPort = a.ports.find(port => port.name === link.a.port);
               const secondPort = b.ports.find(port => port.name === link.b.port);
-              const label = (name: string, port?: Port) => `${showPort ? name : ''}${showPort && showIp && port?.ip ? ' · ' : ''}${showIp && port?.ip ? `${port.ip}/${networkInfo(port.ip, port.mask)?.prefix || ''}` : ''}`;
               const middle = { x: (one.x + two.x) / 2, y: (one.y + two.y) / 2 };
               const serialPath = `M ${one.x} ${one.y} L ${middle.x - 28} ${middle.y} L ${middle.x + 10} ${middle.y - 11} L ${middle.x - 8} ${middle.y + 9} L ${middle.x + 28} ${middle.y} L ${two.x} ${two.y}`;
-              return <g key={link.id}>{serial ? <path d={serialPath} fill="none" stroke="#f32525" strokeWidth={lineThickness} strokeDasharray={!cableIsActive(topology, link) ? '6 3' : undefined} /> : <line x1={one.x} y1={one.y} x2={two.x} y2={two.y} stroke="#f0f0f0" strokeWidth={lineThickness} />}<circle cx={one.x} cy={one.y} r="2" fill="white" /><circle cx={two.x} cy={two.y} r="2" fill="white" />{(showPort || showIp) && <><text x={firstLabel.x} y={firstLabel.y} fill={serial ? '#ff3333' : 'white'} fontSize="11">{label(link.a.port, firstPort)}</text><text x={secondLabel.x} y={secondLabel.y} fill={serial ? '#ff3333' : 'white'} fontSize="11">{label(link.b.port, secondPort)}</text></>}</g>;
+              return <g key={link.id}>{serial ? <path d={serialPath} fill="none" stroke="#f32525" strokeWidth={lineThickness} strokeDasharray={!cableIsActive(topology, link) ? '6 3' : undefined} /> : <line x1={one.x} y1={one.y} x2={two.x} y2={two.y} stroke="#f0f0f0" strokeWidth={lineThickness} />}<circle cx={one.x} cy={one.y} r="2" fill="white" /><circle cx={two.x} cy={two.y} r="2" fill="white" /><CableEndLabel device={a} port={firstPort} point={one} other={two} serial={serial} showPort={showPort} showIp={showIp} /><CableEndLabel device={b} port={secondPort} point={two} other={one} serial={serial} showPort={showPort} showIp={showIp} /></g>;
             })}
             {pending && cableCursor && (() => {
               const source = topology.devices.find(device => device.id === pending.deviceId);
               if (!source) return null;
-              const start = dot(source, pending.port);
+              const start = dot(source, pending.port, cableCursor.x);
               return <line data-testid="pending-cable" x1={start.x} y1={start.y} x2={cableCursor.x} y2={cableCursor.y} stroke="#ff3030" strokeWidth="2" markerEnd="url(#routersim-cable-arrow)" />;
             })()}
           </svg>
@@ -577,7 +592,8 @@ export const RouterSimPage: React.FC = () => {
             onContextMenu={event => { event.preventDefault(); event.stopPropagation(); setSelectedId(device.id); setCanvasMenu(null); setPopup({ deviceId: device.id, x: Math.max(0, Math.min(canvasWidth - (device.kind === 'router' ? 497 : device.kind === 'pc' ? 355 : 430), device.x + 25)), y: Math.max(0, Math.min(canvasHeight - 110, device.y + 30)) }); }}>
             {showHostnames && <div className="mb-1 truncate text-[11px]" style={{ textShadow: '1px 1px black' }}>{device.name}</div>}
             <img src={pictureFor(device)} alt={device.kind} width={PICTURE_SIZE[device.kind].width} height={PICTURE_SIZE[device.kind].height} className={`mx-auto block ${selectedId === device.id ? 'outline outline-1 outline-dotted outline-white' : ''}`} draggable={false} style={{ imageRendering: 'pixelated' }} />
-            {showIp && device.kind !== 'switch' && device.kind !== 'netconnect' && <div className="mt-1 whitespace-nowrap text-[10px]">{device.ports.find(p => p.ip)?.ip || 'unassigned'}</div>}
+            {showIp && device.kind === 'pc' && device.ports[0]?.ip && <div className={`absolute top-[18px] whitespace-nowrap font-mono text-[11px] font-bold text-[#00fb20] ${device.x > 105 ? 'right-[calc(100%+8px)]' : 'left-[calc(100%+8px)]'}`}>{device.ports[0].ip}/{networkInfo(device.ports[0].ip, device.ports[0].mask)?.prefix}</div>}
+            {showIp && device.kind !== 'switch' && device.kind !== 'netconnect' && !device.ports.some(port => port.ip) && <div className="mt-1 whitespace-nowrap text-[10px]">unassigned</div>}
           </div>)}
           {popup && popupDevice && <div className="absolute z-20 text-xs text-black shadow-xl" style={{ left: popup.x, top: popup.y }} onClick={e => e.stopPropagation()}>
             {popupDevice.kind === 'router' ? <div className="relative h-[86px] w-[497px]" style={{ backgroundImage: 'url(/routersim/router-back.png)', imageRendering: 'pixelated' }}>
