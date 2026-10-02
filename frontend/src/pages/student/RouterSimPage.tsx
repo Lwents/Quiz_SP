@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { apiClient } from '../../api/client';
 import {
   cableIsActive, createPreset, ipNumber, lanPeers, makeDevice, networkInfo, PRESET_LABELS, simulatePing, simulateRouterPing,
   type Device, type DeviceKind, type Endpoint, type LabPreset, type Port, type Topology,
@@ -745,13 +746,13 @@ export const RouterSimPage: React.FC = () => {
     {showPreferences && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onMouseDown={() => setShowPreferences(false)}><div className="w-[350px] overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-xl" onMouseDown={e => e.stopPropagation()}><WindowTitle title="Preferences" onClose={() => setShowPreferences(false)} /><div className="space-y-3 p-4 text-xs"><strong>Background Color</strong><p>Click a color to change the Network Visualizer background.</p><div className="grid grid-cols-10 gap-1">{['#ffffff','#000000','#000064','#0000ff','#00b7c6','#b9c9ff','#505050','#888888','#008542','#00e200','#ff00ff','#e6ad00','#ffaaaa','#e00000','#ffff00','#ffffcc','#dbffdf','#008b89'].map(color => <button key={color} title={color} aria-label={`Background ${color}`} onClick={() => setCanvasColor(color)} className={`h-5 w-5 border border-slate-500 ${canvasColor === color ? 'outline-2 outline-offset-1 outline-blue-700' : ''}`} style={{ backgroundColor: color }} />)}</div><label className="flex items-center gap-2"><input type="checkbox" checked={showDeviceListAtStart} onChange={e => setShowDeviceListAtStart(e.target.checked)} /> Show Device List with Network Visualizer</label><label className="flex items-center gap-2"><input type="checkbox" checked={autoSizeCanvas} onChange={e => setAutoSizeCanvas(e.target.checked)} /> Autosize Network Visualizer when loading a network</label><button onClick={() => setShowPreferences(false)} className="rounded-full border border-green-900 bg-gradient-to-b from-green-400 to-green-800 px-6 py-1 font-bold text-white">Close</button></div></div></div>}
 
     {showTeacherLabs && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-3" onMouseDown={() => setShowTeacherLabs(false)}><section aria-label="Bài tập của thầy COMP303" className="w-[min(900px,100%)] overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={event => event.stopPropagation()}><WindowTitle title="Bài tập của thầy · COMP303" onClose={() => setShowTeacherLabs(false)} /><div className="max-h-[75vh] overflow-auto p-4"><p className="mb-3 text-sm text-slate-700">Chọn sơ đồ để xem cấu hình mẫu và giải thích cách chia mạng. Những bài chỉ có yêu cầu được ghi rõ là phương án minh họa.</p><label className="mb-4 flex items-center gap-2 text-sm"><span>Số thứ tự (STT) cho bài 4 router:</span><input aria-label="Số thứ tự STT" type="number" min={1} max={254} value={draftStudentNumber} onChange={event => setDraftStudentNumber(Number(event.target.value))} className="w-20 rounded border border-slate-400 bg-white px-2 py-1" /></label><div className="grid gap-3 md:grid-cols-2">{TEACHER_LABS.map(lab => <article key={lab.id} className="rounded-lg border border-slate-300 bg-white p-3 shadow-sm"><div className="mb-1 text-xs font-semibold text-blue-800">{lab.basis}</div><h3 className="font-bold text-slate-900">{lab.title}</h3><p className="mt-1 text-xs text-slate-500">Nguồn: {lab.source}</p><p className="mt-2 text-sm leading-5">{lab.summary}</p><button onClick={() => openTeacherLab(lab)} className="mt-3 rounded-md bg-blue-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-800">Mở sơ đồ</button></article>)}</div></div></section></div>}
-    {teacherLab && showTeacherExplanation && <TeacherExplanationWindow lab={teacherLab} studentNumber={teacherStudentNumber} onClose={() => setShowTeacherExplanation(false)} />}
+    {teacherLab && showTeacherExplanation && <TeacherExplanationWindow key={`${teacherLab.id}:${teacherStudentNumber}`} lab={teacherLab} studentNumber={teacherStudentNumber} topology={topology} onClose={() => setShowTeacherExplanation(false)} />}
     {showGuide && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onMouseDown={() => setShowGuide(false)}><section className="w-[min(600px,calc(100vw-20px))] overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={event => event.stopPropagation()}><WindowTitle title="RouterSim Help · Làm bài COMP303" onClose={() => setShowGuide(false)} /><div className="max-h-[70vh] overflow-auto p-4 text-sm leading-6"><ol className="list-decimal pl-5"><li>Chọn sơ đồ trong <strong>View → Labs</strong> hoặc mở tệp RouterSim <code>.rsm</code> bằng <strong>File → Open</strong>. Vào <strong>Tools → Clear Configuration</strong> để bắt đầu cấu hình từ đầu.</li><li>Kéo thiết bị từ thanh công cụ hoặc Device List vào vùng xanh. Nhấp chuột phải lên thiết bị và chọn cổng ở hai đầu để nối dây. Với cáp serial, chọn đầu DCE và đặt <code>clock rate 64000</code> trên cổng DCE.</li><li>Nhấp phải PC → Configs để nhập IP, mask và gateway. Nhấp đúp router để mở console; gõ <code>enable</code>, <code>conf t</code>, <code>int F0/0</code>, <code>ip add ...</code>, <code>no shut</code>, <code>router rip</code> và <code>network ...</code>.</li><li>Nhấp đúp PC, chạy <code>ipconfig</code> hoặc <code>ping IP_đích</code>. Dùng <code>show ip route</code> để xem tuyến; dùng mũi tên ↑/↓ để gọi lại lệnh.</li></ol><p className="mt-2">Nút tròn xanh trên thanh tiêu đề mở toàn màn hình. Các phím tắt chính: Ctrl+O mở tệp, Ctrl+S lưu JSON, Ctrl+D mở Device List, Ctrl+F mở Net Configs, Ctrl+T mở Net Packet Monitor.</p></div></section></div>}
     <input ref={fileRef} type="file" accept=".json,.rsm,application/json,application/xml,text/xml" className="hidden" onChange={e => { void importFile(e.target.files?.[0]); e.target.value = ''; }} />
   </div>;
 };
 
-function TeacherExplanationWindow({ lab, studentNumber, onClose }: { lab: TeacherLab; studentNumber: number; onClose: () => void }) {
+function TeacherExplanationWindow({ lab, studentNumber, topology, onClose }: { lab: TeacherLab; studentNumber: number; topology: Topology; onClose: () => void }) {
   const lesson = getTeacherExplanation(lab.id);
   const show = (value: string) => teacherText(value, studentNumber);
   return <section data-testid="teacher-explanation" className="fixed right-3 top-20 z-30 flex max-h-[85vh] w-[min(690px,calc(100vw-24px))] flex-col overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl">
@@ -759,6 +760,7 @@ function TeacherExplanationWindow({ lab, studentNumber, onClose }: { lab: Teache
     <div className="min-h-0 overflow-y-auto bg-white p-4 text-sm leading-6 sm:p-5">
       <div className="rounded-lg bg-blue-50 p-3"><div className="text-xs font-semibold text-blue-800">{lab.basis}</div><h2 className="mt-1 text-lg font-bold text-slate-900">{lab.title}</h2><p className="mt-1 text-xs text-slate-600">Nguồn: {lab.source}</p><p className="mt-2 text-slate-800">{show(lab.summary)}</p></div>
       <p className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3 text-green-950">Mới học mạng máy tính? Hãy đọc lần lượt từ bước 1. Mỗi bước giải thích một điều trên hình, rồi chỉ ngay số IP tương ứng để bạn đối chiếu.</p>
+      <NetworkLabAiChat lab={lab} studentNumber={studentNumber} topology={topology} />
       <h3 className="mt-5 text-base font-bold text-slate-900">Đi từ dễ đến khó</h3>
       <div className="mt-2 space-y-3">{lesson.steps.map((step, index) => <article key={step.title} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"><h4 className="font-bold text-blue-900">Bước {index + 1}: {step.title}</h4><p className="mt-1 text-slate-800">{show(step.explanation)}</p>{step.analogy && <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-amber-950"><strong>Hình dung như thế này:</strong> {show(step.analogy)}</p>}<p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-slate-800"><strong>Nhìn vào sơ đồ:</strong> {show(step.example)}</p></article>)}</div>
       <h3 className="mt-5 text-base font-bold text-slate-900">Từng mạng trong bài dùng vào đâu?</h3>
@@ -768,6 +770,67 @@ function TeacherExplanationWindow({ lab, studentNumber, onClose }: { lab: Teache
       <h3 className="mt-5 text-base font-bold text-slate-900">Thực hành tự kiểm tra</h3><ol className="mt-2 list-decimal space-y-1 pl-5">{lab.verify.map(step => <li key={step}>{show(step)}</li>)}</ol>
       <p className="mt-5 rounded-md bg-blue-50 p-3 text-xs text-blue-900">Muốn tự cấu hình từ đầu: Tools → Clear Configuration (Start Lab). Muốn xem lại cấu hình mẫu: Tools → Reset selected lab.</p>
     </div>
+  </section>;
+}
+
+type LabChatMessage = { role: 'user' | 'assistant'; content: string };
+
+function NetworkLabAiChat({ lab, studentNumber, topology }: { lab: TeacherLab; studentNumber: number; topology: Topology }) {
+  const [question, setQuestion] = useState('');
+  const [messages, setMessages] = useState<LabChatMessage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const pendingRef = useRef<AbortController | null>(null);
+  useEffect(() => () => pendingRef.current?.abort(), []);
+  const show = (value: string) => teacherText(value, studentNumber);
+  const suggestions = lab.id === 'week1-switch'
+    ? ['Vì sao không cần gateway?', 'Switch làm gì khi PC1 gửi cho PC2?']
+    : lab.id === 'week1-one-router'
+      ? ['Gateway của PC1 là cổng nào?', 'Vì sao chưa cần RIP?']
+      : ['Vì sao phải chia subnet như vậy?', 'Gateway của PC1 là cổng nào?', 'Tôi ping không được thì kiểm tra gì?'];
+  const ask = async (suggested?: string) => {
+    const text = (suggested ?? question).trim();
+    if (!text || pendingRef.current) return;
+    const lesson = getTeacherExplanation(lab.id);
+    const lessonContext = [
+      `Tên bài: ${lab.title}. Nguồn: ${lab.source}. Loại: ${lab.basis}.`,
+      show(lab.summary),
+      ...lab.networkPlan.map(row => `${show(row.network)}: ${show(row.purpose)}. ${show(row.reason)}`),
+      ...lesson.steps.map(step => `${step.title}: ${show(step.explanation)} Ví dụ: ${show(step.example)}`),
+    ].join('\n').slice(0, 8000);
+    const topologyContext = [
+      ...topology.devices.map(device => `${device.name} (${device.kind}): ${device.kind === 'pc' ? `gateway ${device.gateway || 'chưa đặt'}; ` : ''}${device.ports.filter(port => port.ip || port.name.startsWith('S')).map(port => `${port.name} ${port.ip || 'chưa đặt'}/${port.mask} ${port.enabled ? 'bật' : 'tắt'}${port.clockRate ? ` clock ${port.clockRate}` : ''}`).join('; ')}${device.kind === 'router' ? `; RIP ${device.ripNetworks.join(', ') || 'chưa đặt'}` : ''}`),
+      ...topology.cables.map(cable => `Dây: ${cable.a.deviceId} ${cable.a.port} ↔ ${cable.b.deviceId} ${cable.b.port}${cable.dce ? `; DCE ${cable.dce.deviceId} ${cable.dce.port}` : ''}`),
+    ].join('\n').slice(0, 6000);
+    const history = messages.slice(-6).map(message => ({ role: message.role, content: message.content.slice(0, 1200) }));
+    const controller = new AbortController();
+    pendingRef.current = controller;
+    setMessages(previous => [...previous, { role: 'user', content: text }]);
+    setQuestion(''); setError(''); setLoading(true);
+    try {
+      const response = await apiClient.post<{ answer: string }>('/ai/network-lab/ask', {
+        lab_id: lab.id, question: text, lesson_context: lessonContext, topology_context: topologyContext, history,
+      }, { signal: controller.signal });
+      setMessages(previous => [...previous, { role: 'assistant', content: response.data.answer }]);
+    } catch (reason) {
+      if (controller.signal.aborted) return;
+      const detail = (reason as { response?: { data?: { detail?: unknown } } }).response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : 'Chưa nhận được câu trả lời. Hãy thử lại.');
+      setMessages(previous => previous.slice(0, -1));
+      setQuestion(text);
+    } finally {
+      if (pendingRef.current === controller) pendingRef.current = null;
+      if (!controller.signal.aborted) setLoading(false);
+    }
+  };
+  return <section aria-label="Hỏi AI về bài tập" className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+    <h3 className="font-bold text-blue-950">Hỏi AI về sơ đồ này</h3>
+    <p className="mt-1 text-xs text-blue-900">Bạn có thể hỏi theo cách của mình. AI sẽ xem bài đang mở và các IP bạn đang đặt trên sơ đồ.</p>
+    <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(suggestion => <button key={suggestion} type="button" disabled={loading} onClick={() => void ask(suggestion)} className="rounded-full border border-blue-200 bg-white px-2.5 py-1 text-xs text-blue-900 hover:bg-blue-100 disabled:opacity-50">{suggestion}</button>)}</div>
+    {messages.length > 0 && <div aria-live="polite" className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-md bg-white p-2">{messages.map((message, index) => <div key={index} className={`whitespace-pre-wrap rounded-md px-3 py-2 text-sm ${message.role === 'user' ? 'ml-8 bg-blue-100 text-blue-950' : 'mr-8 bg-slate-100 text-slate-900'}`}><strong className="mb-1 block text-xs">{message.role === 'user' ? 'Bạn' : 'Gia sư AI'}</strong>{message.content}</div>)}</div>}
+    {loading && <p role="status" className="mt-2 text-xs text-blue-900">AI đang giải thích bài này...</p>}
+    {error && <p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
+    <form onSubmit={event => { event.preventDefault(); void ask(); }} className="mt-3 flex items-end gap-2"><textarea aria-label="Nhập câu hỏi cho AI về bài tập" value={question} maxLength={1000} rows={2} onChange={event => setQuestion(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder="Ví dụ: Vì sao PC1 phải đặt gateway là IP của R1?" className="min-h-16 min-w-0 flex-1 resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-blue-600" /><button type="submit" disabled={loading || !question.trim()} className="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50">Gửi</button></form>
   </section>;
 }
 
