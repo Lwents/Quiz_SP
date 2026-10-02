@@ -63,17 +63,26 @@ const PageTitleHandler: React.FC = () => {
   return null;
 };
 
-// Điều hướng trang chủ theo vai trò: ADMIN/TEACHER về /teacher, STUDENT/Khách về /courses
+// Điều hướng trang chủ theo vai trò sau khi đăng nhập.
 const RootRedirect: React.FC = () => {
   const { user, initialized } = useAuthStore();
 
   if (!initialized) {
     return <div className="py-12 text-center text-slate-500">Đang tải...</div>;
   }
+  if (!user) return <Navigate to="/login" replace />;
   if (user && (user.role === 'ADMIN' || user.role === 'TEACHER')) {
     return <Navigate to="/teacher" replace />;
   }
   return <Navigate to="/courses" replace />;
+};
+
+const RequireLogin: React.FC = () => {
+  const { user, initialized } = useAuthStore();
+  const location = useLocation();
+  if (!initialized) return <div className="py-12 text-center text-slate-500">Đang kiểm tra đăng nhập...</div>;
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+  return <Outlet />;
 };
 
 // Chặn ADMIN và TEACHER vào luồng làm bài thật ở frontend
@@ -158,17 +167,19 @@ export const App: React.FC = () => {
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/courses" element={<CourseListPage />} />
-            <Route path="/courses/:subjectId" element={<CourseDetailPage />} />
-            <Route path="/courses/:subjectId/lessons/:lessonId" element={<LessonPlayerPage />} />
-            <Route path="/network-lab" element={<RouterSimPage />} />
-            <Route element={<StudentPracticeGuard />}>
-              <Route path="/practice" element={<QuizListPage />} />
-              <Route path="/practice/:quizId" element={<QuizPlayerPage />} />
+            <Route element={<RequireLogin />}>
+              <Route path="/courses" element={<CourseListPage />} />
+              <Route path="/courses/:subjectId" element={<CourseDetailPage />} />
+              <Route path="/courses/:subjectId/lessons/:lessonId" element={<LessonPlayerPage />} />
+              <Route path="/network-lab" element={<RouterSimPage />} />
+              <Route element={<StudentPracticeGuard />}>
+                <Route path="/practice" element={<QuizListPage />} />
+                <Route path="/practice/:quizId" element={<QuizPlayerPage />} />
+              </Route>
+              <Route path="/results/:attemptId" element={<ResultPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
-            <Route path="/results/:attemptId" element={<ResultPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
             <Route element={<RoleRoute allowedRoles={['TEACHER', 'ADMIN']} roleLabel="giáo viên và quản trị viên" />}>
               <Route path="/teacher" element={<TeacherDashboardPage />} />
               <Route path="/teacher/subjects" element={<SubjectManagementPage />} />

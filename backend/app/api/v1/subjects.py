@@ -17,13 +17,13 @@ from app.schemas.quiz import (
     TopicResponse,
     TopicReorderRequest
 )
-from app.api.deps import require_role
+from app.api.deps import get_current_user, require_role
 
 router = APIRouter(prefix="/subjects", tags=["subjects"])
 
 
 @router.get("", response_model=List[SubjectResponse])
-async def list_subjects(db: AsyncSession = Depends(get_db)):
+async def list_subjects(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     result = await db.execute(select(Subject).order_by(Subject.name))
     return result.scalars().all()
 
@@ -152,7 +152,7 @@ async def delete_subject(
 
 
 @router.get("/{subject_id}/topics", response_model=List[TopicResponse])
-async def list_topics(subject_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def list_topics(subject_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     result = await db.execute(
         select(Topic)
         .where(Topic.subject_id == subject_id)

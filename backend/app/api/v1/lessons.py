@@ -11,7 +11,7 @@ from app.core.database import get_db
 from app.models.quiz import Subject, Topic, Quiz, QuizStatus
 from app.models.lesson import Lesson, UserLessonProgress
 from app.models.user import User, UserRole
-from app.api.deps import get_current_user, get_optional_current_user, require_role
+from app.api.deps import get_current_user, require_role
 from app.schemas.lesson import (
     LessonCreate,
     LessonUpdate,
@@ -30,7 +30,7 @@ router = APIRouter(prefix="/lessons", tags=["lessons"])
 async def get_subject_curriculum(
     subject_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_optional_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     subject = await db.get(Subject, subject_id)
     if not subject:
@@ -141,7 +141,7 @@ async def get_subject_curriculum(
 async def get_lesson_detail(
     lesson_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_optional_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     query = (
         select(Lesson)

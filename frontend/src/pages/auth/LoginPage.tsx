@@ -1,6 +1,6 @@
 import { toast } from '../../stores/toastStore';
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { apiClient } from '../../api/client';
 import { Logo } from '../../components/Logo';
@@ -8,6 +8,7 @@ import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setAuth } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,11 +24,15 @@ export const LoginPage: React.FC = () => {
       const res = await apiClient.post('/auth/login', { email, password });
       const { access_token, refresh_token, user } = res.data;
       setAuth(user, access_token, refresh_token);
-      if (user.role === 'ADMIN' || user.role === 'TEACHER') {
-        navigate('/teacher');
+      const requestedPath = (location.state as { from?: string } | null)?.from;
+      const safeRequestedPath = requestedPath?.startsWith('/') && !requestedPath.startsWith('//') && !requestedPath.startsWith('/login') ? requestedPath : null;
+      if (safeRequestedPath) {
+        navigate(safeRequestedPath, { replace: true });
+      } else if (user.role === 'ADMIN' || user.role === 'TEACHER') {
+        navigate('/teacher', { replace: true });
       } else {
         toast.success('Đăng nhập thành công! Chào mừng bạn quay trở lại.');
-        navigate('/courses');
+        navigate('/courses', { replace: true });
       }
     } catch (err: any) {
       setError(err.response?.data?.detail?.error?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại email hoặc mật khẩu.');
