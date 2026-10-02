@@ -223,6 +223,7 @@ if __name__ == "__main__":
     from app.seed_network_course import seed_network_course
     from app.seed_network_admin import seed_network_admin_course
     from app.seed_discrete_sets import seed_discrete_sets_quiz
+    from app.seed_ai_course import seed_ai_course
 
     async def startup_seed_and_repair():
         await seed_data()
@@ -235,5 +236,6 @@ if __name__ == "__main__":
         print("Nạp khóa học K74 Mạng máy tính nâng cao:", await seed_network_course())
         print("Nạp khóa học COMP303 Tuần 1:", await seed_network_admin_course())
         print("Nạp Quiz 2.1 Toán rời rạc lọc trùng:", await seed_discrete_sets_quiz())
+        print("Nạp khóa học Trí tuệ nhân tạo K74:", await seed_ai_course())
 
     asyncio.run(startup_seed_and_repair())

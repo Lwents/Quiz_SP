@@ -161,6 +161,7 @@ export const LessonPlayerPage: React.FC = () => {
     const elements: React.ReactNode[] = [];
     let listItems: { text: string; num?: string }[] = [];
     let tableRows: string[][] = [];
+    let codeLines: string[] | null = null;
 
     const flushList = () => {
       if (listItems.length > 0) {
@@ -221,11 +222,14 @@ export const LessonPlayerPage: React.FC = () => {
 
     const renderInline = (text: string): React.ReactNode => {
       // Split by <br>, code, math, bold, italic, and block math tokens
-      const tokenRegex = /(<br\s*\/?>|__BLOCK_MATH_\d+__|`[^`\n]+?`|\$[^\$\n]+?\$|\*\*[^\*\n]+?\*\*|\*[^\*\n]+?\*)/g;
+      const tokenRegex = /(<br\s*\/?>|__BLOCK_MATH_\d+__|\[[^\]\n]+\]\(https?:\/\/[^\s)]+\)|`[^`\n]+?`|\$[^\$\n]+?\$|\*\*[^\*\n]+?\*\*|\*[^\*\n]+?\*)/g;
       const parts = text.split(tokenRegex);
 
       return parts.map((part, index) => {
         if (!part) return null;
+
+        const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+        if (link) return <a key={`link-${index}`} href={link[2]} target="_blank" rel="noopener noreferrer" className="text-blue-700 underline hover:text-blue-900">{link[1]}</a>;
 
         // 1. <br> tags
         if (/^<br\s*\/?>$/i.test(part)) {
@@ -316,6 +320,22 @@ export const LessonPlayerPage: React.FC = () => {
 
     lines.forEach((line, idx) => {
       const trimmed = line.trim();
+
+      if (trimmed.startsWith('```')) {
+        flushList();
+        flushTable();
+        if (codeLines) {
+          elements.push(<pre key={`code-${idx}`} className="my-4 overflow-x-auto rounded-xl bg-slate-900 p-4 text-sm leading-6 text-slate-100"><code>{codeLines.join('\n')}</code></pre>);
+          codeLines = null;
+        } else {
+          codeLines = [];
+        }
+        return;
+      }
+      if (codeLines) {
+        codeLines.push(line);
+        return;
+      }
 
       // Check for markdown table row
       if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
@@ -417,6 +437,8 @@ export const LessonPlayerPage: React.FC = () => {
 
     flushList();
     flushTable();
+    const pendingCode = codeLines as string[] | null;
+    if (pendingCode) elements.push(<pre key="code-last" className="my-4 overflow-x-auto rounded-xl bg-slate-900 p-4 text-sm leading-6 text-slate-100"><code>{pendingCode.join('\n')}</code></pre>);
     return elements;
   };
 
