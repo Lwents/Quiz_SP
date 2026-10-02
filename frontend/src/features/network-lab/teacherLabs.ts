@@ -7,7 +7,6 @@ export interface TeacherLab {
   basis: 'Sơ đồ trong tài liệu' | 'Yêu cầu bài tập · phương án minh họa';
   summary: string;
   networkPlan: Array<{ network: string; purpose: string; reason: string }>;
-  why: string[];
   verify: string[];
 }
 
@@ -20,7 +19,6 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '192.168.10.0/24', purpose: 'PC1 ↔ R1 F0/0', reason: 'PC1 đặt gateway 192.168.10.1 để ra khỏi LAN thứ nhất.' },
       { network: '192.168.20.0/24', purpose: 'R1 F0/1 ↔ PC2', reason: 'PC2 đặt gateway 192.168.20.1; hai cổng router phải ở hai mạng khác nhau.' },
     ],
-    why: ['Hai LAN là hai mạng lớp 3 riêng; router chuyển gói giữa chúng.', 'R1 nối trực tiếp cả hai mạng nên chưa cần RIP hoặc tuyến tĩnh.'],
     verify: ['Ping từ mỗi PC tới gateway của nó.', 'Ping PC1 → PC2; nếu lỗi, kiểm tra mask, gateway và trạng thái hai cổng.'],
   },
   {
@@ -28,7 +26,6 @@ export const TEACHER_LABS: TeacherLab[] = [
     source: 'Tong_hop_noi_dung_bai_tap.txt · Tuần 1, bài 2', basis: 'Yêu cầu bài tập · phương án minh họa',
     summary: 'Ba PC cùng một LAN 192.168.1.0/24, mỗi PC cắm vào một cổng switch.',
     networkPlan: [{ network: '192.168.1.0/24', purpose: 'PC1 .11, PC2 .12, PC3 .13', reason: 'Cùng địa chỉ mạng và mask /24 nên các PC liên lạc qua switch ở lớp 2.' }],
-    why: ['Switch chuyển frame theo MAC, không chia mạng IP cho từng cổng.', 'Khi chỉ ping giữa ba PC cùng LAN, chưa cần router hay default gateway.'],
     verify: ['Ping PC1 → PC2 và PC3.', 'Nếu lỗi, kiểm tra dây, cổng switch, IP trùng và mask /24.'],
   },
   {
@@ -41,7 +38,6 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '192.168.1.128/26', purpose: 'R2 F0/0 .130 ↔ PC2 .150', reason: 'LAN phải khác hai mạng trước; .130 là gateway của PC2.' },
       { network: '192.168.1.192/26', purpose: 'Dự phòng', reason: 'Tách /24 thành bốn mạng /26; bài này dùng ba mạng.' },
     ],
-    why: ['Mask 255.255.255.192 tạo bước nhảy 64: .0, .64, .128, .192.', 'RIP khai báo các mạng nối trực tiếp ở mỗi router để học LAN phía bên kia.', 'Chỉ đầu DCE của dây serial cần clock rate; mô phỏng gán DCE ở R1 S0/0.'],
     verify: ['Ping PC1 → R1 .1, R1 .65 → R2 .66, rồi PC1 → PC2 .150.', 'Dùng show ip route tại R1 và R2 để xem tuyến RIP và kiểm tra đường về.'],
   },
   {
@@ -53,7 +49,6 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '192.168.1.64/26', purpose: 'R1 S0/0 .65 ↔ R2 S0/1 .66', reason: 'Hai đầu serial cùng mạng .64/26.' },
       { network: '192.168.1.128/26', purpose: 'R2 F0/1 .129 ↔ PC2 .150', reason: 'Ảnh RouterSim dùng F0/1 và .129, khác F0/0 .130 trong sơ đồ Tuần 1; cả hai đều hợp lệ.' },
     ],
-    why: ['Đây là một biến thể của bài hai router, được giữ riêng vì cổng và IP trong hai tài liệu khác nhau.', 'RIP vẫn khai báo .0 và .64 ở R1; .64 và .128 ở R2.'],
     verify: ['Ping PC1 → PC2 .150 và chiều ngược lại.', 'Đối chiếu R2 F0/1 .129 với default gateway .129 của PC2.'],
   },
   {
@@ -68,7 +63,6 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '192.168.1.128/27', purpose: 'R3 – PC3', reason: 'R3 .129, PC3 .130.' },
       { network: '192.168.1.160/27', purpose: 'R3 – R1', reason: 'Hai đầu serial .161 và .162.' },
     ],
-    why: ['Ba LAN cộng ba đường router cần sáu mạng; /27 chia /24 thành tám mạng, bước nhảy 32.', 'Mỗi router quảng bá ba mạng nối trực tiếp bằng RIP để các PC ở những LAN khác nhau liên lạc hai chiều.'],
     verify: ['Ping từng PC tới gateway, rồi thử PC1 → PC2, PC3.', 'Dùng show ip route xem các mạng /27 học qua RIP.'],
   },
   {
@@ -83,7 +77,6 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '195.10.10.128/27', purpose: 'R3 – PC3', reason: 'LAN thứ ba.' },
       { network: '195.10.10.160/27', purpose: 'R3 – R1', reason: 'Đường serial thứ ba.' },
     ],
-    why: ['Đề chỉ ấn định khối IP, chưa đưa bảng gán cổng cụ thể. Sơ đồ này là một đáp án minh họa, không phải đáp án duy nhất.', 'Sáu liên kết lớp 3 cần ít nhất sáu subnet; /27 tạo tám subnet.'],
     verify: ['Đổi IP mẫu nếu thầy yêu cầu cách gán khác, miễn các subnet không chồng nhau.', 'Ping giữa cả ba PC và kiểm tra tuyến RIP.'],
   },
   {
@@ -99,7 +92,6 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '200.10.{STT}.160/27', purpose: 'R3 – R4', reason: 'Serial 3.' },
       { network: '200.10.{STT}.192/27', purpose: 'R4 – PC4', reason: 'LAN 4; mạng .224/27 còn dự phòng.' },
     ],
-    why: ['Bốn LAN cộng ba đường router cần bảy mạng; /27 tạo tám subnet trong cùng khối /24.', 'Bài chỉ cho khối IP, không ấn định sơ đồ hay STT; cách nối chuỗi và bảng địa chỉ này là phương án minh họa.'],
     verify: ['Ping từng PC tới gateway trước, rồi ping PC1 → PC4.', 'Kiểm tra STT và RIP trên cả bốn router nếu ping liên LAN thất bại.'],
   },
 ];
