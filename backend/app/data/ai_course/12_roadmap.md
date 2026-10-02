@@ -6,19 +6,19 @@
 
 ## 1. Tìm kiếm lời giải
 
-Giả sử đi từ phòng A đến phòng B trong một tòa nhà. Mỗi phòng là một **trạng thái**, lối đi là một **cạnh**. **BFS** khám phá các phòng gần trước, phù hợp khi cần đường ít bước nhất và mỗi bước có cùng chi phí. **DFS** đi sâu theo một nhánh trước rồi quay lại, thường tốn ít bộ nhớ hơn nhưng không đảm bảo đường ít bước nhất. **A\*** dùng thêm một ước lượng khoảng cách còn lại (heuristic) để ưu tiên hướng hứa hẹn. Bài toán và điều kiện của nó quyết định thuật toán nào phù hợp.
+Giả sử đi từ phòng A đến phòng B trong một tòa nhà. Mỗi phòng là một **trạng thái**, lối đi là một **cạnh**. **BFS** khám phá các phòng gần trước, phù hợp khi cần đường ít bước nhất và mỗi bước có cùng chi phí. **DFS** đi sâu theo một nhánh trước rồi quay lại, thường tốn ít bộ nhớ hơn nhưng không đảm bảo đường ít bước nhất. **A\*** dùng thêm một ước lượng khoảng cách còn lại (heuristic) để ưu tiên hướng hứa hẹn. Bài toán và điều kiện của nó quyết định thuật toán nào phù hợp. Chương tìm kiếm có bốn bài riêng: BFS/DFS, heuristic và A*, tìm nước đi trong trò chơi, và bài toán ràng buộc.
 
 ## 2. Phân cụm khi không có nhãn
 
-Nếu có bảng khách hàng nhưng **không có cột “nhóm”**, không thể dùng trực tiếp PLA để học nhãn. **K-means** thử chia các điểm thành `k` nhóm dựa trên độ gần. Chọn `k`, đổi thang đo các cột và xem nhóm có ý nghĩa hay không là việc của người phân tích; số nhóm không tự là “đáp án đúng”.
+Nếu có bảng khách hàng nhưng **không có cột “nhóm”**, không thể dùng trực tiếp PLA để học nhãn. **K-means** thử chia các điểm thành `k` nhóm dựa trên độ gần. Chọn `k`, đổi thang đo các cột và xem nhóm có ý nghĩa hay không là việc của người phân tích; số nhóm không tự là “đáp án đúng”. Bài K-means trong chương học máy mở rộng sẽ tính từng vòng trên một bảng nhỏ.
 
 ## 3. Nhiều hơn hai nhãn
 
-Logistic Regression nhị phân xử lý hai nhãn. Khi cần nhận dạng ba hoặc nhiều loại, **Softmax** chuyển một vector điểm thành các xác suất cộng lại bằng 1. Điểm số, nhãn và hàm mất mát đều mở rộng theo số lớp.
+Logistic Regression nhị phân xử lý hai nhãn. Khi cần nhận dạng ba hoặc nhiều loại, **Softmax** chuyển một vector điểm thành các xác suất cộng lại bằng 1. Điểm số, nhãn và hàm mất mát đều mở rộng theo số lớp. Bài Softmax sẽ tính một ví dụ cụ thể và so sánh với bài toán nhiều nhãn.
 
 ## 4. Mạng nhiều lớp
 
-Một đường thẳng không tách được mọi bộ dữ liệu. **Multi-layer Perceptron (MLP)** nối nhiều lớp tính toán và hàm phi tuyến để học ranh giới phức tạp hơn. Đổi lại cần chú ý thang đo, số tham số và việc mô hình học thuộc dữ liệu train.
+Một đường thẳng không tách được mọi bộ dữ liệu. **Multi-layer Perceptron (MLP)** nối nhiều lớp tính toán và hàm phi tuyến để học ranh giới phức tạp hơn. Đổi lại cần chú ý thang đo, số tham số và việc mô hình học thuộc dữ liệu train. Bài MLP nối kiến thức này với Gradient Descent đã học.
 
 ## Cách chọn bài tiếp theo
 

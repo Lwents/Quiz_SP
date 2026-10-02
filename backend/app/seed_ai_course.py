@@ -41,6 +41,17 @@ CURRICULUM = [
     ("Đọc thêm theo lộ trình OLM", "Tìm kiếm, K-means, Softmax và mạng nhiều lớp; tách khỏi bài thầy đã giao.", [
         ("12_roadmap.md", "Bản đồ các chủ đề AI tiếp theo", 20),
     ]),
+    ("Chương 7: Tìm lời giải bằng tìm kiếm", "Tìm đường, chọn nước đi và giải bài toán có ràng buộc; đây là phần mở rộng theo lộ trình AI.", [
+        ("13_bfs_dfs.md", "BFS và DFS: tìm đường từng bước", 25),
+        ("14_heuristic_astar.md", "Heuristic và A*: tìm hướng có triển vọng", 25),
+        ("15_game_search.md", "Minimax: máy chọn nước đi trong trò chơi", 25),
+        ("16_csp.md", "Bài toán ràng buộc: xếp lịch không bị trùng", 25),
+    ]),
+    ("Chương 8: Học máy mở rộng", "Phân cụm không nhãn, phân loại nhiều lớp và mạng nơ-ron nhiều tầng; phần đọc thêm sau các bài cơ bản.", [
+        ("17_kmeans.md", "K-means: tự gom nhóm dữ liệu chưa có nhãn", 25),
+        ("18_softmax.md", "Softmax: phân loại từ ba nhóm trở lên", 25),
+        ("19_mlp.md", "MLP: học ranh giới phi tuyến bằng nhiều lớp", 30),
+    ]),
 ]
 
 
