@@ -29,4 +29,4 @@ Một đường thẳng không tách được mọi bộ dữ liệu. **Multi-la
 | Phân loại nhiều nhãn | Softmax |
 | Học ranh giới phi tuyến | MLP |
 
-**Lộ trình nguồn:** [Khóa Trí tuệ nhân tạo trên OLM](https://olm.vn/bg/tri-tue-nhan-tao). Hãy đọc phần học máy theo thứ tự hồi quy → Gradient Descent → Perceptron → Logistic, rồi mới sang Softmax và MLP.
+**Lộ trình nguồn:** [Khóa Trí tuệ nhân tạo trên OLM](https://olm.vn/bg/tri-tue-nhan-tao). Hãy đọc phần học máy theo thứ tự hồi quy → Gradient Descent → Perceptron → Logistic, rồi mới sang Softmax và MLP. Nếu muốn đi xa hơn, trang [Machine Learning cơ bản](https://machinelearningcoban.com/) có chuỗi 37 bài từ nhập môn tới CNN. Các chương 9–15 trong khóa học này bổ sung những chủ đề của chuỗi đó còn thiếu; một số nội dung nâng cao được giải thích trực quan, không yêu cầu bạn tự suy ra từ công thức.

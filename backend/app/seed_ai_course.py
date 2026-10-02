@@ -52,6 +52,48 @@ CURRICULUM = [
         ("18_softmax.md", "Softmax: phân loại từ ba nhóm trở lên", 25),
         ("19_mlp.md", "MLP: học ranh giới phi tuyến bằng nhiều lớp", 30),
     ]),
+    ("Chương 9: Chọn cách học và chuẩn bị dữ liệu", "Mở rộng chuỗi Machine Learning cơ bản: các kiểu học, K-means ứng dụng, KNN và cách tạo đặc trưng.", [
+        ("20_ml_algorithm_families.md", "Bài 2: Có những kiểu học máy nào?", 20),
+        ("21_kmeans_applications.md", "Bài 5: K-means dùng để làm gì với ảnh?", 22),
+        ("22_knn.md", "Bài 6: KNN đo khoảng cách rồi hỏi láng giềng", 25),
+        ("23_feature_engineering.md", "Bài 11: Biến dữ liệu thô thành đặc trưng hữu ích", 25),
+    ]),
+    ("Chương 10: Ranh giới phân loại và khả năng khái quát", "Nối Logistic Regression với cách đặt ngưỡng, hiện tượng học thuộc và kiểm tra trên dữ liệu mới.", [
+        ("24_binary_classifiers.md", "Bài 12: Bộ phân loại hai lớp và ngưỡng quyết định", 22),
+        ("25_overfitting.md", "Bài 15: Nhận biết và giảm overfitting", 25),
+    ]),
+    ("Chương 11: Tối ưu hóa và Support Vector Machine", "Giải thích trực quan từ hình học lồi tới SVM tuyến tính, soft margin, kernel và nhiều lớp.", [
+        ("26_convex_sets_functions.md", "Bài 16: Tập lồi và hàm lồi bằng hình dung", 22),
+        ("27_convex_optimization.md", "Bài 17: Tối ưu lồi và vì sao nghiệm đáng tin", 22),
+        ("28_duality.md", "Bài 18: Đối ngẫu — đổi góc nhìn để giải bài toán", 22),
+        ("29_svm.md", "Bài 19: SVM chọn đường biên có lề rộng", 25),
+        ("30_soft_margin_svm.md", "Bài 20: Soft margin khi dữ liệu không hoàn hảo", 22),
+        ("31_kernel_svm.md", "Bài 21: Kernel giúp SVM xử lý đường biên cong", 25),
+        ("32_multiclass_svm.md", "Bài 22: Dùng SVM khi có nhiều lớp", 22),
+    ]),
+    ("Chương 12: Hệ thống gợi ý", "Ba cách gợi ý dựa trên nội dung, người dùng hoặc sản phẩm tương tự và các yếu tố ẩn.", [
+        ("33_content_recommenders.md", "Bài 23: Gợi ý dựa trên nội dung món đồ", 22),
+        ("34_neighborhood_cf.md", "Bài 24: Gợi ý từ người dùng và sản phẩm giống nhau", 25),
+        ("35_matrix_factorization.md", "Bài 25: Ma trận yếu tố ẩn trong hệ gợi ý", 25),
+    ]),
+    ("Chương 13: Rút gọn và nhìn dữ liệu nhiều chiều", "SVD, PCA và LDA giúp nén, trực quan hóa hoặc tìm hướng phân biệt trong dữ liệu.", [
+        ("36_svd.md", "Bài 26: SVD — tách ma trận thành các mẫu chính", 25),
+        ("37_pca_1.md", "Bài 27: PCA tìm hướng dữ liệu biến thiên nhiều", 25),
+        ("38_pca_2.md", "Bài 28: Chiếu dữ liệu và chọn số thành phần PCA", 25),
+        ("39_lda.md", "Bài 29: LDA tìm hướng tách các lớp", 25),
+    ]),
+    ("Chương 14: Xác suất, Bayes và đọc kết quả phân loại", "Ôn xác suất có điều kiện, học tham số bằng MLE/MAP, Naive Bayes và các thước đo đánh giá.", [
+        ("40_probability_review.md", "Bài 30: Ôn xác suất để hiểu mô hình", 22),
+        ("41_mle_map.md", "Bài 31: MLE và MAP ước lượng tham số ra sao?", 25),
+        ("42_naive_bayes.md", "Bài 32: Naive Bayes phân loại bằng xác suất", 25),
+        ("43_classification_metrics.md", "Bài 33: Đánh giá bộ phân loại ngoài accuracy", 25),
+        ("44_decision_trees.md", "Bài 34: Cây quyết định ID3 hỏi câu nào trước?", 25),
+    ]),
+    ("Chương 15: Nhìn vào Deep Learning và CNN", "Bối cảnh lịch sử, cách dùng Keras và phép tích chập giúp mạng nhận biết cấu trúc ảnh.", [
+        ("45_deep_learning_history.md", "Bài 35: Các cột mốc dẫn tới Deep Learning", 20),
+        ("46_keras.md", "Bài 36: Dùng Keras lắp ghép và huấn luyện mô hình", 25),
+        ("47_convolution.md", "Bài 37: Tích chập hai chiều trong CNN", 25),
+    ]),
 ]
 
 
