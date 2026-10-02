@@ -294,3 +294,35 @@ export function simulatePing(topology: Topology, sourceId: string, targetIp: str
   if (!backward.ok) return { ok: false, path: forward.path, message: 'Gói đi tới đích nhưng đường phản hồi bị lỗi.', why: `${target.name}: ${backward.message} ${backward.why}` };
   return { ...forward, why: `${forward.why} Phản hồi từ ${target.name} cũng tìm được đường về ${source.name}.` };
 }
+
+export function simulateRouterPing(topology: Topology, routerId: string, targetIp: string): PingResult {
+  const source = topology.devices.find(device => device.id === routerId && device.kind === 'router');
+  if (!source) return { ok: false, path: [], message: 'Không tìm thấy router nguồn.', why: 'Chọn console của router để ping.' };
+  if (ipNumber(targetIp) === null) return { ok: false, path: [source.name], message: 'Địa chỉ IP đích không hợp lệ.', why: 'Nhập địa chỉ IPv4 sau lệnh ping.' };
+  const targets = topology.devices.flatMap(device => device.ports.filter(port => port.ip === targetIp).map(port => ({ device, port })));
+  if (targets.length !== 1) return { ok: false, path: [source.name], message: targets.length ? 'Địa chỉ IP bị dùng trùng.' : 'Không tìm thấy IP đích.', why: 'Kiểm tra IP trên PC hoặc cổng router đích.' };
+  const target = targets[0];
+  const queue: Array<{ router: Device; path: string[] }> = [{ router: source, path: [source.name] }];
+  const visited = new Set<string>();
+  while (queue.length) {
+    const { router, path } = queue.shift()!;
+    if (visited.has(router.id)) continue;
+    visited.add(router.id);
+    if (router.id === target.device.id && target.port.enabled) return { ok: true, path, message: 'Ping thành công.', why: 'IP đích thuộc cổng đang bật của router.' };
+    for (const port of router.ports) {
+      if (!port.enabled || !networkInfo(port.ip, port.mask)) continue;
+      const peers = lanPeers(topology, { deviceId: router.id, port: port.name });
+      for (const peer of peers) {
+        const neighbor = topology.devices.find(device => device.id === peer.deviceId);
+        const neighborPort = neighbor?.ports.find(item => item.name === peer.port);
+        if (!neighbor || neighbor.id === router.id || !neighborPort?.enabled || !sameNetwork(port.ip, port.mask, neighborPort.ip, neighborPort.mask)) continue;
+        if (neighbor.id === target.device.id && neighborPort.name === target.port.name) {
+          if (neighbor.kind === 'pc' && neighbor.gateway !== port.ip) return { ok: false, path: [...path, neighbor.name], message: 'Đích nhận được gói nhưng không có đường trả lời.', why: `Gateway của ${neighbor.name} phải là ${port.ip}.` };
+          return { ok: true, path: [...path, neighbor.name], message: 'Ping thành công.', why: 'Các cổng, dây nối và đường định tuyến đến IP đích đều hợp lệ.' };
+        }
+        if (neighbor.kind === 'router' && !visited.has(neighbor.id) && hasRip(router, port) && hasRip(neighbor, neighborPort)) queue.push({ router: neighbor, path: [...path, neighbor.name] });
+      }
+    }
+  }
+  return { ok: false, path: [source.name], message: 'Không có đường đến IP đích.', why: 'Kiểm tra trạng thái cổng, cáp serial/DCE, địa chỉ mạng và các mạng khai báo trong RIP.' };
+}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  cableIsActive, createPreset, ipNumber, lanPeers, makeDevice, networkInfo, PRESET_LABELS, simulatePing,
+  cableIsActive, createPreset, ipNumber, lanPeers, makeDevice, networkInfo, PRESET_LABELS, simulatePing, simulateRouterPing,
   type Device, type DeviceKind, type Endpoint, type LabPreset, type Port, type Topology,
 } from '../../features/network-lab/model';
 import { importRsm } from '../../features/network-lab/importRsm';
@@ -172,6 +172,7 @@ export const RouterSimPage: React.FC = () => {
   const [showPreferences, setShowPreferences] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const consoleInputRef = useRef<HTMLInputElement>(null);
+  const consoleOutputRef = useRef<HTMLDivElement>(null);
   const consoleDragRef = useRef<{ pointerId: number; x: number; y: number; left: number; top: number; width: number; height: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const dragRef = useRef<{ id: string; x: number; y: number; clientX: number; clientY: number } | null>(null);
@@ -208,6 +209,9 @@ export const RouterSimPage: React.FC = () => {
     const frame = requestAnimationFrame(() => consoleInputRef.current?.focus());
     return () => cancelAnimationFrame(frame);
   }, [consoleId, consoleMinimized]);
+  useEffect(() => {
+    if (consoleOutputRef.current) consoleOutputRef.current.scrollTop = consoleOutputRef.current.scrollHeight;
+  }, [lines, consoleId]);
   const canvasWidth = autoSizeCanvas ? Math.max(WIDTH, viewport.width) : WIDTH;
   const canvasHeight = autoSizeCanvas ? Math.max(HEIGHT, viewport.height - 96) : HEIGHT;
   const toggleFullscreen = () => { if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen().catch(() => setStatus('Trình duyệt không cho mở toàn màn hình; thử nhấn F11.')); setMenu(null); };
@@ -398,6 +402,12 @@ export const RouterSimPage: React.FC = () => {
     const typed = input.toLowerCase().replace(/\s+/g, ' ');
     const cmd = typed.replace(/^sh\b/, 'show').replace(/^show run$/, 'show running-config').replace(/^show start$/, 'show startup-config').replace(/^show ip int br(?:ief)?$/, 'show ip interface brief').replace(/^show int br(?:ief)?$/, 'show ip interface brief').replace(/^config t$/, 'configure terminal').replace(/^copy run start$/, 'copy running-config startup-config');
     const output: string[] = [];
+    const pingOutput = (destination: string, result: ReturnType<typeof simulatePing>) => {
+      output.push(`Pinging ${destination} with 32 bytes of data:`, '');
+      for (let attempt = 0; attempt < 4; attempt++) output.push(result.ok ? `Reply from ${destination}: bytes=32 time<1ms TTL=128` : 'Request timed out.');
+      output.push('', `Ping statistics for ${destination}:`, `    Packets: Sent = 4, Received = ${result.ok ? 4 : 0}, Lost = ${result.ok ? 0 : 4} (${result.ok ? 0 : 100}% loss)`);
+      if (!result.ok) output.push(result.why);
+    };
     const runningConfig = () => [
       'Building configuration...', 'Current configuration:', '!', `hostname ${consoleDevice.name.replace(/\s/g, '')}`,
       ...consoleDevice.ports.flatMap(port => ['!', `interface ${port.name}`, ...(port.ip ? [` ip address ${port.ip} ${port.mask}`] : [' no ip address']), ...(port.clockRate ? [` clock rate ${port.clockRate}`] : []), port.enabled ? ' no shutdown' : ' shutdown']),
@@ -407,12 +417,16 @@ export const RouterSimPage: React.FC = () => {
     if (consoleDevice.kind === 'pc') {
       if (cmd === 'ipconfig' || cmd === 'ipconfig /all') output.push('Ethernet adapter Local Area Connection:', '', ...(cmd.endsWith('/all') ? ['   Description . . . . . . : RouterSim Host Adapter', '   DHCP Enabled. . . . . . : No'] : []), `   IP Address . . . . . . : ${consoleDevice.ports[0].ip || '0.0.0.0'}`, `   Subnet Mask  . . . . . : ${consoleDevice.ports[0].mask}`, `   Default Gateway . . . : ${consoleDevice.gateway || '0.0.0.0'}`);
       else if (cmd.startsWith('ping ')) {
-        const result = simulatePing(topology, consoleDevice.id, input.split(/\s+/)[1] || '');
-        output.push(`Pinging ${input.split(/\s+/)[1]}...`, result.ok ? 'Reply from destination: bytes=32 time<1ms TTL=128' : 'Request timed out.', result.ok ? 'Packets: Sent = 1, Received = 1, Lost = 0' : `Packets: Sent = 1, Received = 0, Lost = 1`, `Why: ${result.why}`);
+        const destination = input.split(/\s+/)[1] || '';
+        pingOutput(destination, simulatePing(topology, consoleDevice.id, destination));
       } else if (cmd === 'help' || cmd === '?') output.push('Commands: ipconfig, ipconfig /all, ping IP');
       else output.push('Bad command or file name. Type help.');
     } else if (consoleDevice.kind === 'router') {
-      if (cmd === 'enable' || cmd === 'ena' || cmd === 'en') { setConsoleMode('privileged'); }
+      if (cmd.startsWith('ping ')) {
+        const destination = input.split(/\s+/)[1] || '';
+        pingOutput(destination, simulateRouterPing(topology, consoleDevice.id, destination));
+      }
+      else if (cmd === 'enable' || cmd === 'ena' || cmd === 'en') { setConsoleMode('privileged'); }
       else if (cmd === 'disable') setConsoleMode('user');
       else if (cmd === 'conf t' || cmd === 'configure terminal') { setConsoleMode('config'); output.push('Enter configuration commands, one per line.'); }
       else if (cmd === 'end') setConsoleMode('privileged');
@@ -455,7 +469,7 @@ export const RouterSimPage: React.FC = () => {
       else if (cmd === 'show ip ?') output.push('interface  protocols  route');
       else if (cmd === 'interface ?' && consoleMode === 'config') output.push(consoleDevice.ports.map(p => p.name).join('  '));
       else if (cmd === 'wr' || cmd === 'write memory' || cmd === 'copy running-config startup-config') output.push('Building configuration...', '[OK]');
-      else if (cmd === 'help' || cmd === '?') output.push('enable  configure terminal  interface  router rip  show  copy  write memory  exit', 'Use show ? or show ip ? for available display commands.');
+      else if (cmd === 'help' || cmd === '?') output.push('enable  configure terminal  interface  router rip  ping IP  show  copy  write memory  exit', 'Use show ? or show ip ? for available display commands.');
       else output.push('% Invalid input detected. Type help for supported commands.');
     } else {
       if (cmd === 'enable' || cmd === 'ena' || cmd === 'en') setConsoleMode('privileged');
@@ -698,19 +712,18 @@ export const RouterSimPage: React.FC = () => {
         {consoleMenu && <div className="absolute left-1 top-6 z-50 min-w-44 border border-slate-600 bg-[#f1f1ef] p-1 shadow-lg" style={{ marginLeft: `${(['File', 'Edit', 'View', 'Tools', 'Help'] as const).indexOf(consoleMenu) * 31}px` }}>
           {consoleMenu === 'File' && <><MenuItem label="Print..." onClick={() => { setConsoleMenu(null); window.print(); }} /><MenuItem label="Save Console Log..." onClick={saveConsoleLog} /><MenuItem label="Close" onClick={() => { setConsoleId(null); setConsoleMenu(null); }} /></>}
           {consoleMenu === 'Edit' && <><MenuItem label="Copy" onClick={() => { if (navigator.clipboard) void navigator.clipboard.writeText(lines.join('\n')).catch(() => setStatus('Could not copy console text.')); else setStatus('Clipboard is unavailable in this browser.'); setConsoleMenu(null); }} /><MenuItem label="Paste" onClick={() => { void navigator.clipboard?.readText().then(value => setCommand(old => old + value)).catch(() => setStatus('Clipboard is unavailable in this browser.')); setConsoleMenu(null); }} /><MenuItem label="Clear Console" onClick={() => { setLines([]); setConsoleMenu(null); }} /></>}
-          {consoleMenu === 'View' && <><LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} onTeacher={openTeacherLab} /><MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { openConsole(d); setConsoleMenu(null); }} />)}</MenuSubmenu><MenuItem label="Network Visualizer Screen" onClick={() => { setConsoleId(null); setConsoleMenu(null); }} /><MenuItem label="Supported Commands" onClick={() => { setLines(old => [...old, consoleDevice.kind === 'pc' ? 'ipconfig, ipconfig /all, ping IP' : consoleDevice.kind === 'switch' ? 'enable, conf t, hostname, int P1, shutdown, no shut, show interfaces status, show vlan brief, end, wr' : 'enable, conf t, hostname, int F0/0, ip add IP MASK, no shut, clock rate 64000, router rip, network NET, show ip route, end, wr']); setConsoleMenu(null); }} /></>}
+          {consoleMenu === 'View' && <><LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} onTeacher={openTeacherLab} /><MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { openConsole(d); setConsoleMenu(null); }} />)}</MenuSubmenu><MenuItem label="Network Visualizer Screen" onClick={() => { setConsoleId(null); setConsoleMenu(null); }} /><MenuItem label="Supported Commands" onClick={() => { setLines(old => [...old, consoleDevice.kind === 'pc' ? 'ipconfig, ipconfig /all, ping IP' : consoleDevice.kind === 'switch' ? 'enable, conf t, hostname, int P1, shutdown, no shut, show interfaces status, show vlan brief, end, wr' : 'enable, conf t, hostname, int F0/0, ip add IP MASK, no shut, clock rate 64000, router rip, network NET, ping IP, show ip route, end, wr']); setConsoleMenu(null); }} /></>}
           {consoleMenu === 'Tools' && <><MenuItem label="Net Packet Monitor" onClick={() => { setShowPing(true); setConsoleMenu(null); }} /><MenuItem label="Net Detective" onClick={() => { setShowAssessment(true); setConsoleMenu(null); }} /></>}
           {consoleMenu === 'Help' && <MenuItem label="RouterSim Help" onClick={() => { setShowGuide(true); setConsoleMenu(null); }} />}
         </div>}
       </div>
       <div className="flex h-10 items-center gap-2 border-b border-slate-400 bg-[#f3f3f3] px-2"><ToolButton title="Print Console" onClick={() => window.print()}><img src="/routersim/printer_up.png" alt="Print" /></ToolButton><button title="Copy Console" onClick={() => void navigator.clipboard?.writeText(lines.join('\n'))} className="border px-2 py-1 text-xs">Copy</button><button title="Paste Command" onClick={() => void navigator.clipboard?.readText().then(value => setCommand(old => old + value))} className="border px-2 py-1 text-xs">Paste</button><ToolButton title="Net Packet Monitor" onClick={() => setShowPing(true)}><img src="/routersim/netpacket_up.png" alt="Packet monitor" /></ToolButton></div>
-      <div onClick={() => consoleInputRef.current?.focus()} className={`${consoleMaximized ? 'min-h-0 flex-1' : 'h-72'} overflow-y-auto whitespace-pre-wrap bg-white p-3 font-mono text-[12px] leading-5 text-black`}>{lines.map((line, i) => <div key={i}>{line}</div>)}<div>{prompt()}{command}<span className="animate-pulse">▌</span></div></div>
-      <form onSubmit={e => { e.preventDefault(); runCommand(); requestAnimationFrame(() => consoleInputRef.current?.focus()); }} className="flex border-t border-slate-300"><input ref={consoleInputRef} autoFocus aria-label="RouterSim console command" value={command} onChange={e => setCommand(e.target.value)} onKeyDown={e => {
+      <div ref={consoleOutputRef} onClick={() => consoleInputRef.current?.focus()} className={`${consoleMaximized ? 'min-h-0 flex-1' : 'h-80'} overflow-y-auto whitespace-pre-wrap bg-white p-3 font-mono text-[12px] leading-5 text-black`}>{lines.map((line, i) => <div key={i}>{line || '\u00a0'}</div>)}<form onSubmit={e => { e.preventDefault(); runCommand(); requestAnimationFrame(() => consoleInputRef.current?.focus()); }} className="flex min-h-5 items-center"><span className="shrink-0">{prompt()}</span><input ref={consoleInputRef} autoFocus aria-label="RouterSim console command" value={command} onChange={e => setCommand(e.target.value)} onKeyDown={e => {
         if (e.key === 'ArrowUp' && commandHistory.length) { e.preventDefault(); const next = commandHistoryIndex < 0 ? commandHistory.length - 1 : Math.max(0, commandHistoryIndex - 1); setCommandHistoryIndex(next); setCommand(commandHistory[next]); }
         if (e.key === 'ArrowDown' && commandHistoryIndex >= 0) { e.preventDefault(); const next = commandHistoryIndex + 1; setCommandHistoryIndex(next < commandHistory.length ? next : -1); setCommand(next < commandHistory.length ? commandHistory[next] : ''); }
-        if (e.key === 'Tab') { e.preventDefault(); const candidates = consoleDevice.kind === 'pc' ? ['ipconfig', 'ping'] : ['enable', 'configure terminal', 'hostname', 'interface', 'ip address', 'no shutdown', 'clock rate', 'router rip', 'network', 'show ip route', 'show ip interface brief', 'write memory']; const match = candidates.find(item => item.startsWith(command.toLowerCase()) && item !== command.toLowerCase()); if (match) setCommand(match); }
+        if (e.key === 'Tab') { e.preventDefault(); const candidates = consoleDevice.kind === 'pc' ? ['ipconfig', 'ping'] : ['enable', 'configure terminal', 'hostname', 'interface', 'ip address', 'no shutdown', 'clock rate', 'router rip', 'network', 'ping', 'show ip route', 'show ip interface brief', 'write memory']; const match = candidates.find(item => item.startsWith(command.toLowerCase()) && item !== command.toLowerCase()); if (match) setCommand(match); }
         if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); setLines(old => [...old, `${prompt()}${command}^C`]); setCommand(''); if (consoleDevice.kind !== 'pc') setConsoleMode('privileged'); }
-      }} className="min-w-0 flex-1 bg-white px-2 py-1.5 font-mono text-xs text-black outline-none" placeholder="Type a command and press Enter" /><button type="submit" className="border-l border-slate-300 bg-[#f3f4f6] px-3 text-xs">Enter</button></form>
+      }} className="min-w-0 flex-1 bg-transparent pl-0.5 font-mono text-xs text-black outline-none" autoComplete="off" spellCheck={false} /></form></div>
     </div>}
 
     {showPing && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onMouseDown={() => setShowPing(false)}><div className="w-[min(760px,calc(100vw-20px))] overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-xl" onMouseDown={e => e.stopPropagation()}><WindowTitle title="Net Packet Monitor" onClose={() => setShowPing(false)} />
@@ -804,7 +817,29 @@ function Field({ label, value, onChange, asSelect }: { label: string; value: str
   return <label className="grid grid-cols-[120px_1fr] items-center gap-2"><span>{label}</span>{asSelect ? <select value={value} onChange={e => onChange(e.target.value)} className="border border-slate-500 bg-white px-1 py-0.5">{asSelect.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select> : <input value={value} onChange={e => onChange(e.target.value)} className="min-w-0 border border-slate-500 bg-white px-1 py-0.5" />}</label>;
 }
 function IpField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const inputs = React.useRef<Array<HTMLInputElement | null>>([]);
   const parts = value ? value.split('.').slice(0, 4) : [];
   while (parts.length < 4) parts.push('');
-  return <label className="grid grid-cols-[120px_1fr] items-center gap-2"><span>{label}</span><span className="flex items-center gap-0.5">{parts.map((part, index) => <React.Fragment key={index}><input aria-label={`${label} octet ${index + 1}`} inputMode="numeric" maxLength={3} value={part} onChange={event => { const next = [...parts]; next[index] = event.target.value.replace(/\D/g, '').slice(0, 3); onChange(next.join('.')); }} className="w-11 border border-slate-500 bg-white px-1 py-0.5 text-center" />{index < 3 && <span>.</span>}</React.Fragment>)}</span></label>;
+  const update = (index: number, octet: string) => { const next = [...parts]; next[index] = octet; onChange(next.join('.')); };
+  const focus = (index: number) => { const input = inputs.current[index]; input?.focus(); input?.select(); };
+  return <label className="grid grid-cols-[120px_1fr] items-center gap-2"><span>{label}</span><span className="flex items-center gap-0.5">{parts.map((part, index) => <React.Fragment key={index}><input ref={input => { inputs.current[index] = input; }} aria-label={`${label} octet ${index + 1}`} inputMode="numeric" maxLength={3} value={part} onChange={event => {
+    const digits = event.target.value.replace(/\D/g, '').slice(0, 3);
+    update(index, digits);
+    if (digits.length === 3 && index < 3 && Number(digits) <= 255) requestAnimationFrame(() => focus(index + 1));
+  }} onKeyDown={event => {
+    if ((event.key === '.' || event.key === 'Decimal') && index < 3) { event.preventDefault(); focus(index + 1); }
+    else if (event.key === 'ArrowRight' && event.currentTarget.selectionStart === part.length && index < 3) { event.preventDefault(); focus(index + 1); }
+    else if (event.key === 'ArrowLeft' && event.currentTarget.selectionStart === 0 && index > 0) { event.preventDefault(); focus(index - 1); }
+    else if (event.key === 'Backspace' && !part && index > 0) { event.preventDefault(); focus(index - 1); }
+  }} onPaste={event => {
+    const pasted = event.clipboardData.getData('text').trim();
+    if (!/^\d{1,3}(?:\.\d{1,3}){1,3}$/.test(pasted)) return;
+    event.preventDefault();
+    const octets = pasted.split('.');
+    if (octets.some(octet => Number(octet) > 255)) return;
+    const next = [...parts];
+    octets.slice(0, 4 - index).forEach((octet, offset) => { next[index + offset] = octet; });
+    onChange(next.join('.'));
+    requestAnimationFrame(() => focus(Math.min(3, index + octets.length - 1)));
+  }} className="w-11 border border-slate-500 bg-white px-1 py-0.5 text-center" />{index < 3 && <span>.</span>}</React.Fragment>)}</span></label>;
 }
