@@ -5,6 +5,7 @@ import {
   type Device, type DeviceKind, type Endpoint, type LabPreset, type Port, type Topology,
 } from '../../features/network-lab/model';
 import { importRsm } from '../../features/network-lab/importRsm';
+import { buildTeacherTopology, TEACHER_LABS, teacherText, type TeacherLab } from '../../features/network-lab/teacherLabs';
 
 const WIDTH = 1040;
 const HEIGHT = 620;
@@ -55,7 +56,9 @@ function loadPreset(preset: LabPreset): Topology {
   return createPreset(preset);
 }
 
-function loadNewTab(id: string | null): { preset: LabPreset; topology: Topology; loadedNetworkName: string | null } | null {
+type LabSnapshot = { preset: LabPreset; topology: Topology; loadedNetworkName: string | null; teacherLabId?: string | null; teacherStudentNumber?: number };
+
+function loadNewTab(id: string | null): LabSnapshot | null {
   if (!id) return null;
   try {
     const saved = sessionStorage.getItem(`network-lab-tab:${id}`);
@@ -65,6 +68,15 @@ function loadNewTab(id: string | null): { preset: LabPreset; topology: Topology;
     }
   } catch { /* Open a fresh blank network if this tab has no valid save. */ }
   return { preset: 'blank', topology: { devices: [], cables: [] }, loadedNetworkName: null };
+}
+
+function loadCurrentLab(): LabSnapshot {
+  try {
+    const raw = localStorage.getItem('network-lab-current');
+    const saved = raw && JSON.parse(raw) as LabSnapshot;
+    if (saved && PRESETS.includes(saved.preset)) return { ...saved, topology: loadPreset(saved.preset) };
+  } catch { /* Fall back to the default practice network. */ }
+  return { preset: 'two-routers', topology: loadPreset('two-routers'), loadedNetworkName: null };
 }
 
 function dot(device: Device, port: string, otherCenterX?: number): { x: number; y: number } {
@@ -106,13 +118,18 @@ export const RouterSimPage: React.FC = () => {
   const navigate = useNavigate();
   const subjectId = params.get('subject');
   const newTabId = params.get('new');
-  const [tabSnapshot] = useState(() => loadNewTab(newTabId));
+  const [tabSnapshot] = useState(() => loadNewTab(newTabId) ?? loadCurrentLab());
   const [minimized, setMinimized] = useState(false);
   const [viewport, setViewport] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
-  const [preset, setPreset] = useState<LabPreset>(tabSnapshot?.preset ?? 'two-routers');
-  const [loadedNetworkName, setLoadedNetworkName] = useState<string | null>(tabSnapshot?.loadedNetworkName ?? null);
+  const [preset, setPreset] = useState<LabPreset>(tabSnapshot.preset);
+  const [loadedNetworkName, setLoadedNetworkName] = useState<string | null>(tabSnapshot.loadedNetworkName);
   const [labLibrary, setLabLibrary] = useState<LabLibraryItem[]>([]);
-  const [topology, setTopology] = useState<Topology>(() => tabSnapshot?.topology ?? loadPreset('two-routers'));
+  const [topology, setTopology] = useState<Topology>(() => tabSnapshot.topology);
+  const [teacherLabId, setTeacherLabId] = useState<string | null>(tabSnapshot.teacherLabId ?? null);
+  const [teacherStudentNumber, setTeacherStudentNumber] = useState(tabSnapshot.teacherStudentNumber ?? 1);
+  const [draftStudentNumber, setDraftStudentNumber] = useState(tabSnapshot.teacherStudentNumber ?? 1);
+  const [showTeacherLabs, setShowTeacherLabs] = useState(false);
+  const [showTeacherExplanation, setShowTeacherExplanation] = useState(false);
   const [menu, setMenu] = useState<Menu>(null);
   const [popup, setPopup] = useState<Popup>(null);
   const [canvasMenu, setCanvasMenu] = useState<{ x: number; y: number } | null>(null);
@@ -166,11 +183,15 @@ export const RouterSimPage: React.FC = () => {
   const consoleDevice = topology.devices.find(item => item.id === consoleId);
   const hostConfig = topology.devices.find(item => item.id === hostConfigId && item.kind === 'pc');
   const popupDevice = topology.devices.find(item => item.id === popup?.deviceId);
+  const teacherLab = TEACHER_LABS.find(item => item.id === teacherLabId);
   const occupied = useMemo(() => new Set(topology.cables.flatMap(c => [`${c.a.deviceId}:${c.a.port}`, `${c.b.deviceId}:${c.b.port}`])), [topology.cables]);
   useEffect(() => {
-    if (newTabId) sessionStorage.setItem(`network-lab-tab:${newTabId}`, JSON.stringify({ preset, topology, loadedNetworkName }));
-    else localStorage.setItem(`network-lab-v1:${preset}`, JSON.stringify(topology));
-  }, [newTabId, preset, topology, loadedNetworkName]);
+    if (newTabId) sessionStorage.setItem(`network-lab-tab:${newTabId}`, JSON.stringify({ preset, topology, loadedNetworkName, teacherLabId, teacherStudentNumber }));
+    else {
+      localStorage.setItem(`network-lab-v1:${preset}`, JSON.stringify(topology));
+      localStorage.setItem('network-lab-current', JSON.stringify({ preset, loadedNetworkName, teacherLabId, teacherStudentNumber }));
+    }
+  }, [newTabId, preset, topology, loadedNetworkName, teacherLabId, teacherStudentNumber]);
   useEffect(() => { void fetch('/routersim/labs.json').then(response => response.json()).then((labs: LabLibraryItem[]) => setLabLibrary(labs)).catch(() => setStatus('RouterSim sample layouts could not be loaded.')); }, []);
   useEffect(() => { localStorage.setItem('routersim-device-list-at-start', String(showDeviceListAtStart)); }, [showDeviceListAtStart]);
   useEffect(() => {
@@ -200,18 +221,32 @@ export const RouterSimPage: React.FC = () => {
     updateDevice(id, item => ({ ...item, ports: item.ports.map(port => port.name === name ? { ...port, ...change } : port) }));
   };
   const openPreset = (next: LabPreset) => {
+    setTeacherLabId(null); setShowTeacherExplanation(false);
     setPreset(next); setLoadedNetworkName(null); setTopology(loadPreset(next)); setMenu(null); setPopup(null); setCanvasMenu(null); setPending(null); setDceEnd(null);
     setConsoleId(null); setHostConfigId(null); setSelectedId(null); setPing(null);
     setSourceId('pc1'); setPingTarget(next === 'two-routers' ? '192.168.1.150' : '');
     setStatus(`Opened ${PRESET_LABELS[next]}.`);
   };
   const openLibraryLab = (lab: LabLibraryItem) => {
+    setTeacherLabId(null); setShowTeacherExplanation(false);
     const data = structuredClone(lab.topology);
     setPreset('blank'); setLoadedNetworkName(lab.name); setTopology(data);
     setMenu(null); setCanvasMenu(null); setPopup(null); setPending(null); setConsoleId(null); setSelectedId(null); setPing(null);
     setSourceId(data.devices.find(d => d.kind === 'pc')?.id || '');
     setPingTarget(data.devices.filter(d => d.kind === 'pc').at(-1)?.ports[0]?.ip || '');
     setStatus(`Opened RouterSim lab: ${lab.name}.`);
+  };
+  const openTeacherLab = (lab: TeacherLab) => {
+    const studentNumber = Math.max(1, Math.min(254, Math.trunc(draftStudentNumber) || 1));
+    const data = buildTeacherTopology(lab.id, studentNumber);
+    setPreset('blank'); setLoadedNetworkName(lab.title); setTopology(data);
+    setTeacherLabId(lab.id); setTeacherStudentNumber(studentNumber);
+    setShowTeacherLabs(false); setShowTeacherExplanation(true);
+    setMenu(null); setConsoleMenu(null); setCanvasMenu(null); setPopup(null); setPending(null); setDceEnd(null);
+    setConsoleId(null); setHostConfigId(null); setSelectedId(null); setPing(null);
+    setSourceId(data.devices.find(device => device.kind === 'pc')?.id || '');
+    setPingTarget(data.devices.filter(device => device.kind === 'pc').at(-1)?.ports[0]?.ip || '');
+    setStatus(`Đã mở ${lab.title}. Chọn “Giải thích sơ đồ” để xem cách chia mạng.`);
   };
   const addDeviceAt = (kind: DeviceKind, position?: { x: number; y: number }, switchModel: '1900' | '2950' | '3550' = '2950') => {
     const prefix = kind === 'pc' ? 'pc' : kind === 'router' ? 'r' : kind === 'netconnect' ? 'net' : 'sw';
@@ -258,6 +293,7 @@ export const RouterSimPage: React.FC = () => {
     setMenu(null); setStatus('Last topology change undone.');
   };
   const clearNetwork = () => {
+    setTeacherLabId(null); setShowTeacherExplanation(false); setLoadedNetworkName(null);
     setTopology({ devices: [], cables: [] }); setSelectedId(null); setPending(null);
     setMenu(null); setStatus('Network Visualizer cleared.');
   };
@@ -310,6 +346,7 @@ export const RouterSimPage: React.FC = () => {
       const data = imported?.topology || JSON.parse(source) as Topology;
       if (!Array.isArray(data.devices) || !Array.isArray(data.cables) || !data.devices.every(d => Array.isArray(d.ports) && ['pc', 'router', 'switch', 'netconnect'].includes(d.kind))) throw Error('Invalid topology');
       setPreset('blank'); setLoadedNetworkName(imported?.name || file.name); setTopology(data); setStatus(`Opened ${file.name}.`); setMenu(null); setPing(null);
+      setTeacherLabId(null); setShowTeacherExplanation(false);
       setSourceId(data.devices.find(d => d.kind === 'pc')?.id || '');
       setPingTarget(data.devices.filter(d => d.kind === 'pc').at(-1)?.ports[0]?.ip || '');
     } catch { setStatus('Could not open this RouterSim JSON/RSM file.'); }
@@ -499,7 +536,7 @@ export const RouterSimPage: React.FC = () => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setMenu(null); setConsoleMenu(null); setPopup(null); setCanvasMenu(null); setPending(null);
-        setShowGuide(false); setShowPreferences(false); setShowDeviceList(false);
+        setShowGuide(false); setShowPreferences(false); setShowDeviceList(false); setShowTeacherLabs(false); setShowTeacherExplanation(false);
         setShowNetConfigs(false); setShowPing(false); setShowAssessment(false); setShowNetConnectManager(false); setHostConfigId(null);
         return;
       }
@@ -546,10 +583,10 @@ export const RouterSimPage: React.FC = () => {
         {menu && <div className="absolute left-1 top-7 z-40 min-w-52 border border-slate-600 bg-[#f5f5f1] p-1 shadow-lg" style={{ marginLeft: `${(['File', 'Edit', 'View', 'Insert', 'Tools', 'Help'] as const).indexOf(menu) * 37}px` }}>
           {menu === 'File' && <><MenuItem label="New..." shortcut="Ctrl+N" onClick={newNetwork} /><MenuItem label="Open..." shortcut="Ctrl+O" onClick={() => { fileRef.current?.click(); setMenu(null); }} /><MenuItem label="Save..." shortcut="Ctrl+S" onClick={saveFile} /><MenuItem label="Print..." shortcut="Ctrl+P" onClick={() => { setMenu(null); window.print(); }} /><div className="my-1 border-t" /><MenuItem label="Close" onClick={exitLab} /></>}
           {menu === 'Edit' && <><MenuItem label="Clear" onClick={clearNetwork} /><MenuItem label="Undo" shortcut="Ctrl+Z" onClick={undo} disabled={undoStack.current.length < 2} /><div className="my-1 border-t" /><MenuItem label="Cut" shortcut="Ctrl+X" onClick={cutSelected} disabled={!selected} /><MenuItem label="Copy" shortcut="Ctrl+C" onClick={copySelected} disabled={!selected} /><MenuItem label="Paste" shortcut="Ctrl+V" onClick={pasteDevice} disabled={!clipboardDevice.current} /><MenuItem label="Delete" shortcut="Del" onClick={deleteSelected} disabled={!selected} /></>}
-          {menu === 'View' && <><LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} /><MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { openConsole(d); setMenu(null); }} />)}</MenuSubmenu><MenuSubmenu label="Toolbars"><MenuItem label={`${toolbarGroups.file ? '✓ ' : ''}File buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, file: !old.file })); setMenu(null); }} /><MenuItem label={`${toolbarGroups.insert ? '✓ ' : ''}Insert buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, insert: !old.insert })); setMenu(null); }} /><MenuItem label={`${toolbarGroups.tools ? '✓ ' : ''}Tools buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, tools: !old.tools })); setMenu(null); }} /></MenuSubmenu><div className="my-1 border-t" /><MenuItem label={`${showIp ? '✓ ' : ''}IP Addresses`} onClick={() => { setShowIp(!showIp); setMenu(null); }} /><MenuItem label={`${showPort ? '✓ ' : ''}Port Numbers`} onClick={() => { setShowPort(!showPort); setMenu(null); }} /><MenuItem label={`${showHostnames ? '✓ ' : ''}Hostnames`} onClick={() => { setShowHostnames(!showHostnames); setMenu(null); }} /><MenuItem label={`${showTooltips ? '✓ ' : ''}Tooltips`} onClick={() => { setShowTooltips(!showTooltips); setMenu(null); }} /><MenuSubmenu label="Line Thickness">{[1, 2, 3].map(size => <MenuItem key={size} label={`${lineThickness === size ? '✓ ' : ''}${size === 1 ? 'Thin' : size === 2 ? 'Medium' : 'Thick'}`} onClick={() => { setLineThickness(size); setMenu(null); }} />)}</MenuSubmenu></>}
+          {menu === 'View' && <><LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} onTeacher={openTeacherLab} /><MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { openConsole(d); setMenu(null); }} />)}</MenuSubmenu><MenuSubmenu label="Toolbars"><MenuItem label={`${toolbarGroups.file ? '✓ ' : ''}File buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, file: !old.file })); setMenu(null); }} /><MenuItem label={`${toolbarGroups.insert ? '✓ ' : ''}Insert buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, insert: !old.insert })); setMenu(null); }} /><MenuItem label={`${toolbarGroups.tools ? '✓ ' : ''}Tools buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, tools: !old.tools })); setMenu(null); }} /></MenuSubmenu><div className="my-1 border-t" /><MenuItem label={`${showIp ? '✓ ' : ''}IP Addresses`} onClick={() => { setShowIp(!showIp); setMenu(null); }} /><MenuItem label={`${showPort ? '✓ ' : ''}Port Numbers`} onClick={() => { setShowPort(!showPort); setMenu(null); }} /><MenuItem label={`${showHostnames ? '✓ ' : ''}Hostnames`} onClick={() => { setShowHostnames(!showHostnames); setMenu(null); }} /><MenuItem label={`${showTooltips ? '✓ ' : ''}Tooltips`} onClick={() => { setShowTooltips(!showTooltips); setMenu(null); }} /><MenuSubmenu label="Line Thickness">{[1, 2, 3].map(size => <MenuItem key={size} label={`${lineThickness === size ? '✓ ' : ''}${size === 1 ? 'Thin' : size === 2 ? 'Medium' : 'Thick'}`} onClick={() => { setLineThickness(size); setMenu(null); }} />)}</MenuSubmenu></>}
           {menu === 'Insert' && <><MenuItem label="File..." shortcut="Alt+F" onClick={() => { fileRef.current?.click(); setMenu(null); }} /><MenuItem label="Host" shortcut="Alt+H" onClick={() => addDevice('pc')} /><MenuItem label="Net Connect" shortcut="Alt+N" onClick={() => addDevice('netconnect')} /><MenuItem label="Router 2600" shortcut="Alt+R" onClick={() => addDevice('router')} /><MenuItem label="Switch 1900" shortcut="Alt+S" onClick={() => addDeviceAt('switch', undefined, '1900')} /><MenuItem label="Switch 2950" shortcut="Alt+T" onClick={() => addDeviceAt('switch', undefined, '2950')} /><MenuItem label="Switch 3550" shortcut="Alt+U" onClick={() => addDeviceAt('switch', undefined, '3550')} /></>}
-          {menu === 'Tools' && <><MenuItem label="Device List" shortcut="Ctrl+D" onClick={() => { setShowDeviceList(true); setMenu(null); }} /><MenuItem label="Net Assessment" shortcut="Ctrl+A" onClick={() => { setShowAssessment(true); setMenu(null); }} /><MenuItem label="Net Configs" shortcut="Ctrl+F" onClick={() => { setShowNetConfigs(true); setMenu(null); }} /><MenuItem label="Net Connect Manager" shortcut="Ctrl+M" onClick={() => { setShowNetConnectManager(true); setMenu(null); }} /><MenuItem label="Net Packet Monitor" shortcut="Ctrl+T" onClick={() => { setShowPing(true); setMenu(null); }} /><div className="my-1 border-t" /><MenuItem label="Preferences" onClick={() => { setShowPreferences(true); setMenu(null); }} /><MenuItem label="Clear Configuration (Start Lab)" onClick={startPractice} /><MenuItem label="Reset selected lab" onClick={() => { localStorage.removeItem(`network-lab-v1:${preset}`); setTopology(createPreset(preset)); setMenu(null); setPing(null); }} /></>}
-          {menu === 'Help' && <><MenuItem label="How to use RouterSim" onClick={() => { setShowGuide(true); setMenu(null); }} /><MenuItem label="RouterSim manual (PDF)" onClick={() => { window.open('http://localhost:8000/media/course-slides/comp303_routersim_manual.pdf', '_blank'); setMenu(null); }} /></>}
+          {menu === 'Tools' && <><MenuItem label="Device List" shortcut="Ctrl+D" onClick={() => { setShowDeviceList(true); setMenu(null); }} /><MenuItem label="Net Assessment" shortcut="Ctrl+A" onClick={() => { setShowAssessment(true); setMenu(null); }} /><MenuItem label="Net Configs" shortcut="Ctrl+F" onClick={() => { setShowNetConfigs(true); setMenu(null); }} /><MenuItem label="Net Connect Manager" shortcut="Ctrl+M" onClick={() => { setShowNetConnectManager(true); setMenu(null); }} /><MenuItem label="Net Packet Monitor" shortcut="Ctrl+T" onClick={() => { setShowPing(true); setMenu(null); }} /><div className="my-1 border-t" /><MenuItem label="Preferences" onClick={() => { setShowPreferences(true); setMenu(null); }} /><MenuItem label="Clear Configuration (Start Lab)" onClick={startPractice} /><MenuItem label="Reset selected lab" onClick={() => { localStorage.removeItem(`network-lab-v1:${preset}`); setTopology(teacherLab ? buildTeacherTopology(teacherLab.id, teacherStudentNumber) : createPreset(preset)); setMenu(null); setPing(null); }} /></>}
+          {menu === 'Help' && <><MenuItem label="Giải thích sơ đồ đang chọn" disabled={!teacherLab} onClick={() => { setShowTeacherExplanation(true); setMenu(null); }} /><MenuItem label="How to use RouterSim" onClick={() => { setShowGuide(true); setMenu(null); }} /><MenuItem label="RouterSim manual (PDF)" onClick={() => { window.open('http://localhost:8000/media/course-slides/comp303_routersim_manual.pdf', '_blank'); setMenu(null); }} /></>}
         </div>}
       </div>
       <div className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-400 bg-[#f3f3f3] px-1">
@@ -562,6 +599,8 @@ export const RouterSimPage: React.FC = () => {
         <ToolButton title="Insert Switch 2950 · click or drag onto canvas" onClick={() => addDevice('switch')} deviceKind="switch"><img src="/routersim/2950device_up.png" alt="2950" /></ToolButton>
         <ToolButton title="Insert Switch 3550 · click or drag onto canvas" onClick={() => addDeviceAt('switch', undefined, '3550')} deviceKind="switch" switchModel="3550"><img src="/routersim/3550device_up.png" alt="3550" /></ToolButton></>}
         {toolbarGroups.tools && <><ToolButton title="Net Assessment (Ctrl+A)" onClick={() => setShowAssessment(true)}><img src="/routersim/assessment_up.png" alt="Net Assessment" /></ToolButton><ToolButton title="Net Configs (Ctrl+F)" onClick={() => setShowNetConfigs(true)}><img src="/routersim/netconfig_up.png" alt="Net Configs" /></ToolButton><ToolButton title="Net Packet Monitor (Ctrl+T)" onClick={() => setShowPing(true)}><img src="/routersim/netpacket_up.png" alt="Net Packet Monitor" /></ToolButton></>}
+        <button type="button" onClick={() => { setDraftStudentNumber(teacherStudentNumber); setShowTeacherLabs(true); }} className="ml-auto shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1 text-xs font-semibold text-blue-900 hover:bg-blue-50">Bài tập của thầy</button>
+        {teacherLab && <button type="button" onClick={() => setShowTeacherExplanation(true)} className="shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1 text-xs font-semibold text-blue-900 hover:bg-blue-50">Giải thích sơ đồ</button>}
       </div>
       <div className="min-h-0 flex-1 overflow-auto" style={{ backgroundColor: canvasColor }}>
         <div ref={canvasRef} className="relative" style={{ width: canvasWidth, height: canvasHeight, backgroundColor: canvasColor }} onPointerMove={e => { if (!pending) return; const rect = e.currentTarget.getBoundingClientRect(); setCableCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top }); }} onClick={() => { setPopup(null); setMenu(null); setCanvasMenu(null); }} onContextMenu={e => { e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); setPopup(null); setCanvasMenu({ x: Math.min(canvasWidth - 190, e.clientX - rect.left), y: Math.min(canvasHeight - 360, e.clientY - rect.top) }); }} onDragOver={e => { if (e.dataTransfer.types.includes('application/x-routersim-device')) e.preventDefault(); }} onDrop={e => { const kind = e.dataTransfer.getData('application/x-routersim-device'); if (!['pc', 'router', 'switch', 'netconnect'].includes(kind)) return; e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); const model = e.dataTransfer.getData('application/x-routersim-model'); addDeviceAt(kind as DeviceKind, { x: Math.max(2, Math.min(canvasWidth - PICTURE_SIZE[kind as DeviceKind].width, e.clientX - rect.left - 25)), y: Math.max(2, Math.min(canvasHeight - 55, e.clientY - rect.top - 20)) }, model === '1900' || model === '3550' ? model : '2950'); }}>
@@ -627,7 +666,7 @@ export const RouterSimPage: React.FC = () => {
           {canvasMenu && <div className="absolute z-20 w-52 border border-slate-600 bg-[#f1f1ef] p-1 text-xs text-black shadow-xl" style={{ left: canvasMenu.x, top: canvasMenu.y }} onClick={e => e.stopPropagation()}>
             <MenuItem label="Open..." onClick={() => { setCanvasMenu(null); fileRef.current?.click(); }} /><MenuItem label="Save..." onClick={saveFile} /><MenuItem label="Print..." onClick={() => { setCanvasMenu(null); window.print(); }} />
             <MenuSubmenu label="Edit"><MenuItem label="Clear" onClick={clearNetwork} /><MenuItem label="Undo" onClick={undo} disabled={undoStack.current.length < 2} /><MenuItem label="Cut" onClick={cutSelected} disabled={!selected} /><MenuItem label="Copy" onClick={copySelected} disabled={!selected} /><MenuItem label="Paste" onClick={pasteDevice} disabled={!clipboardDevice.current} /><MenuItem label="Delete" onClick={deleteSelected} disabled={!selected} /></MenuSubmenu>
-            <LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} />
+            <LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} onTeacher={openTeacherLab} />
             <MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { setCanvasMenu(null); openConsole(d); }} />)}</MenuSubmenu>
             <MenuItem label={`${showIp ? '✓ ' : ''}IP Addresses`} onClick={() => { setShowIp(!showIp); setCanvasMenu(null); }} /><MenuItem label={`${showPort ? '✓ ' : ''}Port Numbers`} onClick={() => { setShowPort(!showPort); setCanvasMenu(null); }} /><MenuItem label={`${showHostnames ? '✓ ' : ''}Hostnames`} onClick={() => { setShowHostnames(!showHostnames); setCanvasMenu(null); }} /><MenuItem label={`${showTooltips ? '✓ ' : ''}Tooltips`} onClick={() => { setShowTooltips(!showTooltips); setCanvasMenu(null); }} />
             <MenuSubmenu label="Line Thickness">{[1, 2, 3].map(size => <MenuItem key={size} label={`${lineThickness === size ? '✓ ' : ''}${size === 1 ? 'Thin' : size === 2 ? 'Medium' : 'Thick'}`} onClick={() => { setLineThickness(size); setCanvasMenu(null); }} />)}</MenuSubmenu>
@@ -659,7 +698,7 @@ export const RouterSimPage: React.FC = () => {
         {consoleMenu && <div className="absolute left-1 top-6 z-50 min-w-44 border border-slate-600 bg-[#f1f1ef] p-1 shadow-lg" style={{ marginLeft: `${(['File', 'Edit', 'View', 'Tools', 'Help'] as const).indexOf(consoleMenu) * 31}px` }}>
           {consoleMenu === 'File' && <><MenuItem label="Print..." onClick={() => { setConsoleMenu(null); window.print(); }} /><MenuItem label="Save Console Log..." onClick={saveConsoleLog} /><MenuItem label="Close" onClick={() => { setConsoleId(null); setConsoleMenu(null); }} /></>}
           {consoleMenu === 'Edit' && <><MenuItem label="Copy" onClick={() => { if (navigator.clipboard) void navigator.clipboard.writeText(lines.join('\n')).catch(() => setStatus('Could not copy console text.')); else setStatus('Clipboard is unavailable in this browser.'); setConsoleMenu(null); }} /><MenuItem label="Paste" onClick={() => { void navigator.clipboard?.readText().then(value => setCommand(old => old + value)).catch(() => setStatus('Clipboard is unavailable in this browser.')); setConsoleMenu(null); }} /><MenuItem label="Clear Console" onClick={() => { setLines([]); setConsoleMenu(null); }} /></>}
-          {consoleMenu === 'View' && <><LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} /><MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { openConsole(d); setConsoleMenu(null); }} />)}</MenuSubmenu><MenuItem label="Network Visualizer Screen" onClick={() => { setConsoleId(null); setConsoleMenu(null); }} /><MenuItem label="Supported Commands" onClick={() => { setLines(old => [...old, consoleDevice.kind === 'pc' ? 'ipconfig, ipconfig /all, ping IP' : consoleDevice.kind === 'switch' ? 'enable, conf t, hostname, int P1, shutdown, no shut, show interfaces status, show vlan brief, end, wr' : 'enable, conf t, hostname, int F0/0, ip add IP MASK, no shut, clock rate 64000, router rip, network NET, show ip route, end, wr']); setConsoleMenu(null); }} /></>}
+          {consoleMenu === 'View' && <><LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} onTeacher={openTeacherLab} /><MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { openConsole(d); setConsoleMenu(null); }} />)}</MenuSubmenu><MenuItem label="Network Visualizer Screen" onClick={() => { setConsoleId(null); setConsoleMenu(null); }} /><MenuItem label="Supported Commands" onClick={() => { setLines(old => [...old, consoleDevice.kind === 'pc' ? 'ipconfig, ipconfig /all, ping IP' : consoleDevice.kind === 'switch' ? 'enable, conf t, hostname, int P1, shutdown, no shut, show interfaces status, show vlan brief, end, wr' : 'enable, conf t, hostname, int F0/0, ip add IP MASK, no shut, clock rate 64000, router rip, network NET, show ip route, end, wr']); setConsoleMenu(null); }} /></>}
           {consoleMenu === 'Tools' && <><MenuItem label="Net Packet Monitor" onClick={() => { setShowPing(true); setConsoleMenu(null); }} /><MenuItem label="Net Detective" onClick={() => { setShowAssessment(true); setConsoleMenu(null); }} /></>}
           {consoleMenu === 'Help' && <MenuItem label="RouterSim Help" onClick={() => { setShowGuide(true); setConsoleMenu(null); }} />}
         </div>}
@@ -691,6 +730,8 @@ export const RouterSimPage: React.FC = () => {
 
     {showPreferences && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onMouseDown={() => setShowPreferences(false)}><div className="w-[350px] overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-xl" onMouseDown={e => e.stopPropagation()}><WindowTitle title="Preferences" onClose={() => setShowPreferences(false)} /><div className="space-y-3 p-4 text-xs"><strong>Background Color</strong><p>Click a color to change the Network Visualizer background.</p><div className="grid grid-cols-10 gap-1">{['#ffffff','#000000','#000064','#0000ff','#00b7c6','#b9c9ff','#505050','#888888','#008542','#00e200','#ff00ff','#e6ad00','#ffaaaa','#e00000','#ffff00','#ffffcc','#dbffdf','#008b89'].map(color => <button key={color} title={color} aria-label={`Background ${color}`} onClick={() => setCanvasColor(color)} className={`h-5 w-5 border border-slate-500 ${canvasColor === color ? 'outline-2 outline-offset-1 outline-blue-700' : ''}`} style={{ backgroundColor: color }} />)}</div><label className="flex items-center gap-2"><input type="checkbox" checked={showDeviceListAtStart} onChange={e => setShowDeviceListAtStart(e.target.checked)} /> Show Device List with Network Visualizer</label><label className="flex items-center gap-2"><input type="checkbox" checked={autoSizeCanvas} onChange={e => setAutoSizeCanvas(e.target.checked)} /> Autosize Network Visualizer when loading a network</label><button onClick={() => setShowPreferences(false)} className="rounded-full border border-green-900 bg-gradient-to-b from-green-400 to-green-800 px-6 py-1 font-bold text-white">Close</button></div></div></div>}
 
+    {showTeacherLabs && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-3" onMouseDown={() => setShowTeacherLabs(false)}><section aria-label="Bài tập của thầy COMP303" className="w-[min(900px,100%)] overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={event => event.stopPropagation()}><WindowTitle title="Bài tập của thầy · COMP303" onClose={() => setShowTeacherLabs(false)} /><div className="max-h-[75vh] overflow-auto p-4"><p className="mb-3 text-sm text-slate-700">Chọn sơ đồ để xem cấu hình mẫu và giải thích cách chia mạng. Những bài chỉ có yêu cầu được ghi rõ là phương án minh họa.</p><label className="mb-4 flex items-center gap-2 text-sm"><span>Số thứ tự (STT) cho bài 4 router:</span><input aria-label="Số thứ tự STT" type="number" min={1} max={254} value={draftStudentNumber} onChange={event => setDraftStudentNumber(Number(event.target.value))} className="w-20 rounded border border-slate-400 bg-white px-2 py-1" /></label><div className="grid gap-3 md:grid-cols-2">{TEACHER_LABS.map(lab => <article key={lab.id} className="rounded-lg border border-slate-300 bg-white p-3 shadow-sm"><div className="mb-1 text-xs font-semibold text-blue-800">{lab.basis}</div><h3 className="font-bold text-slate-900">{lab.title}</h3><p className="mt-1 text-xs text-slate-500">Nguồn: {lab.source}</p><p className="mt-2 text-sm leading-5">{lab.summary}</p><button onClick={() => openTeacherLab(lab)} className="mt-3 rounded-md bg-blue-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-800">Mở sơ đồ</button></article>)}</div></div></section></div>}
+    {teacherLab && showTeacherExplanation && <div className="fixed right-3 top-28 z-30 w-[min(520px,calc(100vw-24px))] overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl"><WindowTitle title="Giải thích sơ đồ · COMP303" onClose={() => setShowTeacherExplanation(false)} /><div className="max-h-[min(75vh,680px)] overflow-auto bg-white p-4 text-sm leading-5"><div className="mb-1 text-xs font-semibold text-blue-800">{teacherLab.basis}</div><h2 className="text-base font-bold">{teacherLab.title}</h2><p className="mt-1 text-xs text-slate-500">Nguồn: {teacherLab.source}</p><p className="mt-3">{teacherText(teacherLab.summary, teacherStudentNumber)}</p><h3 className="mt-4 font-bold">Chia mạng và gán địa chỉ</h3><div className="mt-2 overflow-x-auto"><table className="w-full border-collapse text-xs"><thead><tr className="bg-slate-100"><th className="border p-1.5 text-left">Mạng</th><th className="border p-1.5 text-left">Dùng cho</th><th className="border p-1.5 text-left">Vì sao</th></tr></thead><tbody>{teacherLab.networkPlan.map(row => <tr key={row.network}><td className="whitespace-nowrap border p-1.5 font-mono">{teacherText(row.network, teacherStudentNumber)}</td><td className="border p-1.5">{teacherText(row.purpose, teacherStudentNumber)}</td><td className="border p-1.5">{teacherText(row.reason, teacherStudentNumber)}</td></tr>)}</tbody></table></div><h3 className="mt-4 font-bold">Vì sao cấu hình như vậy?</h3><ul className="mt-1 list-disc space-y-1 pl-5">{teacherLab.why.map(reason => <li key={reason}>{teacherText(reason, teacherStudentNumber)}</li>)}</ul><h3 className="mt-4 font-bold">Tự kiểm tra</h3><ol className="mt-1 list-decimal space-y-1 pl-5">{teacherLab.verify.map(step => <li key={step}>{teacherText(step, teacherStudentNumber)}</li>)}</ol><p className="mt-4 rounded-md bg-blue-50 p-2 text-xs text-blue-900">Muốn tự cấu hình từ đầu: Tools → Clear Configuration (Start Lab). Muốn khôi phục lời giải: Tools → Reset selected lab.</p></div></div>}
     {showGuide && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onMouseDown={() => setShowGuide(false)}><section className="w-[min(600px,calc(100vw-20px))] overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={event => event.stopPropagation()}><WindowTitle title="RouterSim Help · Làm bài COMP303" onClose={() => setShowGuide(false)} /><div className="max-h-[70vh] overflow-auto p-4 text-sm leading-6"><ol className="list-decimal pl-5"><li>Chọn sơ đồ trong <strong>View → Labs</strong> hoặc mở tệp RouterSim <code>.rsm</code> bằng <strong>File → Open</strong>. Vào <strong>Tools → Clear Configuration</strong> để bắt đầu cấu hình từ đầu.</li><li>Kéo thiết bị từ thanh công cụ hoặc Device List vào vùng xanh. Nhấp chuột phải lên thiết bị và chọn cổng ở hai đầu để nối dây. Với cáp serial, chọn đầu DCE và đặt <code>clock rate 64000</code> trên cổng DCE.</li><li>Nhấp phải PC → Configs để nhập IP, mask và gateway. Nhấp đúp router để mở console; gõ <code>enable</code>, <code>conf t</code>, <code>int F0/0</code>, <code>ip add ...</code>, <code>no shut</code>, <code>router rip</code> và <code>network ...</code>.</li><li>Nhấp đúp PC, chạy <code>ipconfig</code> hoặc <code>ping IP_đích</code>. Dùng <code>show ip route</code> để xem tuyến; dùng mũi tên ↑/↓ để gọi lại lệnh.</li></ol><p className="mt-2">Nút tròn xanh trên thanh tiêu đề mở toàn màn hình. Các phím tắt chính: Ctrl+O mở tệp, Ctrl+S lưu JSON, Ctrl+D mở Device List, Ctrl+F mở Net Configs, Ctrl+T mở Net Packet Monitor.</p></div></section></div>}
     <input ref={fileRef} type="file" accept=".json,.rsm,application/json,application/xml,text/xml" className="hidden" onChange={e => { void importFile(e.target.files?.[0]); e.target.value = ''; }} />
   </div>;
@@ -708,9 +749,9 @@ function MenuItem({ label, onClick, shortcut, disabled = false }: { label: strin
 function MenuSubmenu({ label, children, scroll = false }: { label: string; children: React.ReactNode; scroll?: boolean }) {
   return <div className="rs-submenu relative"><button className="flex w-full items-center justify-between gap-5 whitespace-nowrap px-3 py-1 text-left hover:bg-[#316ac5] hover:text-white">{label}<span>▸</span></button><div className={`rs-submenu-panel absolute left-full top-0 z-50 hidden min-w-44 border border-slate-600 bg-[#f5f5f1] p-1 text-black shadow-lg ${scroll ? 'max-h-[70vh] overflow-y-auto' : ''}`}>{children}</div></div>;
 }
-function LabsMenu({ labs, onPreset, onLibrary }: { labs: LabLibraryItem[]; onPreset: (preset: LabPreset) => void; onLibrary: (lab: LabLibraryItem) => void }) {
+function LabsMenu({ labs, onPreset, onLibrary, onTeacher }: { labs: LabLibraryItem[]; onPreset: (preset: LabPreset) => void; onLibrary: (lab: LabLibraryItem) => void; onTeacher: (lab: TeacherLab) => void }) {
   const categories = [...new Set(labs.map(lab => lab.category))];
-  return <MenuSubmenu label="Labs"><MenuSubmenu label="COMP303 practice">{PRESETS.filter(p => p !== 'blank').map(p => <MenuItem key={p} label={PRESET_LABELS[p]} onClick={() => onPreset(p)} />)}</MenuSubmenu>{categories.map(category => <MenuSubmenu key={category} label={category} scroll>{labs.filter(lab => lab.category === category).map((lab, index) => <MenuItem key={`${lab.name}-${index}`} label={lab.name} onClick={() => onLibrary(lab)} />)}</MenuSubmenu>)}</MenuSubmenu>;
+  return <MenuSubmenu label="Labs"><MenuSubmenu label="Bài tập của thầy COMP303" scroll>{TEACHER_LABS.map(lab => <MenuItem key={lab.id} label={lab.title} onClick={() => onTeacher(lab)} />)}</MenuSubmenu><MenuSubmenu label="COMP303 practice">{PRESETS.filter(p => p !== 'blank').map(p => <MenuItem key={p} label={PRESET_LABELS[p]} onClick={() => onPreset(p)} />)}</MenuSubmenu>{categories.map(category => <MenuSubmenu key={category} label={category} scroll>{labs.filter(lab => lab.category === category).map((lab, index) => <MenuItem key={`${lab.name}-${index}`} label={lab.name} onClick={() => onLibrary(lab)} />)}</MenuSubmenu>)}</MenuSubmenu>;
 }
 function WindowTitle({ title, onClose, onMinimize, onMaximize, onDragStart, onDragMove, onDragEnd }: {
   title: string;
