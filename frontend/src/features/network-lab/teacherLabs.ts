@@ -14,7 +14,7 @@ export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week1-one-router', title: 'Tuần 1 · 1 router, 2 PC, 2 dải IP',
     source: 'Tong_hop_noi_dung_bai_tap.txt · Tuần 1, bài 1', basis: 'Yêu cầu bài tập · phương án minh họa',
-    summary: 'Hai PC ở hai mạng LAN khác nhau, mỗi LAN nối vào một cổng FastEthernet của cùng router.',
+    summary: 'Hai máy tính ở hai khu mạng khác nhau. Một router đứng giữa để chuyển dữ liệu từ khu này sang khu kia.',
     networkPlan: [
       { network: '192.168.10.0/24', purpose: 'PC1 ↔ R1 F0/0', reason: 'PC1 đặt gateway 192.168.10.1 để ra khỏi LAN thứ nhất.' },
       { network: '192.168.20.0/24', purpose: 'R1 F0/1 ↔ PC2', reason: 'PC2 đặt gateway 192.168.20.1; hai cổng router phải ở hai mạng khác nhau.' },
@@ -24,14 +24,14 @@ export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week1-switch', title: 'Tuần 1 · 3 PC và 1 switch',
     source: 'Tong_hop_noi_dung_bai_tap.txt · Tuần 1, bài 2', basis: 'Yêu cầu bài tập · phương án minh họa',
-    summary: 'Ba PC cùng một LAN 192.168.1.0/24, mỗi PC cắm vào một cổng switch.',
+    summary: 'Ba máy tính ở cùng một khu mạng, được nối với nhau bằng switch. Bài này học cách liên lạc trong cùng khu.',
     networkPlan: [{ network: '192.168.1.0/24', purpose: 'PC1 .11, PC2 .12, PC3 .13', reason: 'Cùng địa chỉ mạng và mask /24 nên các PC liên lạc qua switch ở lớp 2.' }],
     verify: ['Ping PC1 → PC2 và PC3.', 'Nếu lỗi, kiểm tra dây, cổng switch, IP trùng và mask /24.'],
   },
   {
     id: 'week1-two-router-diagram', title: 'Tuần 1 · 2 router theo sơ đồ chia /26',
     source: 'Cau_hinh_2_router_1_dai_IP.docx · sơ đồ và bảng lệnh', basis: 'Sơ đồ trong tài liệu',
-    summary: 'Đúng cổng và IP trên sơ đồ: PC1 .20, R1 F0/1 .1, R1 S0/0 .65, R2 S0/1 .66, R2 F0/0 .130, PC2 .150.',
+    summary: 'Hai máy tính ở hai khu khác nhau. Dữ liệu từ PC1 phải qua R1, đi trên dây giữa hai router, rồi qua R2 mới tới PC2.',
     networkPlan: [
       { network: '192.168.1.0/26', purpose: 'PC1 .20 ↔ R1 F0/1 .1', reason: 'LAN trái có 62 địa chỉ host dùng được; .1 là gateway.' },
       { network: '192.168.1.64/26', purpose: 'R1 S0/0 .65 ↔ R2 S0/1 .66', reason: 'Đường giữa hai router cần một mạng riêng; hai đầu phải cùng subnet.' },
@@ -43,7 +43,7 @@ export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week34-two-router-guide', title: 'Tuần 3–4 · 2 router theo ảnh RouterSim',
     source: 'HD_bai_tap_2_Router.docx · sơ đồ RouterSim và lệnh', basis: 'Sơ đồ trong tài liệu',
-    summary: 'Biến thể trong ảnh hướng dẫn: PC1 .10; LAN R2 dùng F0/1 .129, PC2 .150. Các mạng /26 và đường serial giữ nguyên.',
+    summary: 'Cùng cách nối hai router như bài Tuần 1, nhưng ảnh hướng dẫn chọn IP của PC1 và cổng ra của R2 hơi khác. Hãy xem phần giải thích để tránh trộn hai bản.',
     networkPlan: [
       { network: '192.168.1.0/26', purpose: 'PC1 .10 ↔ R1 F0/1 .1', reason: '.10 và .20 đều là địa chỉ host hợp lệ của cùng LAN; tài liệu này dùng .10.' },
       { network: '192.168.1.64/26', purpose: 'R1 S0/0 .65 ↔ R2 S0/1 .66', reason: 'Hai đầu serial cùng mạng .64/26.' },
@@ -54,7 +54,7 @@ export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week34-three-router-guide', title: 'Tuần 3–4 · 3 router tam giác theo hướng dẫn',
     source: 'HD_bai_tap_3_Router.docx · cùng nội dung ở Tuần 1 và Tuần 3–4', basis: 'Sơ đồ trong tài liệu',
-    summary: 'Ba router nối tam giác, mỗi router có một PC. Sơ đồ hướng dẫn lặp ở hai thư mục nên chỉ tạo một bài.',
+    summary: 'Ba router nối thành hình tam giác. Mỗi router có một máy tính bên cạnh; máy ở khu này có thể liên lạc với máy ở khu kia.',
     networkPlan: [
       { network: '192.168.1.0/27', purpose: 'PC1 – R1', reason: 'PC1 .2, gateway R1 .1.' },
       { network: '192.168.1.32/27', purpose: 'R1 – R2', reason: 'Hai đầu serial .40 và .41.' },
@@ -68,29 +68,29 @@ export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week34-three-router-195', title: 'Tuần 3–4 · 3 router, dải 195.10.10.x',
     source: 'Tong_hop_noi_dung_bai_tap.txt · Tuần 3–4, bài 1', basis: 'Yêu cầu bài tập · phương án minh họa',
-    summary: 'Áp dụng hình tam giác ba router của bài hướng dẫn vào khối 195.10.10.0/24 được giao.',
+    summary: 'Lấy hình tam giác ba router trong tài liệu làm mẫu, rồi dùng dải địa chỉ 195.10.10.x mà đề giao. Đây là một phương án minh họa.',
     networkPlan: [
-      { network: '195.10.10.0/27', purpose: 'PC1 – R1', reason: 'LAN thứ nhất.' },
-      { network: '195.10.10.32/27', purpose: 'R1 – R2', reason: 'Đường serial thứ nhất.' },
-      { network: '195.10.10.64/27', purpose: 'R2 – PC2', reason: 'LAN thứ hai.' },
-      { network: '195.10.10.96/27', purpose: 'R2 – R3', reason: 'Đường serial thứ hai.' },
-      { network: '195.10.10.128/27', purpose: 'R3 – PC3', reason: 'LAN thứ ba.' },
-      { network: '195.10.10.160/27', purpose: 'R3 – R1', reason: 'Đường serial thứ ba.' },
+      { network: '195.10.10.0/27', purpose: 'PC1 – R1', reason: 'PC1 và cổng R1 ở cùng khu; R1 là cổng ra của PC1.' },
+      { network: '195.10.10.32/27', purpose: 'R1 – R2', reason: 'Hai đầu dây này cần hai IP thuộc cùng một nhóm riêng.' },
+      { network: '195.10.10.64/27', purpose: 'R2 – PC2', reason: 'PC2 và cổng R2 ở cùng khu; R2 là cổng ra của PC2.' },
+      { network: '195.10.10.96/27', purpose: 'R2 – R3', reason: 'Dây R2–R3 được tách khỏi các khu PC và hai dây còn lại.' },
+      { network: '195.10.10.128/27', purpose: 'R3 – PC3', reason: 'PC3 và cổng R3 ở cùng khu; R3 là cổng ra của PC3.' },
+      { network: '195.10.10.160/27', purpose: 'R3 – R1', reason: 'Dây cuối khép kín hình tam giác và dùng một nhóm IP riêng.' },
     ],
     verify: ['Đổi IP mẫu nếu thầy yêu cầu cách gán khác, miễn các subnet không chồng nhau.', 'Ping giữa cả ba PC và kiểm tra tuyến RIP.'],
   },
   {
     id: 'week34-four-router-stt', title: 'Tuần 3–4 · 4 router, dải 200.10.STT.x',
     source: 'Tong_hop_noi_dung_bai_tap.txt · Tuần 3–4, bài 2', basis: 'Yêu cầu bài tập · phương án minh họa',
-    summary: 'Bốn router nối chuỗi, mỗi router có một PC. Thay STT bằng số thứ tự của bạn trước khi mở bài.',
+    summary: 'Bốn router nối thành một hàng; mỗi router có một máy tính. Nhập số thứ tự của bạn để tạo đúng dải IP rồi học cách gửi dữ liệu qua nhiều chặng.',
     networkPlan: [
-      { network: '200.10.{STT}.0/27', purpose: 'PC1 – R1', reason: 'LAN 1.' },
-      { network: '200.10.{STT}.32/27', purpose: 'R1 – R2', reason: 'Serial 1.' },
-      { network: '200.10.{STT}.64/27', purpose: 'R2 – PC2', reason: 'LAN 2.' },
-      { network: '200.10.{STT}.96/27', purpose: 'R2 – R3', reason: 'Serial 2.' },
-      { network: '200.10.{STT}.128/27', purpose: 'R3 – PC3', reason: 'LAN 3.' },
-      { network: '200.10.{STT}.160/27', purpose: 'R3 – R4', reason: 'Serial 3.' },
-      { network: '200.10.{STT}.192/27', purpose: 'R4 – PC4', reason: 'LAN 4; mạng .224/27 còn dự phòng.' },
+      { network: '200.10.{STT}.0/27', purpose: 'PC1 – R1', reason: 'PC1 và cổng R1 bên cạnh phải cùng khu địa chỉ.' },
+      { network: '200.10.{STT}.32/27', purpose: 'R1 – R2', reason: 'Dây nối R1 và R2 cần nhóm IP riêng cho hai đầu.' },
+      { network: '200.10.{STT}.64/27', purpose: 'R2 – PC2', reason: 'PC2 đi ra ngoài khu qua cổng R2 ở cùng nhóm.' },
+      { network: '200.10.{STT}.96/27', purpose: 'R2 – R3', reason: 'Dây giữa R2 và R3 tách khỏi các khu PC.' },
+      { network: '200.10.{STT}.128/27', purpose: 'R3 – PC3', reason: 'PC3 đi ra ngoài khu qua cổng R3 ở cùng nhóm.' },
+      { network: '200.10.{STT}.160/27', purpose: 'R3 – R4', reason: 'Dây giữa R3 và R4 dùng nhóm địa chỉ thứ sáu.' },
+      { network: '200.10.{STT}.192/27', purpose: 'R4 – PC4', reason: 'PC4 ở khu thứ tư; nhóm .224/27 còn trống để dự phòng.' },
     ],
     verify: ['Ping từng PC tới gateway trước, rồi ping PC1 → PC4.', 'Kiểm tra STT và RIP trên cả bốn router nếu ping liên LAN thất bại.'],
   },
