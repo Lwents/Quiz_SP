@@ -32,6 +32,18 @@ Phương pháp láng giềng so người/sản phẩm trực tiếp theo độ g
 
 Người dùng hoặc sản phẩm mới chưa có tương tác để học vector; cần cách xử lý cold start, chẳng hạn dùng đặc trưng nội dung làm bổ sung. Vector ẩn có thể dự đoán tốt nhưng khó giải thích thành lý do cụ thể. Hãy kiểm tra theo người dùng, thời gian và nhóm nội dung để biết mô hình có bỏ quên nhóm ít dữ liệu hay không.
 
+## Một dự đoán từ hai yếu tố ẩn
+
+Giả sử mỗi người và mỗi món được mô tả bằng hai con số học được từ lịch sử. Vector người dùng là [0.9, 0.2], vector món hàng là [0.8, 0.1]. Tích vô hướng bằng 0.9×0.8+0.2×0.1=0.74. Đây là điểm tương hợp thô: hai vector cùng hướng và có thành phần lớn thì điểm cao.
+
+Điểm 0.74 chưa phải xác suất 74% hoặc số sao 0.74. Với dữ liệu chấm sao, mô hình thường cộng thêm độ lệch nền của người và món; với nhấp chuột, có thể cần chuyển điểm qua một hàm phù hợp và hiệu chỉnh. Ý nghĩa đầu ra phụ thuộc cách mô hình được huấn luyện.
+
+## Vì sao phải regularize?
+
+Một số người chỉ có một lượt đánh giá. Nếu cho mô hình tự chọn vector bất kỳ để khớp đúng lượt đó, nó có thể ghi nhớ thay vì tìm sở thích lặp lại. Regularization phạt vector quá lớn để nghiệm bớt cực đoan. Chọn mức phạt trên validation, và giữ lượt tương tác cuối làm test nếu mục tiêu là dự đoán tương lai.
+
+Yếu tố ẩn không nhất thiết tương ứng với một nhãn dễ gọi tên như “thích phim hành động”. Chúng là tọa độ tiện ích toán học. Ưu điểm là khái quát mẫu cộng tác; nhược điểm là khó giải thích và yếu với người/món hoàn toàn mới.
+
 ## Tự kiểm tra
 
 Hệ thống factorization học cái gì từ ma trận tương tác? **Vector sở thích người dùng và vector đặc tính sản phẩm trong không gian ẩn.** Ô trống có nghĩa đánh giá 0 không? **Không; nó thường chỉ là tương tác chưa quan sát.**

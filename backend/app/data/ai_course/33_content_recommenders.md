@@ -26,6 +26,18 @@ Một cách đơn giản là cộng đặc trưng của những món đã thích
 
 Nên đánh giá chất lượng đề xuất theo hành vi mục tiêu, độ đa dạng và phản hồi người dùng, chứ không chỉ theo độ tương đồng tính toán.
 
+## Ví dụ tính độ giống theo nội dung
+
+Giả sử hồ sơ sở thích của một người là vector [1,1,0], nghĩa là họ quan tâm hai chủ đề thứ nhất và thứ hai. Ba bài viết có vector chủ đề X=[1,0,0], Y=[0,1,1], Z=[1,1,0]. Hệ thống dùng cosine similarity: tích vô hướng chia cho tích độ dài hai vector.
+
+Với X, điểm giống là 1/√2≈0.707. Với Y, tích vô hướng cũng bằng 1 nhưng cả hai vector dài √2, nên điểm là 1/2=0.5. Z trùng hồ sơ nên điểm bằng 1. Hệ thống xếp Z trước, rồi X, rồi Y. Nếu Z là bài người dùng đã đọc, bộ lọc lịch sử có thể bỏ nó và hiển thị X tiếp theo.
+
+## Vì sao đôi khi gợi ý bị lặp?
+
+Mô hình chỉ biết các đặc trưng đã đưa vào. Nếu mọi bài cùng tác giả được mã hóa gần giống nhau, danh sách có thể lặp tác giả; nếu đặc trưng thiếu, bài mới không có mô tả có thể không được gợi ý. Có thể thêm ràng buộc đa dạng, giới hạn số bài mỗi chủ đề và hỏi phản hồi người dùng.
+
+Hệ nội dung xử lý được người dùng mới nếu họ chọn vài sở thích, nhưng khó phát hiện các sở thích tiềm ẩn mà họ chưa nói. Vì vậy hệ thống thực tế thường kết hợp nội dung với tương tác của cộng đồng và luôn cho người dùng quyền điều chỉnh gợi ý.
+
 ## Tự kiểm tra
 
 Người dùng mới chưa có lượt xem nhưng phim đã có thể loại/diễn viên. Hệ thống nội dung có gợi ý được không? **Có thể, vì nó so metadata phim với hồ sơ người dùng (nếu có), không cần lượt đánh giá của nhiều người cho phim ấy.**

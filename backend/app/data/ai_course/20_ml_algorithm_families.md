@@ -29,6 +29,21 @@ Trong trò chơi, máy có thể không được biết ngay nước đi hoàn h
 
 Một dự án có thể dùng học có giám sát để nhận dạng vật thể, rồi dùng tăng cường để quyết định robot nên di chuyển thế nào. Trong báo cáo, hãy mô tả mục tiêu và tín hiệu học thực tế thay vì chỉ gắn một nhãn thuật toán.
 
+## Làm thử: thư viện muốn sắp xếp sách
+
+Thư viện có 1.000 cuốn sách:
+
+1. Nếu nhân viên đã gắn nhãn `lịch sử`, `khoa học`, `tiểu thuyết` cho từng cuốn và ta muốn phân loại cuốn mới, đây là **học có giám sát**.
+2. Nếu chưa có nhãn nhưng muốn máy gom các cuốn có mô tả giống nhau, đây là **học không giám sát**. Người phụ trách phải xem nhóm có ý nghĩa không.
+3. Nếu chỉ có 50 cuốn được gắn nhãn, còn 950 cuốn chưa nhãn, có thể nghiên cứu **bán giám sát** để tận dụng cả hai phần dữ liệu.
+4. Nếu robot thư viện thử đặt sách vào kệ và nhận điểm khi sách ở đúng khu vực, đây là **học tăng cường**: phản hồi là điểm thưởng theo hành động.
+
+Cùng một thư viện có thể dùng cả bốn cách cho những mục tiêu khác nhau. Hãy bắt đầu bằng việc ghi rõ: dữ liệu nào có nhãn, ai tạo nhãn, và hệ thống cần xuất ra điều gì.
+
+## Bài luyện tập
+
+Một ứng dụng nghe nhạc có danh sách bài hát nhưng không có thể loại, muốn tự nhóm các bài gần nhau. Chọn kiểu học nào? **Không giám sát.** Nếu ứng dụng được cho biết từng bài thuộc `rock`, `jazz` hay `pop` và học cách gán thể loại cho bài mới thì sao? **Có giám sát, bài toán phân loại.**
+
 ## Tự kiểm tra
 
 Một bảng có thông tin khách hàng nhưng không có cột “nhóm khách”, bạn muốn tự tìm các nhóm tương tự. Đây là kiểu nào? **Không giám sát.** Nếu có nhãn khách đã rời đi / còn ở lại và muốn dự đoán khách mới, đây là kiểu nào? **Có giám sát, bài toán phân loại.**

@@ -22,6 +22,16 @@ Thư viện có thể chọn cách ghép mặc định khác nhau; hãy kiểm t
 
 SVM thường tạo **decision score** dựa trên khoảng cách tương đối tới biên. Điểm `2` không có nghĩa “xác suất 200%”; muốn xác suất cần thêm bước hiệu chỉnh phù hợp và đánh giá độ tin cậy. Nếu ứng dụng cần xác suất, phải xác nhận thuật toán và phương pháp hiệu chỉnh cụ thể.
 
+## Hai cách ghép bộ phân loại nhị phân
+
+Với ba lớp A, B, C, cách one-versus-rest huấn luyện ba mô hình: A so với phần còn lại, B so với phần còn lại, và C so với phần còn lại. Một mẫu mới cho ba điểm số giả sử là A=0.2, B=1.4, C=0.8. Ta chọn B vì điểm số lớn nhất. Điểm số ấy không tự động có nghĩa xác suất lớp B là 140% hay 80%.
+
+Cách one-versus-one huấn luyện từng cặp: A/B, A/C, B/C. Mỗi mô hình bỏ phiếu cho một lớp. Với 5 lớp có 5×4/2=10 cặp, nên số mô hình tăng theo số cặp. Cách này chỉ học trên dữ liệu của hai lớp tương ứng, nhưng khi nhiều lớp có thể cần tổng hợp phiếu và xử lý hòa.
+
+## Quy trình thực hành
+
+Chia dữ liệu theo cách giữ đại diện của từng lớp nếu lớp mất cân bằng; chuẩn hóa trong từng fold để dữ liệu validation không lọt vào bước học; chọn kernel và C bằng cross-validation. Sau đó đánh giá một lần trên test và xem precision/recall từng lớp. Với nhiều lớp, accuracy tổng thể có thể che một lớp mà mô hình gần như không bao giờ nhận ra.
+
 ## Tự kiểm tra
 
 Với bốn lớp, one-vs-rest cần bao nhiêu bộ? **Bốn.** One-vs-one cần bao nhiêu cặp? **Sáu**: AB, AC, AD, BC, BD, CD. Điểm SVM có phải phần trăm tin cậy không? **Không, thường là điểm quyết định.**

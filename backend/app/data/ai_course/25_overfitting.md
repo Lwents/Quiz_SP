@@ -32,6 +32,28 @@ Dropout là một kỹ thuật thường dùng trong mạng nơ-ron, nhưng khô
 
 Một cây quyết định có thể tiếp tục tách cho tới khi mỗi lá chứa đúng một dòng train: điểm train gần như tuyệt đối nhưng cây đang ghi nhớ từng hồ sơ. Giới hạn độ sâu hoặc yêu cầu mỗi lá có nhiều mẫu hơn làm cây đơn giản lại; sau đó so sánh trên validation xem khả năng tổng quát có tăng không.
 
+## Làm thử: chọn độ phức tạp bằng validation
+
+Ba mô hình dự đoán cùng một dữ liệu cho kết quả loss sau:
+
+| Mô hình | Loss train | Loss validation |
+| --- | ---: | ---: |
+| Đơn giản | 0.45 | 0.48 |
+| Vừa | 0.18 | 0.24 |
+| Rất phức tạp | 0.02 | 0.81 |
+
+Mô hình rất phức tạp khớp train tốt nhất nhưng validation xấu nhất — dấu hiệu học thuộc hoặc tập train/validation khác nhau. Chọn mô hình “vừa” theo validation trong ví dụ này. Sau khi khóa lựa chọn, mới dùng test để ước lượng kết quả cuối.
+
+Nếu chỉ có ít mẫu, `k`-fold cross-validation chia train thành `k` phần: mỗi lượt giữ một phần làm validation và huấn luyện trên `k−1` phần còn lại. Lấy trung bình các lượt giúp quyết định bớt phụ thuộc một lần chia, nhưng tốn nhiều lần huấn luyện. Test cuối vẫn cần giữ ngoài vòng lựa chọn.
+
+## Ba kiểu regularization dễ hiểu
+
+- **Early stopping:** dừng khi loss validation ngừng cải thiện; giữ trọng số ở thời điểm validation tốt nhất.
+- **L2 / weight decay:** thêm hình phạt cho bình phương trọng số lớn, khuyến khích mô hình dùng hệ số vừa phải.
+- **L1:** phạt trị tuyệt đối của trọng số; có thể đẩy một số hệ số về 0, tạo mô hình thưa hơn.
+
+Regularization quá yếu không ngăn được việc học nhiễu; quá mạnh làm mô hình mất cả quy luật thật và underfit. Chọn cường độ trên validation.
+
 ## Tự kiểm tra
 
 Train đạt 99%, validation đạt 65%. Nên khoe accuracy 99% không? **Không; cần tìm lý do chênh lệch và ưu tiên kết quả validation.** Nếu bạn chọn tham số bằng validation, tập nào nên để dành cho báo cáo cuối? **Test độc lập.**

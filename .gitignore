@@ -25,3 +25,11 @@ frontend/.env
 # Temporary & dump scripts
 dump_questions.py
 parse_all_q.py
+
+# Generated caches, logs and OS metadata
+.pytest_cache/
+.ruff_cache/
+.cache/
+*.log
+.DS_Store
+Thumbs.db

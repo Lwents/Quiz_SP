@@ -22,6 +22,16 @@ Deep Learning không xuất hiện chỉ vì một nhà nghiên cứu tạo ra m
 
 Deep Learning vẫn cần dữ liệu đại diện, cách đo lỗi hợp lý, kiểm tra trên dữ liệu mới và người chịu trách nhiệm về việc sử dụng. Nhiều tầng không tự đảm bảo hiểu, đúng hoặc công bằng.
 
+## Nhìn lịch sử như chuỗi điều kiện cùng hội tụ
+
+Có thể nhớ sự phát triển qua bốn câu hỏi. Đầu tiên, làm sao mô tả một quyết định bằng nơ-ron tính tổng đầu vào có trọng số? Tiếp theo, làm sao kết hợp nhiều tầng để biểu diễn quan hệ phi tuyến? Rồi làm sao tính gradient xuyên qua các tầng để cập nhật trọng số? Cuối cùng, có đủ dữ liệu, phần cứng và thư viện để thử nghiệm mạng lớn trên bài toán thật chưa?
+
+Perceptron giúp minh họa ranh giới tuyến tính. Mạng nhiều lớp thêm tầng ẩn và hàm kích hoạt; backpropagation tính đạo hàm cho các tầng; GPU và dữ liệu số hóa làm nhiều thí nghiệm khả thi hơn. CNN khai thác lân cận ảnh; các kiểu kiến trúc khác tận dụng chuỗi hoặc cấu trúc khác. Đây là mạch khái niệm, không khẳng định lịch sử chỉ có những bước này hoặc do một người tạo ra.
+
+## Đánh giá tiến bộ bằng khả năng giải quyết bài toán
+
+Một mạng nhiều tầng có thể học đặc trưng hữu ích, nhưng cũng cần nhãn đáng tin, chi phí tính toán, dữ liệu đại diện và đánh giá độc lập. Trước khi chọn deep learning, hãy so với mô hình đơn giản: nếu mô hình nhỏ đã đủ chính xác, dễ giải thích và rẻ vận hành, mạng lớn chưa chắc là lựa chọn tốt hơn.
+
 ## Tự kiểm tra
 
 Vì sao backpropagation quan trọng với mạng nhiều lớp? **Nó giúp tính gradient cho các trọng số ở nhiều tầng để cập nhật mạng.** Chỉ cần mạng sâu là chắc chắn mô hình tốt hơn không? **Không; cần dữ liệu, bài toán và đánh giá phù hợp.**

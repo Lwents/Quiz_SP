@@ -20,6 +20,18 @@ Trong SVM tuyến tính, primal tìm siêu phẳng có lề rộng. Dạng dual 
 
 Đây là lý do duality không chỉ là phép biến đổi ký hiệu trong giáo trình. Nó giải thích vì sao một số thuật toán có thể mở rộng hoặc dùng kernel hiệu quả.
 
+## Ví dụ đối ngẫu bằng bài toán làm bánh
+
+Một tiệm có 12 kg bột. Mỗi ổ bánh mì dùng 2 kg và lãi 4 nghìn đồng; mỗi bánh muffin dùng 3 kg và lãi 5 nghìn. Gọi x là số ổ bánh mì, y là số muffin. Bài toán nguyên thủy là tối đa hóa 4x+5y, với điều kiện 2x+3y≤12 và x,y≥0.
+
+Hãy gán cho mỗi kg bột một giá trị λ nghìn đồng. Để giá trị bột đủ bao quát lợi nhuận của bánh mì, cần 2λ≥4; với muffin cần 3λ≥5. Ta muốn giá trị của toàn bộ lượng bột thấp nhất: tối thiểu hóa 12λ. Hai điều kiện yêu cầu λ≥2 và λ≥5/3, nên giá trị nhỏ nhất khả thi là λ=2; cận thu được là 12×2=24 nghìn đồng.
+
+Ở bài gốc, làm 6 ổ bánh mì dùng hết 12 kg và lãi 24 nghìn. Ta có một phương án đạt đúng cận đối ngẫu, nên cả hai cách nhìn cho cùng giá trị tối ưu. Ví dụ giả sử số bánh được chia liên tục; tiệm thật thường phải dùng biến nguyên, nên không được bê kết quả này vào vận hành nếu chưa xét điều đó.
+
+## Liên hệ lại với SVM
+
+Bài toán đối ngẫu của SVM gán hệ số cho các điểm huấn luyện. Điểm có hệ số khác không thường là support vector và góp phần xác định ranh giới; các điểm xa lề thường không quyết định nó. Vì biểu thức đối ngẫu dùng tích vô hướng giữa điểm, ta có thể thay tích đó bằng một kernel để mô hình hóa ranh giới cong mà không cần tự tạo mọi tọa độ mới.
+
 ## Tự kiểm tra
 
 Trong cách nhìn dual, biến mới thường gắn với điều gì? **Mức độ quan trọng/giá của ràng buộc.** Vì sao dual hữu ích cho SVM? **Nó viết nghiệm theo dữ liệu huấn luyện và tạo cơ sở cho support vectors cùng kernel.**

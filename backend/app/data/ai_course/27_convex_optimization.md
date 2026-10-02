@@ -26,6 +26,18 @@ Mạng nơ-ron sâu có hàm mất mát phức tạp, thường không lồi. Gr
 
 Vì thế cần hỏi hai câu khác nhau: “Thuật toán đã tối ưu được hàm mục tiêu chưa?” và “Hàm mục tiêu có đại diện đúng điều ta muốn không?”. Điểm thứ nhất là tính toán; điểm thứ hai là thiết kế bài toán.
 
+## Ví dụ Gradient Descent trên một chiếc bát
+
+Xét J(w)=(w−3)². Điểm tốt nhất là w=3 vì khi đó J=0. Đạo hàm là 2(w−3), nên quy tắc cập nhật với tốc độ học η=0.1 là w mới = w cũ − 0.1×2(w cũ−3).
+
+Bắt đầu tại w=0: đạo hàm bằng −6, nên bước đầu đưa w tới 0.6. Tại w=0.6, đạo hàm bằng −4.8, bước kế tiếp tới 1.08. Tiếp tục, ta lần lượt tới 1.464, rồi gần hơn nữa tới 3. Mỗi bước đi theo chiều dốc xuống; vì hàm lồi chỉ có một đáy, đi đúng và đủ ổn định sẽ tiến về nghiệm ấy.
+
+Nếu η quá lớn, bước cập nhật có thể nhảy qua đáy qua lại hoặc làm mất mát tăng. Nếu η rất nhỏ, mỗi bước tiến ít và cần nhiều vòng. Trong bài thật, ta theo dõi loss trên tập train và validation để biết mô hình đang học hay bắt đầu học thuộc.
+
+## Bài tập có lời giải
+
+Với J(w)=(w−3)², tại w=1, gradient bằng bao nhiêu và bước η=0.1 đưa w tới đâu? Gradient là 2(1−3)=−4; w mới =1−0.1×(−4)=1.4. Kết quả tiến gần 3. Nếu ràng buộc yêu cầu w≥0 thì đó là phần nào của bài toán? Đó là miền khả thi; nếu đề yêu cầu w nguyên nữa, nghiệm còn phải thuộc các số nguyên không âm.
+
 ## Tự kiểm tra
 
 Nếu mục tiêu là giảm sai số nhưng trọng số phải không âm, “trọng số không âm” là gì? **Ràng buộc.** Nếu hàm mục tiêu lồi, nó giúp ích ở đâu? **Một cực tiểu cục bộ cũng là cực tiểu toàn cục, nên việc tìm nghiệm có bảo đảm rõ hơn.**

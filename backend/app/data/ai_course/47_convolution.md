@@ -29,6 +29,32 @@ Lớp đầu có thể phát hiện cạnh nhỏ; các lớp sau kết hợp ch�
 
 CNN không tự hiểu nội dung ảnh và cũng có thể nhầm khi ảnh khác ánh sáng, góc nhìn hoặc nhóm dữ liệu huấn luyện. Cần chuẩn hóa đầu vào, kiểm tra lỗi theo nhóm và dùng tập test độc lập.
 
+## Tính một ô của feature map bằng tay
+
+Ảnh nhỏ có vùng sáng ở cột phải:
+
+```text
+0 0 1
+0 0 1
+0 0 1
+```
+
+Dùng kernel phát hiện cạnh dọc:
+
+```text
+-1 0 1
+-1 0 1
+-1 0 1
+```
+
+Nhân từng cặp ô rồi cộng: mỗi hàng cho 1, tổng là 3. Giá trị phản hồi lớn nghĩa là vùng này có khác biệt rõ giữa trái và phải theo chiều kernel. Nếu dùng ReLU, max(0,3)=3 vẫn được giữ. Trong thư viện ảnh, phép tính thường áp kernel theo dạng tương quan chéo; tên lớp vẫn gọi là convolution.
+
+## Tính kích thước đầu ra
+
+Với ảnh 28×28, kernel 3×3, stride 1, không padding, mỗi chiều có 28−3+1=26 vị trí; một bộ lọc tạo bản đồ 26×26. Dùng 32 bộ lọc tạo 26×26×32. Nếu padding same với stride 1, kích thước không gian giữ 28×28, nên đầu ra là 28×28×32.
+
+Mỗi bộ lọc được dùng chung trên toàn ảnh; đó là lý do nó có thể nhận ra cùng một nét ở vị trí khác và tiết kiệm tham số. Nhưng kernel không được đặt tên sẵn là “cạnh”: các trọng số được học từ dữ liệu, và cần đủ ảnh đại diện để phản hồi có ý nghĩa.
+
 ## Tự kiểm tra
 
 Kernel `3×3` quét trên ảnh để làm gì? **Tính phản hồi cục bộ tại từng vị trí và tạo feature map.** Vì sao CNN dùng lại một kernel ở nhiều nơi? **Để phát hiện cùng kiểu mẫu ở các vị trí khác nhau và giảm số trọng số cần học.**

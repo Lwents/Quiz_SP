@@ -25,6 +25,25 @@ Nếu chỉ lưu nhãn dự đoán, ta mất thông tin về mức độ gần n
 
 Khi chấm mô hình, cần nêu rõ lớp dương là lớp nào, ngưỡng nào đã dùng và ma trận nhầm lẫn theo nhãn. Accuracy đơn độc có thể đánh lừa nếu một lớp chiếm đa số; chương sau sẽ tính precision, recall và F1.
 
+## Làm thử: đổi ngưỡng thì ai bị cảnh báo?
+
+Có bốn hồ sơ; nhãn thật là `[dương, dương, âm, âm]`, mô hình trả xác suất dương `[0.70, 0.40, 0.30, 0.20]`.
+
+| Ngưỡng | Dự đoán | TP | FP | FN | TN |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 0.50 | dương, âm, âm, âm | 1 | 0 | 1 | 2 |
+| 0.30 | dương, dương, dương, âm | 2 | 1 | 0 | 1 |
+
+Ở ngưỡng 0.50, mô hình bỏ sót hồ sơ thứ hai. Hạ ngưỡng xuống 0.30 thì bắt được cả hai mẫu dương, nhưng đồng thời gắn nhầm mẫu âm có xác suất 0.30. Recall tăng; precision có thể giảm. Nếu đây là kiểm tra ban đầu rẻ và bỏ sót nguy hiểm, ngưỡng thấp có thể hợp lý. Nếu cảnh báo rất tốn kém, cần cân nhắc báo nhầm.
+
+## Từ score sang đường biên
+
+Một bộ phân loại tuyến tính dùng `s(x)=w₀+w₁x₁+w₂x₂`. Với ngưỡng 0, đường `s(x)=0` là ranh giới; hai phía mang hai nhãn khác nhau. Logistic Regression có thể biến `s` thành xác suất qua sigmoid rồi dùng ngưỡng 0.5 hoặc một ngưỡng khác. Đổi ngưỡng làm đổi quyết định, không làm các trọng số đã học tự biến thành mô hình mới.
+
+## Bài luyện tập
+
+Trong bảng, nếu ngưỡng là 0.40 và quy tắc dùng `>=`, mẫu thứ hai được xếp lớp nào? **Dương.** Cần ghi gì khi công bố kết quả? **Lớp dương, ngưỡng, cách chia dữ liệu và các lỗi TP/FP/FN/TN.**
+
 ## Tự kiểm tra
 
 Ngưỡng giảm từ 0.5 xuống 0.3. Hệ thống thường gọi nhiều hay ít trường hợp là dương hơn? **Nhiều hơn.** Điều đó tự đảm bảo mô hình tốt hơn không? **Không; nó đổi số lần bỏ sót và báo nhầm, nên cần đo theo mục tiêu.**

@@ -23,6 +23,16 @@ Với `C` lớp, phép chiếu LDA thường có tối đa `C−1` hướng phâ
 
 Thử khi có nhãn, cần phân loại tuyến tính hoặc muốn chiếu dữ liệu sao cho nhìn rõ khác biệt lớp. Kiểm tra giả định và validation; nếu các lớp có phân bố phức tạp hoặc ma trận hiệp phương sai khác nhau mạnh, hiệu quả có thể giảm.
 
+## PCA hỏi về độ trải rộng; LDA hỏi về nhãn
+
+Hãy hình dung hai nhóm học sinh trên mặt phẳng: nhóm A tụ quanh (1,1), nhóm B quanh (4,4). Nếu mỗi nhóm còn trải ngang khá nhiều, LDA tìm hướng mà trung bình hai nhóm cách xa nhau so với độ phân tán bên trong từng nhóm. Chiếu điểm lên hướng đó thường giúp phân loại dễ hơn.
+
+PCA không dùng nhãn và chỉ tìm hướng tổng phương sai lớn. LDA dùng nhãn để so độ tách giữa các lớp với độ trải trong lớp. Với C lớp, LDA có nhiều nhất C−1 hướng phân biệt lớp. Nếu trong mỗi lớp dữ liệu trải rộng đúng theo hướng phân biệt, hoặc giả định của mô hình không phù hợp, LDA không thể tạo phép màu; cần kiểm tra validation.
+
+## Quy trình áp dụng
+
+Tách train/validation/test trước. Ước lượng các trung bình lớp và ma trận phân tán từ train; biến đổi tập còn lại bằng cùng phép chiếu. Sau đó đánh giá bộ phân loại phía sau. Không dùng nhãn của validation/test để tìm hướng LDA, vì như vậy mô hình đã nhìn thấy câu trả lời.
+
 ## Tự kiểm tra
 
 PCA dùng hay không dùng nhãn? **Không dùng nhãn.** LDA hướng tới điều gì? **Tách các lớp đã biết nhau tốt hơn.** LDA trong bài này có phải Latent Dirichlet Allocation không? **Không.**

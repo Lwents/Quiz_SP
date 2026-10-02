@@ -21,6 +21,18 @@ Với dữ liệu hai chiều, đường là một đường thẳng. Với nhi�
 
 SVM tuyến tính thích hợp khi ranh giới gần tuyến tính và số chiều vừa phải. Nếu cần ranh giới cong, có kernel; nếu lớp chồng lấn, dùng soft margin. Hai bài tiếp theo lần lượt xử lý hai tình huống đó.
 
+## Ví dụ một chiều: tìm con đường ở giữa
+
+Giả sử các điểm lớp −1 nằm tại x=1 và x=2, còn lớp +1 tại x=4 và x=5. Ranh giới ở x=3 tách hai nhóm. Có thể viết điểm có dấu là f(x)=x−3: nếu f(x)<0 dự đoán lớp −1, nếu f(x)>0 dự đoán lớp +1.
+
+Điểm x=2 nằm cách ranh giới 1 đơn vị về bên trái; x=4 cách 1 đơn vị về bên phải. Đây là hai điểm sát nhất nên là support vectors. Điểm x=1 hay x=5 ở xa hơn và không ép ranh giới dịch chuyển trong ví dụ này. Chiều rộng lề giữa hai đường biên song song là 1+1=2 đơn vị.
+
+SVM chuẩn hóa đường biên để các support vector thỏa yᵢf(xᵢ)=1. Nếu đặt w=1 và b=−3, x=2 có nhãn −1 nên (−1)×(−1)=1; x=4 có nhãn +1 nên (+1)×(+1)=1. Cách chuẩn hóa giúp so sánh bài toán, còn khoảng cách hình học phụ thuộc cả độ dài vector trọng số.
+
+## Khi đọc kết quả SVM
+
+Hãy kiểm tra nhãn được mã hóa đúng, đặc trưng có cùng thang đo hợp lý và điểm lề nằm đúng phía. SVM không tự tạo xác suất đáng tin: điểm số quyết định thường là khoảng cách có dấu đã được co giãn, không phải phần trăm chắc chắn. Muốn dùng xác suất, cần bước hiệu chỉnh riêng và kiểm tra nó trên dữ liệu chưa dùng để huấn luyện.
+
 ## Tự kiểm tra
 
 Những điểm nào quyết định vị trí biên nhiều nhất? **Các điểm gần lề nhất, gọi là support vectors.** Nếu tăng lề nhưng đặt đường lệch hẳn về một lớp, đó có còn là mục tiêu SVM? **Không; lề được xét giữa các lớp theo tiêu chí tối ưu, cần biểu diễn cả hai phía.**

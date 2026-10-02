@@ -26,6 +26,16 @@ Ví dụ dùng prior Beta đối xứng `Beta(2,2)` cho đồng xu 8/10: phân p
 
 MAP phụ thuộc prior đã chọn. Một prior sai lệch có thể kéo kết quả sai hướng; cần giải thích giả định và xem độ nhạy khi đổi prior. MLE/MAP là cách ước lượng tham số, không tự chứng minh mô hình phù hợp với đời thực.
 
+## Tự suy ra MLE cho ví dụ tung đồng xu
+
+Với 8 lần ngửa và 2 lần sấp, log-likelihood bỏ hằng số tổ hợp là ℓ(p)=8 ln(p)+2 ln(1−p). Lấy đạo hàm được 8/p−2/(1−p). Cho đạo hàm bằng 0: 8(1−p)=2p, nên p=0.8. Ta tìm giá trị làm dữ liệu đã quan sát có likelihood lớn nhất.
+
+Nếu thêm prior Beta(2,2), hậu nghiệm là Beta(10,4). Mode bằng (10−1)/(10+4−2)=9/12=0.75. Ước lượng MAP thấp hơn MLE vì prior đối xứng kéo kết quả khỏi 0 hoặc 1 khi số quan sát hữu hạn. Khi có nhiều lần tung hơn, 8/10 hay 800/1000 có cùng tỉ lệ MLE, nhưng prior có ảnh hưởng tương đối nhỏ hơn ở mẫu lớn.
+
+## Khi nào dùng mỗi cách?
+
+MLE là lựa chọn tự nhiên khi muốn tối đa hóa mức phù hợp dữ liệu và không muốn đặt prior tường minh. MAP hữu ích khi có kiến thức trước hoặc muốn regularize nghiệm, nhưng phải nêu rõ prior và kiểm tra độ nhạy. Cả hai đều dựa trên mô hình xác suất; nếu mô hình không diễn tả được dữ liệu, phép tối ưu chính xác vẫn cho câu trả lời sai mục đích.
+
 ## Tự kiểm tra
 
 Với 8 lần ngửa trên 10 lần tung, MLE cho p bao nhiêu? **0.8.** Nếu MAP ra 0.75 trong ví dụ, phần khác với MLE đến từ đâu? **Prior đã chọn.**

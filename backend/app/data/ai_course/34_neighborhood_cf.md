@@ -30,6 +30,18 @@ Người dùng mới chưa có lịch sử tạo ra **cold start**; sản phẩm
 
 Gợi ý cần tôn trọng quyền riêng tư, giải thích cách dùng dữ liệu và cho phép người dùng điều chỉnh/xóa lịch sử theo chính sách sản phẩm.
 
+## Ví dụ tìm người hàng xóm giống mình
+
+Ba người chấm hai bộ phim đầu như sau: An chấm A=5, B=1; Bình chấm A=5, B=1; Chi chấm A=1, B=5. An chưa xem phim C, Bình chấm C=4, Chi chấm C=2. Trên hai phim cùng được xem, An và Bình có cùng kiểu thích; Chi có kiểu ngược lại.
+
+Nếu dùng tương quan hoặc cosine trên vector đã trừ điểm trung bình, Bình sẽ gần An hơn Chi. Ta lấy điểm phim C của hàng xóm giống An để gợi ý C. Bản minh họa đơn giản dự đoán khoảng 4 vì Bình chấm 4; hệ thật thường hiệu chỉnh theo mức chấm trung bình của mỗi người và trọng số độ giống, thay vì sao chép nguyên một đánh giá.
+
+## Cần cẩn thận khi dữ liệu thưa
+
+Một người chỉ trùng một phim với An chưa đủ để kết luận họ giống nhau. Thực tế cần số tương tác tối thiểu hoặc co điểm tương đồng về gần 0 khi có quá ít dữ liệu. Người mới chưa có lịch sử và phim mới chưa ai chấm là vấn đề cold start; gợi ý theo nội dung có thể giúp giai đoạn đầu.
+
+Không được lấy đánh giá tương lai để tính láng giềng khi đánh giá mô hình. Chia train/test theo thời gian nếu sản phẩm dự đoán điều người dùng sẽ thích tiếp theo; chia ngẫu nhiên có thể vô tình để thông tin tương lai rò vào train.
+
 ## Tự kiểm tra
 
 Một ô trống trong ma trận tương tác cho biết gì? **Chưa biết người đó thích hay không.** User-user tìm ai giống ai? **Tìm người dùng có lịch sử gần nhau.**

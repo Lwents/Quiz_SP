@@ -28,6 +28,16 @@ Nếu bỏ sót nguy hiểm, như không phát hiện sự cố, ưu tiên xem r
 
 Hãy xem thêm kết quả theo từng nhóm, baseline đơn giản, cách chia dữ liệu và chi phí lỗi. Không có một chỉ số duy nhất phù hợp với mọi sản phẩm.
 
+## Tính F1 và hiểu hậu quả của ngưỡng
+
+Trong bảng phía trên, precision=8/(8+2)=0.8 và recall=8/(8+4)=2/3. F1=2×precision×recall/(precision+recall)≈0.727, tức khoảng 72.7%. Trung bình điều hòa thấp nếu một trong hai chỉ số thấp, nên F1 hữu ích khi muốn cân bằng precision và recall; nó không tính trực tiếp chi phí tiền bạc hay mức độ nghiêm trọng của từng lỗi.
+
+Nếu hạ ngưỡng để gắn cờ nhiều giao dịch hơn, thường bắt thêm gian lận nên recall tăng, nhưng báo nhầm cũng có thể tăng làm precision giảm. Nếu nâng ngưỡng, cảnh báo ít hơn và thường chính xác hơn, nhưng có thể bỏ sót. Không có ngưỡng tốt nhất chung: nhóm vận hành cần quyết định họ chịu được bao nhiêu ca báo nhầm và bỏ sót.
+
+## Báo cáo để người khác kiểm tra được
+
+Ghi rõ lớp dương, ma trận nhầm lẫn, ngưỡng, cách chia tập và số mẫu. Nếu dữ liệu lệch lớp, so với baseline luôn đoán lớp phổ biến. Khi chọn ngưỡng, dùng validation; tập test chỉ dùng báo cáo cuối. Nếu lớp dương hiếm, precision-recall curve thường cho thấy đánh đổi thực tế rõ hơn accuracy đơn lẻ.
+
 ## Tự kiểm tra
 
 Có 20 ca bệnh thật, mô hình tìm được 15. Recall là bao nhiêu? **15/20 = 75%.** Mô hình báo 18 ca dương nhưng chỉ 15 đúng; precision là bao nhiêu? **15/18 ≈ 83.3%.**

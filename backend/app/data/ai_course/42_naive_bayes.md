@@ -25,6 +25,21 @@ Nếu từ “phi thuyền” chưa xuất hiện trong bất kỳ thư rác nà
 
 Naive Bayes thường nhanh và phù hợp làm mốc cho văn bản. Nó có thể trả ra xác suất chưa hiệu chỉnh tốt, nhất là khi giả định độc lập sai. Đánh giá trên dữ liệu thật và không tin xác suất chỉ vì nó được in ra dưới dạng phần trăm.
 
+## Ví dụ với hai dấu hiệu trong email
+
+Giả sử tỷ lệ email rác là 20%, email thường là 80%. Từ win xuất hiện ở 50% thư rác và 5% thư thường; từ link xuất hiện ở 40% thư rác và 10% thư thường. Với email có cả hai từ, Naive Bayes nhân các xác suất có điều kiện:
+
+```text
+điểm rác = 0.20 × 0.50 × 0.40 = 0.040
+điểm thường = 0.80 × 0.05 × 0.10 = 0.004
+```
+
+Chuẩn hóa hai điểm: 0.040/(0.040+0.004)≈0.909. Theo các số giả định và giả định độc lập có điều kiện, xác suất thư rác là khoảng 90.9%. Trong dữ liệu thật, các từ có thể đi cùng nhau nên phép nhân độc lập có thể tự tin quá mức.
+
+## Vì sao cần làm trơn?
+
+Nếu từ hiếm chưa xuất hiện trong lớp rác, xác suất đếm trực tiếp bằng 0 sẽ triệt tiêu tích của cả lớp. Với từ vựng có V từ và một từ xuất hiện c lần trong N vị trí thuộc lớp, làm trơn Laplace dùng (c+1)/(N+V). Nó cho phép sự kiện chưa thấy vẫn có xác suất nhỏ. Thực hành tốt là so Naive Bayes với baseline, đánh giá theo precision/recall và hiệu chỉnh xác suất nếu ứng dụng cần diễn giải phần trăm.
+
 ## Tự kiểm tra
 
 Nếu một từ xuất hiện nhiều hơn trong thư rác, `P(từ | rác)` thường lớn hay nhỏ hơn `P(từ | bình thường)`? **Lớn hơn.** “Naive” nói tới giả định nào? **Các đặc trưng độc lập có điều kiện khi đã biết lớp.**

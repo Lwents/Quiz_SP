@@ -21,6 +21,18 @@ Không có giá trị `C` đúng cho mọi bộ dữ liệu. Chọn nó trên t�
 
 Một điểm màu đỏ nằm lẫn vào đám xanh do người nhập sai nhãn. Với C quá lớn, SVM có thể uốn hoặc xoay ranh giới để chiều theo điểm sai, làm nhiều điểm bình thường bị xếp xấu hơn. C nhỏ hơn có thể giữ ranh giới gọn, chấp nhận sai mẫu bất thường ấy. Nhưng nếu cả cụm đỏ thật sự chồng lấn xanh, C quá nhỏ có thể làm mô hình bỏ qua tín hiệu cần thiết.
 
+## Tính slack để hiểu soft margin
+
+Với một mẫu, đặt y là nhãn −1 hoặc +1 và f(x) là điểm có dấu của mô hình. Số vi phạm lề là ξ=max(0,1−y f(x)). Nếu một mẫu dương có y f(x)=0.6, mô hình đoán đúng phía nhưng chưa đủ xa lề; ξ=0.4. Nếu y f(x)=−0.3, mẫu nằm sai phía đường biên; ξ=1.3.
+
+Soft-margin SVM cân bằng hai việc: giữ lề rộng qua thành phần ½||w||² và phạt vi phạm qua C×tổng ξ. C lớn làm lỗi trên train đắt hơn nên mô hình cố chiều theo các điểm khó; điều này có thể nhạy với nhãn sai. C nhỏ chấp nhận nhiều vi phạm hơn để giữ ranh giới đơn giản, nhưng quá nhỏ có thể bỏ qua cấu trúc thật.
+
+## Chọn C có căn cứ
+
+Chuẩn hóa đặc trưng trước, rồi thử vài giá trị C trên cùng các folds của cross-validation. Chọn theo chỉ số phù hợp mục tiêu, chẳng hạn recall nếu bỏ sót lớp bệnh nguy hiểm là chi phí lớn. Chỉ mở tập test một lần để báo kết quả cuối; nếu dùng test để chọn C, điểm test sẽ lạc quan vì ta đã điều chỉnh theo nó.
+
+Slack không phải nhãn “dữ liệu sai”. Một điểm có slack có thể là ngoại lệ thật, nhiễu đo, hoặc dấu hiệu mô hình chưa đủ phù hợp. Cần xem lại nguồn dữ liệu và đánh giá sai lầm theo nhóm.
+
 ## Tự kiểm tra
 
 Tăng C sẽ làm mô hình nhạy hơn hay dung thứ hơn với lỗi train? **Nhạy hơn, vì mức phạt vi phạm tăng.** Điều đó có đảm bảo test tốt hơn không? **Không; cần chọn bằng validation và đánh giá cuối trên test.**

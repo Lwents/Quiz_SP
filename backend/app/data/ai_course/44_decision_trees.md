@@ -26,6 +26,16 @@ Sau câu hỏi đầu, thuật toán tiếp tục tìm câu có gain tốt nhấ
 
 Giới hạn độ sâu, yêu cầu số mẫu tối thiểu trong lá hoặc cắt tỉa cây giúp giảm overfitting. Dùng validation để chọn; đừng để cây lớn vô hạn chỉ để tăng điểm train.
 
+## Tính Information Gain bằng một bảng nhỏ
+
+Giả sử có 12 hồ sơ: 7 được qua và 5 chưa qua. Entropy ban đầu xấp xỉ 0.980 bit. Xét câu hỏi A về chuyên cần: nhánh thứ nhất có 4 qua, 2 chưa qua; nhánh kia 3 qua, 3 chưa qua. Entropy có trọng số sau chia xấp xỉ (6/12×0.918)+(6/12×1)=0.959, nên gain khoảng 0.021.
+
+Câu hỏi B về đã luyện bài: nhánh thứ nhất có 5 qua, 1 chưa qua; nhánh kia có 2 qua, 4 chưa qua. Entropy sau chia xấp xỉ (6/12×0.650)+(6/12×0.918)=0.784, nên gain khoảng 0.196. Vì B làm giảm độ lẫn nhiều hơn, ID3 sẽ thử B trước. Số liệu này chỉ là ví dụ luyện cách tính, không phải kết luận về sinh viên thật.
+
+## Sau khi chọn câu đầu
+
+Thuật toán lặp lại cách tính ở từng nhánh để chọn câu tiếp theo. Nếu nhánh đã thuần thì dừng và tạo lá. Nếu cứ chia tới khi mỗi hồ sơ riêng thành một lá, cây có thể ghi nhớ cả nhiễu. Giới hạn độ sâu, yêu cầu số mẫu tối thiểu và pruning giúp kiểm tra xem cây có khái quát tốt không.
+
 ## Tự kiểm tra
 
 Nếu mọi hồ sơ trong một lá đều cùng nhãn, entropy của lá gần bao nhiêu? **0.** Câu hỏi nào được ID3 ưu tiên? **Câu làm giảm entropy nhiều nhất, tức có information gain lớn nhất.**

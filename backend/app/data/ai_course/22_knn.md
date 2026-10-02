@@ -25,6 +25,39 @@ Khoảng cách Euclid phù hợp khi độ chênh bình phương giữa các chi
 
 KNN dễ giải thích: “dự đoán này giống với các mẫu nào?”. Nhưng với hàng triệu mẫu, phải lưu nhiều dữ liệu và tìm hàng xóm có thể chậm; nhiều chiều cũng khiến khoảng cách khó phân biệt giữa “gần” và “xa”. Chỉ dùng đặc trưng hợp lý, chuẩn hóa đúng và đo tốc độ lẫn độ chính xác trên dữ liệu đại diện.
 
+## Làm thử từng bước: dự đoán có qua môn không
+
+Ta biểu diễn mỗi sinh viên bằng `(số giờ ôn, số buổi đi học)`. Bốn mẫu đã biết là:
+
+| Sinh viên | Giờ ôn | Buổi học | Nhãn |
+| --- | ---: | ---: | --- |
+| A | 1 | 2 | Trượt |
+| B | 2 | 2 | Trượt |
+| C | 4 | 4 | Đỗ |
+| D | 5 | 4 | Đỗ |
+
+Bạn mới X có `(3.5, 3.5)`. Dùng khoảng cách Euclid:
+
+```text
+d(X,A) = √((3.5−1)² + (3.5−2)²) ≈ 2.92
+d(X,B) = √((3.5−2)² + (3.5−2)²) ≈ 2.12
+d(X,C) = √((3.5−4)² + (3.5−4)²) ≈ 0.71
+d(X,D) = √((3.5−5)² + (3.5−4)²) ≈ 1.58
+```
+
+Với `K=3`, ba láng giềng gần nhất là C (đỗ), D (đỗ), B (trượt). Hai trong ba phiếu là “đỗ”, nên KNN phân loại X là “đỗ”. Đây chỉ là dự đoán từ bốn mẫu minh họa, không phải kết luận thật về sinh viên.
+
+### Nếu đầu ra là số thì sao?
+
+Muốn dự đoán điểm thi, ta lấy trung bình điểm của ba người gần nhất. Nếu điểm C, D, B lần lượt là 8, 9, 5, dự đoán không trọng số là `(8+9+5)/3 ≈ 7.33`. Trung bình có trọng số sẽ cho C và D ảnh hưởng nhiều hơn vì gần X hơn.
+
+## Checklist trước khi chạy KNN
+
+1. Xem từng hàng có cùng thứ tự và đơn vị đặc trưng không.
+2. Chia train/validation/test trước khi chuẩn hóa.
+3. Thử vài `K` và cách tính khoảng cách trên validation.
+4. So sánh với baseline đơn giản, rồi chỉ đánh giá cuối trên test một lần.
+
 ## Tự kiểm tra
 
 Ba láng giềng có nhãn `mèo, mèo, chó`; KNN phân loại với `K=3` đoán nhãn nào? **Mèo.** Nếu chỉ có đúng một nhãn cần dự đoán là giá, đầu ra là loại nào? **Hồi quy KNN, thường lấy trung bình các giá trị của hàng xóm.**

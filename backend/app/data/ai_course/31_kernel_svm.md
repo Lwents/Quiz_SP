@@ -22,6 +22,18 @@ RBF gần 1 khi hai điểm sát nhau và nhỏ dần khi chúng xa. Ta có th�
 
 Hai tham số tương tác, nên thử chúng bằng validation/cross-validation thay vì chỉnh theo test. Chuẩn hóa đặc trưng trước khi dùng RBF vì khoảng cách phụ thuộc thang đo.
 
+## Ví dụ XOR: thêm một cách nhìn
+
+Bốn điểm có hai đầu vào nhị phân tạo bài toán XOR: (0,0) thuộc lớp 0; (0,1) và (1,0) thuộc lớp 1; (1,1) thuộc lớp 0. Trên mặt phẳng ban đầu, hai điểm lớp 1 nằm chéo nhau, nên một đường thẳng không tách sạch hai lớp.
+
+Tạo đặc trưng mới z=(x₁−x₂)². Với (0,0) và (1,1), z=0; với (0,1) và (1,0), z=1. Trong trục z, chỉ cần ngưỡng 0.5 là tách được hai nhóm. Kernel cho phép tính độ giống nhau như thể ta đã đưa điểm vào một không gian đặc trưng mới, mà không cần dựng và lưu mọi tọa độ ấy một cách tường minh.
+
+## Kernel không tự biết ranh giới đúng
+
+Kernel tuyến tính tạo ranh giới thẳng trong đặc trưng gốc; RBF có thể tạo ranh giới cong. Tham số C điều chỉnh mức phạt lỗi, còn gamma của RBF điều chỉnh tầm ảnh hưởng của một điểm: gamma quá lớn dễ vẽ đường biên uốn quanh từng điểm train; quá nhỏ có thể làm biên quá trơn. Chuẩn hóa dữ liệu và chọn tham số bằng validation/cross-validation, không bằng cách xem test nhiều lần.
+
+Kernel giúp biểu diễn linh hoạt nhưng có thể tốn thời gian và bộ nhớ khi số mẫu lớn. Trước khi dùng, so với mô hình tuyến tính đơn giản để biết độ phức tạp tăng có đem lại ích lợi đo được không.
+
 ## Tự kiểm tra
 
 Kernel trick hữu ích ở đâu? **Khi muốn mô hình hóa ranh giới phi tuyến mà không cần tính tường minh mọi tọa độ của không gian biến đổi.** Nếu gamma rất lớn và ranh giới ôm sát từng điểm train, nên nghi ngờ điều gì? **Overfitting.**
