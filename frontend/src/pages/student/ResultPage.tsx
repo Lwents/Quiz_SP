@@ -2,9 +2,10 @@ import { AIPracticeQuestion, AIPracticeData } from '../../components/AIPracticeQ
 import { toast } from '../../stores/toastStore';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import katex from 'katex';
+import { preprocessAllMath } from '../../components/aiMathTokens';
 import 'katex/dist/katex.min.css';
 import { apiClient } from '../../api/client';
+import { useAuthStore } from '../../stores/authStore';
 import { AttemptResult } from '../../types';
 import { QuestionContent } from '../../components/QuestionContent';
 import {
@@ -21,65 +22,21 @@ import {
   ChevronUp,
 } from 'lucide-react';
 
-// Helper to render KaTeX formula safely
-const renderKatexSafe = (formula: string, displayMode: boolean = false): string => {
-  try {
-    return katex.renderToString(formula.trim(), { displayMode, throwOnError: false });
-  } catch (e) {
-    return formula;
-  }
-};
-
-// Replace math blocks, inline math, and bare LaTeX commands into encoded HTML tokens
-const preprocessAllMath = (text: string): string => {
-  // Normalize escaped backslashes from AI responses if any (e.g. \\rightarrow -> \rightarrow)
-  let normalized = text.replace(/\\\\([a-zA-Z]+)/g, '\\$1');
-
-  // Convert bare arrows and common math symbols to standard LaTeX inline math if outside
-  normalized = normalized.replace(/\\rightarrow/g, '$ \\rightarrow $');
-  normalized = normalized.replace(/\\leftarrow/g, '$ \\leftarrow $');
-  normalized = normalized.replace(/\\leftrightarrow/g, '$ \\leftrightarrow $');
-
-  // 1. Block math $$...$$
-  let out = normalized.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
-    const rendered = renderKatexSafe(math, true);
-    return `###MATH_BLOCK###${encodeURIComponent(rendered)}###END###`;
-  });
-
-  // 2. Inline math $...$
-  out = out.replace(/\$([^\$\n]+?)\$/g, (_, math) => {
-    const rendered = renderKatexSafe(math, false);
-    return `###MATH_INLINE###${encodeURIComponent(rendered)}###END###`;
-  });
-
-  // 3. Bare LaTeX commands without $...$, e.g. \forall, \exists, \mathbb{Z}, etc.
-  out = out.replace(/(\\[a-zA-Z]+(?:\{[^{}]*\})?)/g, (match) => {
-    try {
-      const rendered = katex.renderToString(match, { throwOnError: true });
-      return `###MATH_INLINE###${encodeURIComponent(rendered)}###END###`;
-    } catch {
-      return match;
-    }
-  });
-
-  return out;
-};
-
 // Render string containing markdown bold and math tokens into ReactNode
 const renderProcessedInline = (text: string): React.ReactNode => {
   // First, if there is encoded KaTeX accidentally placed inside backticks `...`, unwrap them
   const cleanedText = text.replace(/`([^`]*?###MATH_[A-Z]+###.*?###END###[^`]*?)`/g, '$1');
 
-  const parts = cleanedText.split(/(###MATH_BLOCK###.*?###END###|###MATH_INLINE###.*?###END###|\*\*.*?\*\*|`.*?`)/g);
+  const parts = cleanedText.split(/(###MATH_BLOCK###.*?###END###|###MATH_INLINE###.*?###END###|\*\*.*?\*\*|`.*?`|\*[^*\n]+\*)/g);
 
   return parts.map((part, index) => {
     if (part.startsWith('###MATH_BLOCK###') && part.endsWith('###END###')) {
       const encodedHtml = part.replace('###MATH_BLOCK###', '').replace('###END###', '');
       const html = decodeURIComponent(encodedHtml);
       return (
-        <div
+        <span
           key={`mb-${index}`}
-          className="my-2 p-2 rounded-lg bg-indigo-50/50 text-center overflow-x-auto"
+          className="block my-2 p-2 rounded-lg bg-indigo-50/50 text-center overflow-x-auto"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       );
@@ -103,6 +60,10 @@ const renderProcessedInline = (text: string): React.ReactNode => {
           {renderProcessedInline(part.slice(2, -2))}
         </strong>
       );
+    }
+
+    if (part.startsWith('*') && part.endsWith('*')) {
+      return <em key={`em-${index}`}>{renderProcessedInline(part.slice(1, -1))}</em>;
     }
 
     if (part.startsWith('`') && part.endsWith('`')) {
@@ -246,7 +207,7 @@ const renderFormattedAI = (content: string) => {
   flushList();
   if (quizData && quizData.question && Array.isArray(quizData.options)) {
     elements.push(
-      <AIPracticeQuestion key="ai-interactive-practice" data={quizData} />
+      <AIPracticeQuestion key={JSON.stringify(quizData)} data={quizData} />
     );
   }
   return elements;
@@ -437,9 +398,34 @@ const AnswerReviewSummary: React.FC<AnswerReviewSummaryProps> = ({ rev, isCorrec
   );
 };
 
+// Browser-only explanations are isolated by signed-in user and attempt.
+function readSavedAi(storageKey: string): Record<string, string> {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return {};
+    return Object.fromEntries(Object.entries(saved).filter(
+      ([, value]) => typeof value === 'string' && value.trim().length > 0
+    ));
+  } catch {
+    return {};
+  }
+}
+
+function saveAiExplanation(storageKey: string, questionId: string, explanation: string) {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify({
+      ...readSavedAi(storageKey), [questionId]: explanation,
+    }));
+  } catch {
+    // The current page still works when browser storage is unavailable or full.
+  }
+}
+
 export const ResultPage: React.FC = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
   const navigate = useNavigate();
+  const userId = useAuthStore((state) => state.user?.id);
+  const aiStorageKey = `quiz-sp:ai-explanations:v1:${userId}:${attemptId}`;
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [filterMode, setFilterMode] = useState<'all' | 'wrong' | 'correct'>('all');
@@ -447,32 +433,30 @@ export const ResultPage: React.FC = () => {
   // AI Tutor states
   const [aiExplanations, setAiExplanations] = useState<Record<string, string>>({});
   const [loadingAi, setLoadingAi] = useState<Record<string, boolean>>({});
+  const [aiErrors, setAiErrors] = useState<Record<string, string>>({});
+  const activeAttemptRef = useRef<string | undefined>(aiStorageKey);
+  const aiInFlightRef = useRef(new Set<string>());
   const [expandedAi, setExpandedAi] = useState<Record<string, boolean>>({});
 
-  // Ref to trigger auto AI exactly once
-  const autoTriggeredRef = useRef(false);
-
   useEffect(() => {
-    fetchResult();
-  }, [attemptId]);
+    activeAttemptRef.current = aiStorageKey;
+    const saved = userId && attemptId ? readSavedAi(aiStorageKey) : {};
+    setAiExplanations(saved);
+    setAiErrors({});
+    setLoadingAi({});
+    setExpandedAi(Object.fromEntries(Object.keys(saved).map((id) => [id, true])));
+    if (userId && attemptId) void fetchResult();
+    return () => { activeAttemptRef.current = undefined; };
+  }, [attemptId, userId]);
 
   const fetchResult = async () => {
     setLoading(true);
     try {
       const res = await apiClient.get(`/attempts/${attemptId}/result`);
       const data: AttemptResult = res.data;
+      if (activeAttemptRef.current !== aiStorageKey) return;
       setResult(data);
 
-      // TỰ ĐỘNG GỌI GIA SƯ AI CHO TẤT CẢ CÁC CÂU LÀM SAI HOẶC BỎ TRỐNG NGAY KHI VÀO TRANG KẾT QUẢ
-      if (!autoTriggeredRef.current && data.questions_review) {
-        autoTriggeredRef.current = true;
-        const wrongItems = data.questions_review.filter(
-          (item) => item.is_correct !== 'true'
-        );
-        wrongItems.forEach((rev) => {
-          triggerAiForQuestion(rev.question.id, rev);
-        });
-      }
     } catch (err: any) {
       toast.error(err.response?.data?.detail?.error?.message || 'Không thể tải kết quả bài làm');
       navigate('/practice');
@@ -481,34 +465,38 @@ export const ResultPage: React.FC = () => {
     }
   };
 
-  const triggerAiForQuestion = async (questionId: string, rev: any) => {
-    if (loadingAi[questionId] || aiExplanations[questionId]) return;
+  const triggerAiForQuestion = async (questionId: string, regenerate = false) => {
+    const requestKey = `${aiStorageKey}:${questionId}`;
+    if (!userId || !attemptId) return;
+    if (aiInFlightRef.current.has(requestKey) || (!regenerate && aiExplanations[questionId])) return;
+    aiInFlightRef.current.add(requestKey);
+    setAiErrors((prev) => ({ ...prev, [questionId]: '' }));
 
     setLoadingAi((prev) => ({ ...prev, [questionId]: true }));
     setExpandedAi((prev) => ({ ...prev, [questionId]: true }));
 
     try {
-      const payload = {
-        question_id: questionId,
-        question_content: rev.question.content,
-        question_type: rev.question.type,
-        options: rev.question.config?.options || [],
-        user_answer: rev.user_answer,
-        correct_answer: rev.question.config?.correct,
-        raw_explanation: rev.question.explanation || '',
-      };
+      const payload = { attempt_id: attemptId, question_id: questionId };
 
       const res = await apiClient.post('/ai/explain', payload);
-      setAiExplanations((prev) => ({ ...prev, [questionId]: res.data.explanation }));
+      saveAiExplanation(aiStorageKey, questionId, res.data.explanation);
+      if (activeAttemptRef.current === aiStorageKey) {
+        setAiExplanations((prev) => ({ ...prev, [questionId]: res.data.explanation }));
+      }
     } catch (err: any) {
-      console.warn(`Lỗi gọi AI cho câu hỏi ${questionId}:`, err);
+      if (activeAttemptRef.current === aiStorageKey) {
+        const detail = err.response?.data?.detail;
+        const message = typeof detail === 'string' ? detail : detail?.error?.message || 'AI chưa phân tích được câu này. Bạn có thể bấm thử lại.';
+        setAiErrors((prev) => ({ ...prev, [questionId]: message }));
+      }
     } finally {
-      setLoadingAi((prev) => ({ ...prev, [questionId]: false }));
+      aiInFlightRef.current.delete(requestKey);
+      if (activeAttemptRef.current === aiStorageKey) setLoadingAi((prev) => ({ ...prev, [questionId]: false }));
     }
   };
 
-  const handleAskAI = (questionId: string, rev: any) => {
-    triggerAiForQuestion(questionId, rev);
+  const handleAskAI = (questionId: string) => {
+    void triggerAiForQuestion(questionId);
   };
 
   if (loading || !result) {
@@ -682,7 +670,7 @@ export const ResultPage: React.FC = () => {
                 >
                   {/* Question Header Status */}
                   <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-                    <span className="font-bold text-sm text-slate-800">Câu {idx + 1}</span>
+                    <span className="font-bold text-sm text-slate-800">Câu {reviews.findIndex((item) => item.question.id === qId) + 1}</span>
                     <div className="flex items-center gap-2">
                       <span
                         className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
@@ -718,11 +706,12 @@ export const ResultPage: React.FC = () => {
 
                   {/* AI TUTOR SECTION RIGHT AT THE QUESTION */}
                   <div className="pt-2">
+                    {aiErrors[qId] && <p role="alert" className="mb-2 text-sm text-rose-700">{aiErrors[qId]}</p>}
                     {!hasAiResult ? (
                       <button
                         type="button"
                         disabled={isAiLoading}
-                        onClick={() => handleAskAI(qId, rev)}
+                        onClick={() => handleAskAI(qId)}
                         className={`w-full py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
                           !isCorrect
                             ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white hover:shadow-md active:scale-[0.99]'
@@ -732,7 +721,7 @@ export const ResultPage: React.FC = () => {
                         {isAiLoading ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Gia sư AI đang tự động phân tích lỗi sai & tạo ví dụ...</span>
+                            <span>Gia sư AI đang phân tích bài làm & tạo ví dụ...</span>
                           </>
                         ) : (
                           <>
@@ -754,7 +743,7 @@ export const ResultPage: React.FC = () => {
                         >
                           <div className="flex items-center gap-2 text-indigo-950 font-extrabold text-xs sm:text-sm">
                             <Sparkles className="w-4 h-4 text-amber-500" />
-                            <span>Gia sư AI Sư phạm (Phân tích lỗi sai & Ví dụ thực tế)</span>
+                            <span>Gia sư AI (Giải thích bài làm & Ví dụ thực tế)</span>
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-indigo-700 font-semibold">
                             <span>{isAiExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
@@ -767,6 +756,17 @@ export const ResultPage: React.FC = () => {
                             {renderFormattedAI(aiExplanations[qId])}
                           </div>
                         )}
+                        <div className="px-5 py-3 border-t border-indigo-100 flex justify-end">
+                          <button
+                            type="button"
+                            disabled={isAiLoading}
+                            onClick={() => void triggerAiForQuestion(qId, true)}
+                            className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60 disabled:cursor-wait cursor-pointer"
+                          >
+                            <RotateCcw className={`w-4 h-4 ${isAiLoading ? 'animate-spin' : ''}`} />
+                            {isAiLoading ? 'AI đang tạo gợi ý mới...' : 'Gọi lại AI'}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
