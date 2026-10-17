@@ -130,10 +130,12 @@ const RoleRoute: React.FC<{ allowedRoles: UserRole[]; roleLabel: string }> = ({ 
 };
 
 const AppFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const isNetworkLab = useLocation().pathname.startsWith('/network-lab');
+  const { pathname } = useLocation();
+  const isNetworkLab = pathname.startsWith('/network-lab');
+  const isLogin = pathname === '/login' || pathname === '/login/';
   return <div className={isNetworkLab ? 'min-h-screen bg-[#ece9d8]' : 'min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased font-sans'}>
     <ToastContainer />
-    {!isNetworkLab && <Navbar />}
+    {!isNetworkLab && !isLogin && <Navbar />}
     <main className={isNetworkLab ? '' : 'flex-1'}>{children}</main>
   </div>;
 };
