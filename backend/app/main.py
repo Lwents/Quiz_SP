@@ -25,7 +25,7 @@ app.add_middleware(
 
 # Question screenshots and illustrations live outside the application image so
 # they remain available after a backend rebuild/restart.
-MEDIA_DIR = Path("/app/media")
+MEDIA_DIR = Path(settings.MEDIA_DIR)
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 

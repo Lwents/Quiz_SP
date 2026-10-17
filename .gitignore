@@ -29,6 +29,7 @@ parse_all_q.py
 # Generated caches, logs and OS metadata
 .pytest_cache/
 .ruff_cache/
+backend/media/
 .cache/
 *.log
 .DS_Store

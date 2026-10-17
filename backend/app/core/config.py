@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     ADMIN_LOGIN_USERNAME: str = ""
     ADMIN_BOOTSTRAP_EMAIL: str = "admin@example.com"
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
+    MEDIA_DIR: str = "media"
 
     # AI Integration
     AI_BASE_URL: str = "http://localhost:8000/v1"

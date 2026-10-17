@@ -10,12 +10,13 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 
 from app.api.deps import require_role
+from app.core.config import settings
 from app.models.user import User, UserRole
 
 
 router = APIRouter(prefix="/media", tags=["media"])
 
-QUESTION_IMAGE_DIR = Path("/app/media/question-images")
+QUESTION_IMAGE_DIR = Path(settings.MEDIA_DIR) / "question-images"
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
 
