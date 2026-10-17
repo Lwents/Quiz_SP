@@ -769,7 +769,7 @@ export const SubjectManagementPage: React.FC = () => {
       {/* Modal Tạo/Sửa Môn học */}
       {showSubjectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+          <div className="bg-white rounded-2xl max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto w-full p-6 shadow-xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900">
                 {editingSubject ? 'Chỉnh sửa môn học' : 'Thêm môn học mới'}
@@ -848,7 +848,7 @@ export const SubjectManagementPage: React.FC = () => {
       {/* Modal Chỉnh sửa Chủ đề */}
       {showEditTopicModal && editingTopic && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+          <div className="bg-white rounded-2xl max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto w-full p-6 shadow-xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900">Chỉnh sửa chủ đề</h3>
               <button

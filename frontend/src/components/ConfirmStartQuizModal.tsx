@@ -40,7 +40,7 @@ export const ConfirmStartQuizModal: React.FC<ConfirmStartQuizModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div
-        className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-150 relative"
+        className="bg-white rounded-3xl shadow-2xl max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto w-full border border-slate-100 animate-in zoom-in-95 duration-150 relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}

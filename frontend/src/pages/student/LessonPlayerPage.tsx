@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { apiClient } from '../../api/client';
+import { resolveMediaUrl } from '../../api/urls';
 import { LessonDetail, CourseCurriculum, CourseTopic } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from '../../stores/toastStore';
@@ -780,7 +781,7 @@ export const LessonPlayerPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
                   <a
-                    href={lesson.slide_url}
+                    href={resolveMediaUrl(lesson.slide_url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs"
@@ -803,7 +804,7 @@ export const LessonPlayerPage: React.FC = () => {
                   <span className="text-slate-400 text-[11px]">Cuộn xem toàn bộ trang tài liệu</span>
                 </div>
                 <iframe
-                  src={`${lesson.slide_url}#toolbar=1&navpanes=0`}
+                  src={`${resolveMediaUrl(lesson.slide_url)}#toolbar=1&navpanes=0`}
                   title="Slide bài giảng"
                   className="w-full h-[550px] sm:h-[680px] border-0"
                 ></iframe>

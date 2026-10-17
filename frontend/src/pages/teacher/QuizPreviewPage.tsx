@@ -121,7 +121,7 @@ export const QuizPreviewPage: React.FC = () => {
               {user?.role === 'ADMIN' ? 'Quản trị viên' : 'Giáo viên'}. Không tạo Attempt, không đếm giờ, không tính vào thống kê.
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="px-2 py-0.5 rounded bg-amber-600/30 text-slate-950 font-bold uppercase tracking-wider text-[10px]">
               Trạng thái: {quiz.status}
             </span>
@@ -136,8 +136,8 @@ export const QuizPreviewPage: React.FC = () => {
       </div>
 
       {/* Main Bar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+      <header className="bg-white border-b border-slate-200 sticky top-16 z-20 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-14 py-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
@@ -157,7 +157,7 @@ export const QuizPreviewPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => setShowAnswer(!showAnswer)}
@@ -185,12 +185,12 @@ export const QuizPreviewPage: React.FC = () => {
       {/* Main Question Workspace */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Question Area (8 cols) */}
-        <div className="lg:col-span-8 space-y-4">
+        <div className="min-w-0 lg:col-span-8 space-y-4">
           {currentQ ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-6">
               {/* Question Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap gap-2 items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">
                     Câu {currentIndex + 1} / {questions.length}
                   </span>
@@ -259,7 +259,7 @@ export const QuizPreviewPage: React.FC = () => {
               )}
 
               {/* Bottom Nav Buttons */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              <div className="flex flex-wrap gap-2 items-center justify-between pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   disabled={currentIndex === 0}
@@ -322,11 +322,11 @@ export const QuizPreviewPage: React.FC = () => {
             </div>
 
             <div className="pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="w-3 h-3 rounded bg-amber-500 shrink-0"></span>
                 <span>Câu đang xem</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="w-3 h-3 rounded bg-blue-50 border border-blue-200 shrink-0"></span>
                 <span>Đã tương tác thử</span>
               </div>
@@ -339,7 +339,7 @@ export const QuizPreviewPage: React.FC = () => {
       {mobileDrawerOpen && (
         <div className="fixed inset-0 z-50 flex bg-slate-900/50 backdrop-blur-xs lg:hidden">
           <div className="bg-white w-72 max-w-[80vw] h-full p-6 shadow-xl flex flex-col">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div className="flex flex-wrap gap-2 items-center justify-between pb-4 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-sm">Danh sách câu hỏi</h3>
               <button
                 type="button"

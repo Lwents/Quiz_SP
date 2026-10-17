@@ -201,8 +201,8 @@ export const QuizEditorPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => navigate('/teacher')}
@@ -211,14 +211,14 @@ export const QuizEditorPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight break-words">
               {isNew ? 'Soạn đề thi mới' : `Chỉnh sửa: ${title}`}
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">Thiết lập môn học, thông số bài thi, thêm và sắp xếp câu hỏi</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           {!isNew && (
             <button
               type="button"
@@ -240,7 +240,7 @@ export const QuizEditorPage: React.FC = () => {
       </div>
 
       {/* Quiz Settings Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
+      <div className="bg-white min-w-0 rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-5">
         <h2 className="text-base font-bold text-slate-900 pb-3 border-b border-slate-100">1. Thông tin chung & Phân môn</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -253,13 +253,13 @@ export const QuizEditorPage: React.FC = () => {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
+              className="min-w-0 w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
               placeholder="Nhập tiêu đề bài thi..."
             />
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex flex-wrap gap-2 items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
                 Môn học (Subject)
               </label>
@@ -276,7 +276,7 @@ export const QuizEditorPage: React.FC = () => {
                 setSubjectId(e.target.value);
                 setTopicId('');
               }}
-              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
+              className="min-w-0 w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
             >
               <option value="">-- Chọn môn học --</option>
               {subjects.map((sub) => (
@@ -295,7 +295,7 @@ export const QuizEditorPage: React.FC = () => {
               value={topicId}
               disabled={!subjectId || topics.length === 0}
               onChange={(e) => setTopicId(e.target.value)}
-              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium disabled:bg-slate-100 disabled:text-slate-400"
+              className="min-w-0 w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium disabled:bg-slate-100 disabled:text-slate-400"
             >
               <option value="">
                 {subjectId
@@ -318,7 +318,7 @@ export const QuizEditorPage: React.FC = () => {
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="min-w-0 w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               placeholder="Nhập ghi chú hoặc mô tả phạm vi kiến thức kiểm tra..."
             />
           </div>
@@ -332,7 +332,7 @@ export const QuizEditorPage: React.FC = () => {
               min={0}
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="min-w-0 w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             />
             <span className="text-xs text-slate-400 mt-1 block">0 = Không giới hạn thời gian</span>
           </div>
@@ -346,7 +346,7 @@ export const QuizEditorPage: React.FC = () => {
               step="0.5"
               value={passScore}
               onChange={(e) => setPassScore(Number(e.target.value))}
-              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="min-w-0 w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             />
           </div>
 
@@ -357,7 +357,7 @@ export const QuizEditorPage: React.FC = () => {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as DifficultyLevel)}
-              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="min-w-0 w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
               <option value="EASY">Dễ (Easy)</option>
               <option value="MEDIUM">Trung bình (Medium)</option>
@@ -374,7 +374,7 @@ export const QuizEditorPage: React.FC = () => {
               min={0}
               value={maxAttempts}
               onChange={(e) => setMaxAttempts(Number(e.target.value))}
-              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="min-w-0 w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             />
             <span className="text-xs text-slate-400 mt-1 block">0 = Không giới hạn số lần làm</span>
           </div>
@@ -386,7 +386,7 @@ export const QuizEditorPage: React.FC = () => {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as QuizStatus)}
-              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-semibold text-blue-700"
+              className="min-w-0 w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-semibold text-blue-700"
             >
               <option value="DRAFT">Bản nháp (DRAFT - Học sinh chưa thấy)</option>
               <option value="PUBLISHED">Xuất bản (PUBLISHED - Cho phép học sinh làm)</option>
@@ -429,8 +429,8 @@ export const QuizEditorPage: React.FC = () => {
 
       {/* Questions Management Card */}
       {!isNew && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white min-w-0 rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-6">
+          <div className="flex flex-wrap gap-2 items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <h2 className="text-base font-bold text-slate-900">2. Ngân hàng câu hỏi trong đề ({questions.length} câu)</h2>
               <p className="text-xs text-slate-500">Dùng các nút mũi tên để thay đổi thứ tự câu hỏi khi hiển thị</p>
@@ -463,7 +463,7 @@ export const QuizEditorPage: React.FC = () => {
               {questions.map((q, idx) => (
                 <div
                   key={q.id}
-                  className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition shadow-2xs gap-4"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition shadow-2xs gap-4"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
@@ -608,7 +608,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ initialData, onClose, onS
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
       <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="flex flex-wrap gap-2 items-center justify-between pb-3 border-b border-slate-100">
           <h3 className="text-lg font-bold text-slate-900">
             {initialData.id.startsWith('new_') ? 'Thêm câu hỏi mới' : 'Chỉnh sửa câu hỏi'}
           </h3>
@@ -678,7 +678,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ initialData, onClose, onS
               required
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
+              className="min-w-0 w-full px-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium"
               placeholder="Nhập nội dung câu hỏi..."
             />
           </div>
@@ -731,7 +731,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ initialData, onClose, onS
               rows={2}
               value={explanation}
               onChange={(e) => setExplanation(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="min-w-0 w-full px-4 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               placeholder="Giải thích vì sao đáp án đó là chính xác..."
             />
           </div>

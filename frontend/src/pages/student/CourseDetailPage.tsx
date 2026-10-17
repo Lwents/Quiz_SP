@@ -2,6 +2,7 @@ import { ConfirmStartQuizModal, ConfirmQuizInfo } from "../../components/Confirm
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
+import { resolveMediaUrl } from '../../api/urls';
 import { CourseCurriculum, CourseTopic, LessonSimple } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
 import {
@@ -330,7 +331,7 @@ export const CourseDetailPage: React.FC = () => {
                       <div className="flex items-center gap-3 shrink-0">
                         {topic.slide_url && (
                           <a
-                            href={topic.slide_url}
+                            href={resolveMediaUrl(topic.slide_url)}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
@@ -371,7 +372,7 @@ export const CourseDetailPage: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               <a
-                                href={topic.slide_url}
+                                href={resolveMediaUrl(topic.slide_url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition flex items-center gap-1.5 shadow-2xs"

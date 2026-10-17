@@ -59,14 +59,14 @@ const SortableItem: React.FC<SortableItemProps> = ({ id, item, index, count, dis
         <span className="w-6 h-6 shrink-0 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
           {index + 1}
         </span>
-        <span className="font-medium text-slate-800 text-sm">{item}</span>
+        <span className="min-w-0 [overflow-wrap:anywhere] font-medium text-slate-800 text-sm">{item}</span>
       </div>
       <div className="flex items-center gap-1 pr-3">
         <button
           type="button"
           disabled={disabled || index === 0}
           onClick={() => moveItem(index, index - 1)}
-          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+          className="flex h-11 w-11 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
           title="Di chuyển lên"
           aria-label={`Di chuyển mục ${index + 1} lên`}
         >
@@ -76,7 +76,7 @@ const SortableItem: React.FC<SortableItemProps> = ({ id, item, index, count, dis
           type="button"
           disabled={disabled || index === count - 1}
           onClick={() => moveItem(index, index + 1)}
-          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+          className="flex h-11 w-11 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
           title="Di chuyển xuống"
           aria-label={`Di chuyển mục ${index + 1} xuống`}
         >

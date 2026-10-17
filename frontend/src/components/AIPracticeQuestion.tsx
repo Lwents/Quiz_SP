@@ -102,9 +102,9 @@ export const AIPracticeQuestion: React.FC<AIPracticeQuestionProps> = ({ data }) 
   };
 
   return (
-    <div className="mt-4 rounded-2xl border-2 border-indigo-200/90 bg-gradient-to-b from-indigo-50/60 via-white to-blue-50/40 p-5 shadow-xs space-y-4">
+    <div className="mt-4 min-w-0 [overflow-wrap:anywhere] rounded-2xl border-2 border-indigo-200/90 bg-gradient-to-b from-indigo-50/60 via-white to-blue-50/40 p-5 shadow-xs space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-indigo-100">
+      <div className="flex flex-wrap gap-2 items-center justify-between pb-3 border-b border-indigo-100">
         <div className="flex items-center gap-2 text-indigo-950 font-bold text-xs sm:text-sm">
           <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400" />
           <span>Thử thách củng cố: Bạn hãy chọn đáp án đúng!</span>
@@ -181,7 +181,7 @@ export const AIPracticeQuestion: React.FC<AIPracticeQuestionProps> = ({ data }) 
         <div className={`p-4 rounded-xl border space-y-2 animate-in fade-in duration-200 ${
           isCorrect ? 'bg-emerald-50/90 border-emerald-200' : 'bg-rose-50/90 border-rose-200'
         }`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-2 items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
               {isCorrect ? (
                 <>
@@ -201,7 +201,7 @@ export const AIPracticeQuestion: React.FC<AIPracticeQuestionProps> = ({ data }) 
             <button
               type="button"
               onClick={handleReset}
-              className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 p-1 hover:bg-white/60 rounded-lg transition cursor-pointer"
+              className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1 min-h-11 px-2 py-1 hover:bg-white/60 rounded-lg transition cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Thử lại</span>

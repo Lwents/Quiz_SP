@@ -21,7 +21,7 @@ export const TrueFalseQuestion: React.FC<QuestionRendererProps> = ({
           <label
             key={String(opt.id)}
             className={cn(
-              "flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer select-none",
+              "flex items-center gap-3 p-3 sm:p-4 min-h-11 rounded-xl border transition-all cursor-pointer select-none",
               isChecked
                 ? "border-blue-600 bg-blue-50/50 text-blue-950 shadow-sm"
                 : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 bg-white",
@@ -34,9 +34,9 @@ export const TrueFalseQuestion: React.FC<QuestionRendererProps> = ({
               checked={isChecked}
               disabled={disabled}
               onChange={() => onChange(opt.id)}
-              className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300"
+              className="w-4 h-4 shrink-0 text-blue-600 focus:ring-blue-500 border-slate-300"
             />
-            <span className="text-base font-semibold">{opt.label}</span>
+            <span className="min-w-0 [overflow-wrap:anywhere] text-base font-semibold">{opt.label}</span>
           </label>
         );
       })}

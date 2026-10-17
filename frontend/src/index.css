@@ -70,3 +70,20 @@ body {
     transform: translateX(calc(-2rem - 24px));
   }
 }
+
+@layer base {
+  main, fieldset { min-width: 0; }
+  input, select, textarea { min-width: 0; max-width: 100%; }
+}
+
+.katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea {
+    font-size: 16px;
+  }
+}

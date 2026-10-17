@@ -46,8 +46,6 @@ export const QuizPlayerPage: React.FC = () => {
     try {
       const res = await apiClient.post(`/attempts/quiz/${quizId}`);
       const data: AttemptStart = res.data;
-      setAttempt(data);
-
       // Load existing answers if resuming
       const statusRes = await apiClient.get(`/attempts/${data.id}`);
       const existingAnswersMap: Record<string, any> = {};
@@ -73,6 +71,8 @@ export const QuizPlayerPage: React.FC = () => {
       } catch (e) {
         console.warn('Could not restore local quiz meta', e);
       }
+
+      setAttempt(data);
 
       // Setup active duration and timer based on true wall-clock time
       const elapsed = statusRes.data.duration_seconds || 0;
@@ -266,8 +266,8 @@ export const QuizPlayerPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Top Header Bar for Quiz Player (Sticky below Navbar at top-16) */}
       <div className="bg-white border-b border-slate-200 sticky top-16 z-30 px-4 py-3 shadow-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-3">
             <button
               type="button"
               onClick={() => setShowExitModal(true)}
@@ -277,16 +277,16 @@ export const QuizPlayerPage: React.FC = () => {
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Rời bài thi</span>
             </button>
-            <div>
-              <h1 className="text-base font-bold text-slate-900 tracking-tight line-clamp-1">Bài làm trắc nghiệm</h1>
-              <span className="text-xs text-slate-500">Đã trả lời {answeredCount} / {totalQuestions} câu</span>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight line-clamp-1"><span className="sm:hidden">Làm bài</span><span className="hidden sm:inline">Bài làm trắc nghiệm</span></h1>
+              <span className="text-xs text-slate-500"><span className="hidden sm:inline">Đã trả lời </span>{answeredCount} / {totalQuestions} câu</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-3">
             {attempt.duration_minutes > 0 && (
               <div
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-mono text-sm font-bold border ${
+                className={`flex shrink-0 items-center gap-1 px-2 sm:px-3 py-1.5 rounded-xl font-mono text-sm font-bold border ${
                   timeLeft < 300
                     ? 'bg-red-50 text-red-600 border-red-200 animate-pulse'
                     : 'bg-slate-100 text-slate-700 border-slate-200'
@@ -301,7 +301,8 @@ export const QuizPlayerPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowConfirmModal(true)}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition shadow-xs flex items-center gap-2 cursor-pointer"
+              aria-label="Nộp bài"
+              className="px-2 sm:px-4 min-h-11 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition shadow-xs flex items-center gap-2 cursor-pointer"
             >
               <Send className="w-4 h-4" />
               <span className="hidden sm:inline">Nộp bài</span>
@@ -309,6 +310,7 @@ export const QuizPlayerPage: React.FC = () => {
 
             <button
               type="button"
+              aria-label="Mở danh sách câu hỏi"
               onClick={() => setMobileDrawerOpen(true)}
               className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
             >
@@ -321,11 +323,11 @@ export const QuizPlayerPage: React.FC = () => {
       {/* Main Workspace */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left Column: Question Area */}
-        <div className="md:col-span-8 flex flex-col">
+        <div className="min-w-0 md:col-span-8 flex flex-col">
           {currentQuestion && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs flex-1 flex flex-col">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-8 shadow-xs min-w-0 flex-1 flex flex-col">
               {/* Question Meta Bar */}
-              <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+              <div className="flex flex-wrap gap-2 items-center justify-between pb-4 mb-6 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-lg text-sm">
                     Câu {currentIndex + 1} / {totalQuestions}
@@ -353,7 +355,7 @@ export const QuizPlayerPage: React.FC = () => {
               <QuestionContent
                 content={currentQuestion.content}
                 imageUrl={currentQuestion.config?.image_url}
-                className="text-slate-900 text-lg font-medium leading-relaxed mb-8"
+                className="text-slate-900 text-base sm:text-lg font-medium leading-relaxed mb-6 sm:mb-8"
               />
 
               {/* Question Interactive Component */}
@@ -368,12 +370,12 @@ export const QuizPlayerPage: React.FC = () => {
               </div>
 
               {/* Pagination Controls */}
-              <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+              <div className="flex flex-wrap gap-2 items-center justify-between pt-6 border-t border-slate-100">
                 <button
                   type="button"
                   disabled={currentIndex === 0}
                   onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition flex items-center gap-2 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                  className="px-3 sm:px-4 min-h-11 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition flex items-center gap-2 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" /> Câu trước
                 </button>
@@ -382,7 +384,7 @@ export const QuizPlayerPage: React.FC = () => {
                   type="button"
                   disabled={currentIndex === totalQuestions - 1}
                   onClick={() => setCurrentIndex((prev) => Math.min(totalQuestions - 1, prev + 1))}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2 disabled:opacity-30 cursor-pointer"
+                  className="px-3 sm:px-5 min-h-11 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-2 disabled:opacity-30 cursor-pointer"
                 >
                   Câu tiếp theo <ArrowRight className="w-4 h-4" />
                 </button>
@@ -467,14 +469,14 @@ export const QuizPlayerPage: React.FC = () => {
       {mobileDrawerOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setMobileDrawerOpen(false)}></div>
-          <div className="relative ml-auto w-80 max-w-full bg-white h-full p-6 flex flex-col shadow-2xl">
+          <div className="relative ml-auto w-80 max-w-full bg-white h-dvh p-6 flex flex-col shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
               <h3 className="font-bold text-slate-900">Danh sách câu hỏi</h3>
-              <button type="button" onClick={() => setMobileDrawerOpen(false)} className="p-1.5 text-slate-500">
+              <button type="button" aria-label="Đóng danh sách câu hỏi" onClick={() => setMobileDrawerOpen(false)} className="p-2.5 text-slate-500">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="grid grid-cols-5 gap-2 overflow-y-auto flex-1 p-1">
+            <div className="grid auto-rows-min grid-cols-5 gap-2 overflow-y-auto min-h-0 flex-1 p-1">
               {questions.map((q, idx) => {
                 const isAnswered = answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== '';
                 const isCurrent = idx === currentIndex;
@@ -518,7 +520,7 @@ export const QuizPlayerPage: React.FC = () => {
       {/* Exit Confirmation Modal */}
       {showExitModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
               <BookOpen className="w-6 h-6" />
             </div>
@@ -558,7 +560,7 @@ export const QuizPlayerPage: React.FC = () => {
       {/* Submit Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto w-full p-6 shadow-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
               <AlertTriangle className="w-6 h-6" />
             </div>
