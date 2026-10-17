@@ -35,7 +35,7 @@ export const LoginPage: React.FC = () => {
         navigate('/courses', { replace: true });
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail?.error?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại email hoặc mật khẩu.');
+      setError(err.response?.data?.detail?.error?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.');
     } finally {
       setLoading(false);
     }
@@ -61,16 +61,17 @@ export const LoginPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Email</label>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Email hoặc tên đăng nhập</label>
             <div className="relative">
               <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
-                type="email"
+                type="text"
+                autoComplete="username"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="Nhập email..."
+                placeholder="Nhập email hoặc tên đăng nhập..."
               />
             </div>
           </div>
@@ -81,6 +82,7 @@ export const LoginPage: React.FC = () => {
               <Lock className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

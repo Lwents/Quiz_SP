@@ -53,12 +53,15 @@ Khôi phục thay thế toàn bộ 10 bảng dữ liệu của ứng dụng tron
 
 ---
 
-## 🧩 Các Đề Thi & Dữ Liệu Đã Được Nạp Sẵn
+## Dữ liệu khi cài mới
 
-1. **Đề thi mẫu đa dạng dạng câu hỏi (`quiz-demo-toan-roi-rac`)**:
-   - Gồm 10 câu hỏi bao quát các dạng: *Single Choice*, *Multiple Choice*, *True / False*, *Fill in the Blank*, *Matching*, *Ordering*, *Numeric*, *Short Answer*.
-2. **Ngân hàng câu hỏi Toán rời rạc Quiz 1.2 (`quiz-1-2-tuong-duong-logic-vi-ngu-luong-tu`)**:
-   - Trọn bộ **23 câu hỏi chuẩn hóa 100% không trùng lặp** từ ngân hàng đề thi HNUE LMS (Tương đương logic, vị ngữ và lượng tử).
+Cơ sở dữ liệu mới chỉ có tài khoản quản trị từ biến môi trường. Backend không tự tạo môn học, chủ đề, bài học, câu hỏi hay đề thi. Nội dung chỉ có sau khi quản trị viên tạo hoặc nhập dữ liệu.
+
+Khởi động lại và triển khai bản mới không nạp lại dữ liệu mẫu hoặc xóa dữ liệu đang có. Dữ liệu đã nạp ở bản cũ cần được xóa riêng nếu muốn bắt đầu trống.
+
+## Triển khai tự động
+
+Xem [DEPLOYMENT.md](DEPLOYMENT.md) để cấu hình GitHub Actions, Cloudflare Pages và Docker trên VPS.
 
 ---
 

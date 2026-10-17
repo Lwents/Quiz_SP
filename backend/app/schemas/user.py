@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from app.models.user import UserRole
 
 
@@ -44,7 +44,7 @@ class TokenPayload(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str = Field(min_length=1, max_length=254)
     password: str
 
 

@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
+from app.core.config import settings
 from app.core.security import (
     verify_password,
     get_password_hash,
@@ -47,7 +48,10 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == login_data.email))
+    identifier = login_data.email.strip()
+    if settings.ADMIN_LOGIN_USERNAME and identifier.casefold() == settings.ADMIN_LOGIN_USERNAME.casefold():
+        identifier = settings.ADMIN_BOOTSTRAP_EMAIL
+    result = await db.execute(select(User).where(User.email == identifier))
     user = result.scalar_one_or_none()
     if not user or not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(

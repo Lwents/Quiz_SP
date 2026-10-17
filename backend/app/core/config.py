@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 1 day
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ADMIN_LOGIN_USERNAME: str = ""
+    ADMIN_BOOTSTRAP_EMAIL: str = "admin@example.com"
+    CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
     # AI Integration
     AI_BASE_URL: str = "http://localhost:8000/v1"
