@@ -436,11 +436,15 @@ export const ResultPage: React.FC = () => {
   const [aiErrors, setAiErrors] = useState<Record<string, string>>({});
   const activeAttemptRef = useRef<string | undefined>(aiStorageKey);
   const aiInFlightRef = useRef(new Set<string>());
+  const autoAiRequestedRef = useRef(new Set<string>());
+  const aiAnswersRef = useRef<{ scope: string; values: Record<string, string> }>({ scope: aiStorageKey, values: {} });
   const [expandedAi, setExpandedAi] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     activeAttemptRef.current = aiStorageKey;
+    autoAiRequestedRef.current.clear();
     const saved = userId && attemptId ? readSavedAi(aiStorageKey) : {};
+    aiAnswersRef.current = { scope: aiStorageKey, values: saved };
     setAiExplanations(saved);
     setAiErrors({});
     setLoadingAi({});
@@ -457,6 +461,22 @@ export const ResultPage: React.FC = () => {
       if (activeAttemptRef.current !== aiStorageKey) return;
       setResult(data);
 
+      // Generate missing explanations once; browser-saved answers are reused.
+      const saved = readSavedAi(aiStorageKey);
+      const pending = (data.questions_review || []).filter((review) => {
+        const requestKey = `${aiStorageKey}:${review.question.id}`;
+        return review.is_correct !== 'true' && review.is_correct !== 'pending'
+          && !saved[review.question.id] && !autoAiRequestedRef.current.has(requestKey);
+      });
+      pending.forEach((review) => autoAiRequestedRef.current.add(`${aiStorageKey}:${review.question.id}`));
+      let next = 0;
+      const worker = async () => {
+        while (next < pending.length && activeAttemptRef.current === aiStorageKey) {
+          await triggerAiForQuestion(pending[next++].question.id);
+        }
+      };
+      void Promise.all([worker(), worker()]);
+
     } catch (err: any) {
       toast.error(err.response?.data?.detail?.error?.message || 'Không thể tải kết quả bài làm');
       navigate('/practice');
@@ -468,7 +488,8 @@ export const ResultPage: React.FC = () => {
   const triggerAiForQuestion = async (questionId: string, regenerate = false) => {
     const requestKey = `${aiStorageKey}:${questionId}`;
     if (!userId || !attemptId) return;
-    if (aiInFlightRef.current.has(requestKey) || (!regenerate && aiExplanations[questionId])) return;
+    if (aiInFlightRef.current.has(requestKey)) return;
+    if (!regenerate && aiAnswersRef.current.scope === aiStorageKey && aiAnswersRef.current.values[questionId]) return;
     aiInFlightRef.current.add(requestKey);
     setAiErrors((prev) => ({ ...prev, [questionId]: '' }));
 
@@ -481,6 +502,7 @@ export const ResultPage: React.FC = () => {
       const res = await apiClient.post('/ai/explain', payload);
       saveAiExplanation(aiStorageKey, questionId, res.data.explanation);
       if (activeAttemptRef.current === aiStorageKey) {
+        aiAnswersRef.current.values[questionId] = res.data.explanation;
         setAiExplanations((prev) => ({ ...prev, [questionId]: res.data.explanation }));
       }
     } catch (err: any) {
