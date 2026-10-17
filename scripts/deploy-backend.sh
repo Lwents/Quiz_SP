@@ -10,6 +10,23 @@ project=/opt/quiz-sp
 staging=$(mktemp -d /opt/quiz-sp-deploy.XXXXXX)
 trap 'rm -rf "$staging"' EXIT
 tar -xzf - -C "$staging" --no-same-owner
+
+if [[ "${SSH_ORIGINAL_COMMAND:-deploy-backend}" == "deploy-frontend" ]]; then
+  test -f "$staging/dist/index.html"
+  test -f /etc/quiz-pages.env
+  set -a
+  source /etc/quiz-pages.env
+  set +a
+  rsync -a --delete "$staging/dist/" /var/lib/quiz-pages/site/
+  chown -R quiz-pages:quiz-pages /var/lib/quiz-pages/site
+  cd /var/lib/quiz-pages
+  runuser -u quiz-pages -- env CLOUDFLARE_ACCOUNT_ID="$CLOUDFLARE_ACCOUNT_ID" \
+    /opt/quiz-pages-tools/node_modules/.bin/wrangler pages deploy site \
+    --project-name lwent --branch main
+  exit
+fi
+
+[[ "${SSH_ORIGINAL_COMMAND:-deploy-backend}" == "deploy-backend" ]] || { echo 'Unsupported deployment command.'; exit 1; }
 test -f "$staging/backend/Dockerfile"
 test -f "$staging/compose.production.yaml"
 test -f "$project/.env"

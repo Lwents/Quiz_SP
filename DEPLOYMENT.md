@@ -10,15 +10,21 @@ Repository variables:
 
 - `VPS_HOST`: VPS address.
 - `VITE_API_URL`: public HTTPS API URL ending in `/quiz/api/v1`.
-- `CLOUDFLARE_ACCOUNT_ID`: account owning the Pages project.
 
 Repository secrets:
 
 - `VPS_SSH_KEY`: dedicated deployment SSH private key.
 - `VPS_KNOWN_HOSTS`: verified SSH host-key entry.
-- `CLOUDFLARE_API_TOKEN`: Cloudflare API token with Account / Cloudflare Pages / Edit permission.
 
-Credentials and server addresses are configured in GitHub settings and ignored environment files, never in tracked application source. The Pages token is separate from local Wrangler browser login.
+Credentials and server addresses are configured in GitHub settings and ignored environment files, never in tracked application source. Cloudflare deployment runs on the VPS as the dedicated `quiz-pages` user, using its private Wrangler OAuth session. GitHub sends built assets over the same restricted SSH connection; Cloudflare credentials are not stored on GitHub or in source code.
+
+## Cloudflare authorization on the VPS
+
+Install Wrangler 4.151.1 under `/opt/quiz-pages-tools` and initialize a dedicated `quiz-pages` system user with home `/var/lib/quiz-pages` and mode `0700`. Authorize Wrangler for Pages in that account, storing credentials privately in its Wrangler configuration. Wrangler refreshes its OAuth session automatically during deployment. Revoking the Cloudflare session requires authorizing it again on the VPS.
+
+If Wrangler creates a legacy `~/.wrangler` directory, ensure its `config` directory points to the same credential store as `~/.config/.wrangler/config`; do not maintain two independent refresh-token files.
+
+Put `CLOUDFLARE_ACCOUNT_ID` in `/etc/quiz-pages.env` with mode `0600`; the deployment helper reads it at runtime. The helper accepts `deploy-backend` or `deploy-frontend` only. Frontend archives contain a `dist/` directory and are uploaded to Pages project `lwent`; backend archives contain `backend/` and `compose.production.yaml`.
 
 ## VPS setup
 
