@@ -72,8 +72,8 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
     identifier = login_data.email.strip()
     if settings.ADMIN_LOGIN_USERNAME and identifier.casefold() == settings.ADMIN_LOGIN_USERNAME.casefold():
         identifier = settings.ADMIN_BOOTSTRAP_EMAIL
-    identifier = identifier.casefold()
-    result = await db.execute(select(User).where(func.lower(User.email) == identifier))
+    identifier = identifier.strip().lower()
+    result = await db.execute(select(User).where(func.lower(func.trim(User.email)) == identifier))
     user = result.scalar_one_or_none()
     policy = await load_policy(db)
     now = datetime.now(timezone.utc)
@@ -94,7 +94,7 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
         await db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "INVALID_CREDENTIALS", "message": "Incorrect email or password"}}
+            detail={"error": {"code": "INVALID_CREDENTIALS", "message": "Email hoặc mật khẩu chưa chính xác. Vui lòng kiểm tra lại."}}
         )
 
     await require_verified(db, user)
@@ -103,7 +103,7 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
         await db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "INACTIVE_USER", "message": "Inactive user account"}}
+            detail={"error": {"code": "INACTIVE_USER", "message": "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên."}}
         )
 
     session = LoginSession(id=uuid.uuid4(), user_id=user.id, created_at=now, last_seen_at=now,
@@ -128,19 +128,19 @@ async def refresh_token_endpoint(refresh_in: RefreshRequest, db: AsyncSession = 
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "INVALID_REFRESH_TOKEN", "message": "Invalid refresh token"}}
+            detail={"error": {"code": "INVALID_REFRESH_TOKEN", "message": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."}}
         )
 
     try:
         user_id = uuid.UUID(payload.get("sub"))
     except (ValueError, TypeError, AttributeError):
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+        raise HTTPException(status_code=401, detail="Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.")
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not token_matches_user(payload, user):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "USER_NOT_FOUND", "message": "User not found or inactive"}}
+            detail={"error": {"code": "USER_NOT_FOUND", "message": "Tài khoản không tồn tại hoặc đã bị khóa."}}
         )
 
     await validate_session(db, payload, user.id)

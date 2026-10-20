@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { apiClient } from '../../api/client';
+import { authErrorMessage } from '../../api/authErrors';
 import { Logo } from '../../components/Logo';
 import { Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 
@@ -17,11 +18,12 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError(null);
     setLoading(true);
 
     try {
-      const res = await apiClient.post('/auth/login', { email, password });
+      const res = await apiClient.post('/auth/login', { email: email.trim().toLowerCase(), password }, { timeout: 20000 });
       const { access_token, refresh_token, user } = res.data;
       setAuth(user, access_token, refresh_token);
       const requestedPath = (location.state as { from?: string } | null)?.from;
@@ -34,9 +36,10 @@ export const LoginPage: React.FC = () => {
         toast.success('Đăng nhập thành công! Chào mừng bạn quay trở lại.');
         navigate('/courses', { replace: true });
       }
-    } catch (err: any) {
-      const detail = err.response?.data?.detail;
-      setError(detail?.error?.message || (typeof detail === 'string' ? detail : 'Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.'));
+    } catch (err: unknown) {
+      const message = authErrorMessage(err, 'Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.');
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -44,7 +47,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-dvh flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="max-w-md w-full space-y-7 bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm">
+      <div className="max-w-md w-full min-w-0 space-y-7 bg-white p-5 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <Logo size="lg" showSubtitle={true} />
@@ -54,7 +57,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2.5">
+          <div role="alert" className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2.5">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -69,6 +72,9 @@ export const LoginPage: React.FC = () => {
               <input
                 type="text"
                 autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../../api/client';
+import { authErrorMessage } from '../../api/authErrors';
 import { Logo } from '../../components/Logo';
 import { Lock, Mail, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 
@@ -19,7 +20,7 @@ export const RegisterPage: React.FC = () => {
 
     try {
       await apiClient.post('/auth/register', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         full_name: fullName,
         role: 'STUDENT',
@@ -27,9 +28,8 @@ export const RegisterPage: React.FC = () => {
 
       setPassword('');
       setSent(true);
-    } catch (err: any) {
-      const detail = err.response?.data?.detail;
-      setError(detail?.error?.message || (typeof detail === 'string' ? detail : 'Đăng ký không thành công. Vui lòng thử lại.'));
+    } catch (err: unknown) {
+      setError(authErrorMessage(err, 'Đăng ký không thành công. Vui lòng thử lại.'));
     } finally {
       setLoading(false);
     }
@@ -75,6 +75,10 @@ export const RegisterPage: React.FC = () => {
               <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

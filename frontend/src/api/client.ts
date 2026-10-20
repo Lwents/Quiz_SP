@@ -20,7 +20,9 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    const publicAuthRequest = /\/auth\/(login|register|refresh|verify-email|resend-verification)(?:[?#]|$)/.test(error.config?.url || '');
+    // A rejected login is a form error, not an expired authenticated session.
+    if (error.response?.status === 401 && !publicAuthRequest) {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken && !error.config._retry) {
         error.config._retry = true;

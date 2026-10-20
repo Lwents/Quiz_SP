@@ -54,6 +54,11 @@ practice reports, notices, and the existing backup/restore screen.
   (local default `http://localhost:5173`; production compose uses the website).
   Opening the link does not consume it: users explicitly confirm on the page.
 - Both roles open profile and logout actions through the avatar dropdown.
+- Login trims and normalizes email case on both client and server, including
+  legacy stored addresses with outer spaces; passwords remain case-sensitive.
+  Login failures stay on the form and never trigger the session-refresh flow.
+  Authentication messages are Vietnamese. Global notifications use Sonner's
+  compact bottom-right stack, following the Editor application's presentation.
 - Account role/status changes, password resets and creating another administrator
   require the signed-in administrator's password, checked by the backend with a
   per-administrator limit. Passwords are never logged or persisted by these actions.

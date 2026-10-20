@@ -177,7 +177,7 @@ export const ProfilePage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Profile Hero Card */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left z-10">
+        <div className="flex min-w-0 w-full flex-col sm:w-auto sm:flex-row items-center gap-5 text-center sm:text-left z-10">
           {/* Avatar Preview */}
           <div className="relative group shrink-0">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-4 border-white/30 shadow-xl overflow-hidden bg-white flex items-center justify-center">
@@ -210,25 +210,25 @@ export const ProfilePage: React.FC = () => {
             />
           </div>
 
-          <div>
-            <div className="flex items-center justify-center sm:justify-start gap-2">
+          <div className="min-w-0 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-500/30 text-blue-200 border border-blue-400/30 uppercase tracking-wide">
                 {user?.role === 'ADMIN' ? 'Quản trị viên' : user?.role === 'TEACHER' ? 'Giáo viên' : 'Sinh viên'}
               </span>
               <span className="text-xs text-blue-200/80">Khoa CNTT - ĐHSPHN</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+            <h1 className="break-words text-2xl sm:text-3xl font-extrabold text-white mt-1">
               {user?.full_name || 'Người dùng'}
             </h1>
             <p className="text-sm text-blue-100 flex items-center justify-center sm:justify-start gap-1.5 mt-1">
-              <Mail className="w-3.5 h-3.5" />
-              <span>{user?.email}</span>
+              <Mail className="w-3.5 h-3.5 shrink-0" />
+              <span className="min-w-0 break-all">{user?.email}</span>
             </p>
           </div>
         </div>
 
         {/* Action Tabs Switcher */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 z-10 shrink-0">
+        <div className="grid min-w-0 w-full grid-cols-2 items-center gap-1.5 p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 z-10 sm:w-auto shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
@@ -269,7 +269,7 @@ export const ProfilePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid grid-cols-4 min-[400px]:grid-cols-5 gap-2 sm:gap-3">
               {PRESET_AVATARS.map((url, idx) => {
                 const isSelected = avatarUrl === url;
                 return (
@@ -277,7 +277,7 @@ export const ProfilePage: React.FC = () => {
                     key={idx}
                     type="button"
                     onClick={() => setAvatarUrl(url)}
-                    className={`relative w-12 h-12 rounded-2xl overflow-hidden border-2 transition-all p-0.5 cursor-pointer ${
+                    className={`relative aspect-square w-full max-w-12 rounded-2xl overflow-hidden border-2 transition-all p-0.5 cursor-pointer ${
                       isSelected
                         ? 'border-blue-600 ring-2 ring-blue-500/20 scale-105 shadow-sm'
                         : 'border-slate-200 hover:border-slate-300'
@@ -351,7 +351,7 @@ export const ProfilePage: React.FC = () => {
               onSubmit={handleSaveProfile}
               className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 sm:p-8 space-y-5"
             >
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <UserIcon className="w-5 h-5 text-blue-600" />
                   <h3 className="text-base font-bold text-slate-900">Thông tin tài khoản</h3>
