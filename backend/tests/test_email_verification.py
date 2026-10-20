@@ -47,21 +47,26 @@ async def test_send_stores_hash_only_and_delivers_to_owner(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_confirmation_expired_used_and_valid():
+async def test_confirmation_invalid_expired_valid_and_repeatable_after_success():
     token = VerificationToken(token=secrets.token_urlsafe(32))
     now = datetime.now(timezone.utc)
-    for row in [None, SimpleNamespace(verified_at=now, expires_at=now+timedelta(hours=1)), SimpleNamespace(verified_at=None, expires_at=now-timedelta(seconds=1))]:
+    for row in [None, SimpleNamespace(verified_at=None, expires_at=now-timedelta(seconds=1))]:
         db = database(row)
         with pytest.raises(HTTPException) as error:
             await verify_email(token, db)
         assert error.value.status_code == 400
         db.commit.assert_not_called()
+    previously_verified = SimpleNamespace(verified_at=now, expires_at=now+timedelta(hours=1))
+    db = database(previously_verified)
+    response = await verify_email(token, db)
+    assert response["message"] == "Email đã được xác minh. Bạn có thể đăng nhập."
+    db.commit.assert_not_called()
     row = SimpleNamespace(verified_at=None, expires_at=now+timedelta(hours=1))
     db = database(row)
     await verify_email(token, db)
     db.commit.assert_awaited_once()
-    with pytest.raises(HTTPException):
-        await verify_email(token, database(row))
+    repeated = await verify_email(token, database(row))
+    assert repeated["message"] == "Email đã được xác minh. Bạn có thể đăng nhập."
 
 
 @pytest.mark.anyio

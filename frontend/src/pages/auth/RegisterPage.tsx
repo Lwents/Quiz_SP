@@ -36,14 +36,12 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="max-w-md w-full min-w-0 space-y-7 bg-white p-5 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8 bg-slate-50">
+      <div className="max-w-md w-full min-w-0 space-y-5 bg-white p-5 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
         <div className="text-center">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center">
             <Logo size="lg" showSubtitle={true} />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Đăng ký tài khoản</h2>
-          <p className="text-sm text-slate-500 mt-1">Bắt đầu trải nghiệm luyện tập và thi trắc nghiệm</p>
         </div>
 
         {error && (

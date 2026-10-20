@@ -202,7 +202,11 @@ class VerificationEmail(BaseModel):
 async def verify_email(data: VerificationToken, db: AsyncSession = Depends(get_db)):
     row = (await db.execute(select(EmailVerification).where(
         EmailVerification.token_hash == token_digest(data.token)).with_for_update())).scalar_one_or_none()
-    if row is None or row.verified_at is not None or row.expires_at <= datetime.now(timezone.utc):
+    if row is None:
+        raise HTTPException(400, "Link không hợp lệ, đã dùng hoặc đã hết hạn. Hãy yêu cầu gửi lại link.")
+    if row.verified_at is not None:
+        return {"message": "Email đã được xác minh. Bạn có thể đăng nhập."}
+    if row.expires_at <= datetime.now(timezone.utc):
         raise HTTPException(400, "Link không hợp lệ, đã dùng hoặc đã hết hạn. Hãy yêu cầu gửi lại link.")
     row.verified_at = datetime.now(timezone.utc)
     await db.commit()

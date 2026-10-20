@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { Logo } from '../../components/Logo';
 
 export function VerifyEmailPage() {
+  const navigate = useNavigate();
   const [token] = useState(() => new URLSearchParams(window.location.search).get('token') || '');
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -13,6 +14,11 @@ export function VerifyEmailPage() {
     // Remove the token from browser history; no token is sent until confirmation.
     if (token) window.history.replaceState(null, '', window.location.pathname);
   }, [token]);
+  useEffect(() => {
+    if (!verified) return;
+    const timer = window.setTimeout(() => navigate('/login', { replace: true }), 1200);
+    return () => window.clearTimeout(timer);
+  }, [verified, navigate]);
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setBusy(true); setMessage('');
     try {
@@ -34,9 +40,12 @@ export function VerifyEmailPage() {
         {!token && <label className="block text-sm font-semibold">Email<input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 p-3" /></label>}
         <button disabled={busy} className="w-full rounded-xl bg-blue-600 p-3 font-semibold text-white disabled:opacity-60">{busy ? 'Đang xử lý…' : token ? 'Xác minh email' : 'Gửi lại link xác minh'}</button>
       </form>}
-      {message && <p role="status" className="rounded-xl bg-slate-50 p-3 text-sm">{message}</p>}
+      {message && <div role="status" className="space-y-3 rounded-xl bg-slate-50 p-3 text-sm">
+        <p>{message}</p>
+        {verified && <Link to="/login" replace className="inline-flex min-h-11 items-center font-semibold text-blue-600">Đăng nhập ngay</Link>}
+      </div>}
       {token && !verified && <Link to="/verify-email" reloadDocument className="block text-sm text-blue-600">Yêu cầu link mới</Link>}
-      <Link to="/login" className="block font-semibold text-blue-600">Về trang đăng nhập</Link>
+      {!verified && <Link to="/login" className="block min-h-11 content-center font-semibold text-blue-600">Về trang đăng nhập</Link>}
     </div>
   </div>;
 }
