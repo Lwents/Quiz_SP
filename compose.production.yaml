@@ -28,6 +28,7 @@ services:
     env_file: .env
     environment:
       INTEGRATIONS_ENV_FILE: /app/private/integrations.env
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://www.lwent.cloud}
     ports:
       - "127.0.0.1:8000:8000"
     volumes:

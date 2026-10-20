@@ -6,6 +6,7 @@ import { ToastContainer } from './components/Toast';
 import { toast } from './stores/toastStore';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
 import { QuizListPage } from './pages/student/QuizListPage';
 import { QuizPlayerPage } from './pages/student/QuizPlayerPage';
 import { ResultPage } from './pages/student/ResultPage';
@@ -29,7 +30,9 @@ const PageTitleHandler: React.FC = () => {
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/login')) {
+    if (path.startsWith('/verify-email')) {
+      document.title = 'Xác minh email | HNUE PRO';
+    } else if (path.startsWith('/login')) {
       document.title = 'Đăng nhập | HNUE PRO';
     } else if (path.startsWith('/register')) {
       document.title = 'Đăng ký | HNUE PRO';
@@ -136,7 +139,7 @@ const RoleRoute: React.FC<{ allowedRoles: UserRole[]; roleLabel: string }> = ({ 
 const AppFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { pathname } = useLocation();
   const isNetworkLab = pathname.startsWith('/network-lab');
-  const isLogin = pathname === '/login' || pathname === '/login/';
+  const isLogin = pathname === '/login' || pathname === '/login/' || pathname.startsWith('/verify-email');
   return <div className={isNetworkLab ? 'min-h-screen bg-[#ece9d8]' : 'min-h-screen bg-slate-50 flex flex-col text-slate-900 antialiased font-sans'}>
     <ToastContainer />
     {!isNetworkLab && !isLogin && <Navbar />}
@@ -174,6 +177,7 @@ export const App: React.FC = () => {
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route element={<RequireLogin />}>
               <Route path="/courses" element={<CourseListPage />} />
               <Route path="/courses/:subjectId" element={<CourseDetailPage />} />

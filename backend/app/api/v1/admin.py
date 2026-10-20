@@ -83,6 +83,7 @@ async def save_policy(data: AdminPolicy, db: AsyncSession = Depends(get_db), act
 
 @router.post("/users", response_model=UserResponse, status_code=201)
 async def create_account(data: NewAccount, db: AsyncSession = Depends(get_db), actor: User = Depends(admin_only)):
+    from app.core.email_verification import send_verification
     if (await db.execute(select(User.id).where(func.lower(User.email) == data.email.lower()))).scalar_one_or_none():
         raise HTTPException(409, "Email đã tồn tại")
     user = User(email=data.email.lower(), full_name=data.full_name.strip(), role=UserRole(data.role),
@@ -90,6 +91,8 @@ async def create_account(data: NewAccount, db: AsyncSession = Depends(get_db), a
     db.add(user)
     db.add(AuditLog(user_id=actor.id, email=actor.email, action="account_created"))
     try:
+        await db.flush()
+        await send_verification(db, user)
         await db.commit()
     except IntegrityError:
         await db.rollback()

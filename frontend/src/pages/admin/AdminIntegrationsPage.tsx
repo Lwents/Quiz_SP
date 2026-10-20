@@ -118,7 +118,7 @@ export function AdminIntegrationsPage({ kind }: { kind: "ai" | "email" }) {
       <p className="text-sm text-slate-500">
         {kind === "ai"
           ? "Áp dụng cho giải thích bài làm và gia sư thực hành mạng. Hỗ trợ API tương thích OpenAI."
-          : "Thiết lập máy chủ gửi email và gửi thư kiểm tra đến hộp thư của bạn."}
+          : "Thiết lập máy chủ gửi link xác minh tài khoản mới và gửi thư kiểm tra đến hộp thư của bạn."}
       </p>
       {failed && (
         <p

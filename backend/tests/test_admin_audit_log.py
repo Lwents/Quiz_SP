@@ -62,7 +62,7 @@ async def test_successful_login_creates_success_audit_event():
     no_policy.scalar_one_or_none.return_value = None
     counts = MagicMock()
     counts.scalar.return_value = 0
-    db.execute = AsyncMock(side_effect=[result, no_policy, counts])
+    db.execute = AsyncMock(side_effect=[result, no_policy, counts, no_policy])
     db.commit = AsyncMock()
 
     response = await login(LoginRequest(email=user.email, password="right123"), db)

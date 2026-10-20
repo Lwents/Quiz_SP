@@ -35,7 +35,8 @@ export const LoginPage: React.FC = () => {
         navigate('/courses', { replace: true });
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail?.error?.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.');
+      const detail = err.response?.data?.detail;
+      setError(detail?.error?.message || (typeof detail === 'string' ? detail : 'Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.'));
     } finally {
       setLoading(false);
     }
@@ -59,6 +60,7 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
+        {error?.includes('xác minh') && <Link to="/verify-email" className="block text-sm font-semibold text-blue-600">Gửi lại link xác minh email</Link>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Email hoặc tên đăng nhập</label>

@@ -1,14 +1,11 @@
-import { toast } from '../../stores/toastStore';
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { Logo } from '../../components/Logo';
 import { Lock, Mail, User as UserIcon, AlertCircle, ArrowRight } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const [sent, setSent] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,15 +25,11 @@ export const RegisterPage: React.FC = () => {
         role: 'STUDENT',
       });
 
-      // Automatically log in after registration
-      const loginRes = await apiClient.post('/auth/login', { email, password });
-      const { access_token, refresh_token, user } = loginRes.data;
-      setAuth(user, access_token, refresh_token);
-
-      toast.success('Đăng ký tài khoản thành công!');
-      navigate('/courses');
+      setPassword('');
+      setSent(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail?.error?.message || 'Đăng ký không thành công. Vui lòng thử lại.');
+      const detail = err.response?.data?.detail;
+      setError(detail?.error?.message || (typeof detail === 'string' ? detail : 'Đăng ký không thành công. Vui lòng thử lại.'));
     } finally {
       setLoading(false);
     }
@@ -60,7 +53,7 @@ export const RegisterPage: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {sent ? <div className="space-y-4 text-sm text-slate-600" role="status"><h3 className="text-lg font-bold text-slate-900">Kiểm tra email của bạn</h3><p>Đã gửi link xác minh đến <strong className="break-all">{email}</strong>. Hãy kiểm tra hộp thư và thư rác. Link có hiệu lực 24 giờ.</p><Link to="/verify-email" className="block text-blue-600 font-semibold">Chưa nhận được thư? Gửi lại link</Link></div> : <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Họ và tên</label>
             <div className="relative">
@@ -115,7 +108,7 @@ export const RegisterPage: React.FC = () => {
             {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
             <ArrowRight className="w-4 h-4" />
           </button>
-        </form>
+        </form>}
 
         <p className="text-sm text-center text-slate-600">
           Đã có tài khoản?{' '}

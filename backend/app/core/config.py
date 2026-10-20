@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     ADMIN_BOOTSTRAP_EMAIL: str = "admin@example.com"
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
     MEDIA_DIR: str = "media"
+    PUBLIC_APP_URL: str = "http://localhost:5173"
 
     @field_validator("SECRET_KEY")
     @classmethod

@@ -1,9 +1,7 @@
 """Admin configuration for AI and SMTP; provider errors are always redacted."""
 import asyncio
 import smtplib
-import ssl
-from email.message import EmailMessage
-from email.utils import formataddr
+from app.core.mailer import send_mail
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
@@ -92,25 +90,6 @@ async def set_mail(data: MailConfigInput, db: AsyncSession = Depends(get_db), ac
 
 class MailTest(BaseModel):
     recipient: EmailStr
-
-
-def send_mail(config, password, recipient):
-    message = EmailMessage()
-    message["Subject"] = "Kiểm tra cấu hình email HNUE PRO"
-    message["From"] = formataddr((config.from_name, config.from_email))
-    message["To"] = recipient
-    message.set_content("Email kiểm tra từ trang quản trị HNUE PRO. Cấu hình SMTP đang hoạt động.")
-    context = ssl.create_default_context()
-    if config.tls_mode == "ssl":
-        client = smtplib.SMTP_SSL(config.host, config.port, timeout=15, context=context)
-    else:
-        client = smtplib.SMTP(config.host, config.port, timeout=15)
-    with client:
-        if config.tls_mode == "starttls":
-            client.starttls(context=context)
-        if config.username:
-            client.login(config.username, password)
-        client.send_message(message)
 
 
 @router.post("/email/test")

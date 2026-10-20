@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Logo } from '../components/Logo';
@@ -9,9 +9,8 @@ import {
   LogOut,
   Layers,
   GraduationCap,
-  ShieldCheck,
+  UserRound,
   BarChart3,
-  FileSpreadsheet,
   Menu,
   X
 } from 'lucide-react';
@@ -21,7 +20,22 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  useEffect(() => { setMobileMenuOpen(false); }, [location.pathname]);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+  const accountButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { setMobileMenuOpen(false); setAccountOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!accountOpen) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!accountRef.current?.contains(event.target as Node)) setAccountOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setAccountOpen(false); accountButtonRef.current?.focus(); }
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', closeOutside); document.removeEventListener('keydown', escape); };
+  }, [accountOpen]);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Guard navigation when user is taking a quiz
@@ -155,11 +169,13 @@ export const Navbar: React.FC = () => {
             {user ? (
               <div className="flex items-center gap-1 sm:gap-3">
                 <NotificationInbox />
-                <Link
-                  to="/profile"
-                  onClick={(e) => handleGuardedNav(e, '/profile')}
+                <div ref={accountRef} className="relative">
+                <button
+                  type="button" ref={accountButtonRef}
+                  aria-label="Mở menu tài khoản" aria-expanded={accountOpen} aria-controls="account-dropdown"
+                  onClick={() => setAccountOpen((open) => !open)}
                   className="flex items-center gap-2.5 p-1 -m-1 rounded-xl hover:bg-slate-100 transition group cursor-pointer"
-                  title="Xem hồ sơ & Cài đặt cá nhân"
+                  title="Menu tài khoản"
                 >
                   <div className="hidden sm:flex flex-col text-right">
                     <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
@@ -176,15 +192,13 @@ export const Navbar: React.FC = () => {
                       <span>{user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}</span>
                     )}
                   </div>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setShowLogoutConfirm(true)}
-                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
-                  title="Đăng xuất"
-                >
-                  <LogOut className="w-5 h-5" />
                 </button>
+                {accountOpen && <div id="account-dropdown" className="absolute right-0 top-full mt-3 w-60 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                  <div className="border-b border-slate-100 px-3 py-2 text-sm"><p className="font-semibold truncate">{user.full_name}</p><p className="truncate text-xs text-slate-500">{user.email}</p></div>
+                  <Link to="/profile" onClick={(event) => { setAccountOpen(false); handleGuardedNav(event, '/profile'); }} className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm text-slate-700 hover:bg-slate-50"><UserRound className="h-4 w-4" />Hồ sơ & cài đặt</Link>
+                  <button type="button" onClick={() => { setAccountOpen(false); setShowLogoutConfirm(true); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-3 text-sm text-red-600 hover:bg-red-50"><LogOut className="h-4 w-4" />Đăng xuất</button>
+                </div>}
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">

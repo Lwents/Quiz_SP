@@ -89,6 +89,7 @@ export function AdminAccounts() {
             });
           }}
         >
+          <p className="text-sm text-slate-500 sm:col-span-2">Tài khoản mới phải xác minh bằng link gửi về email trước khi đăng nhập. Hãy cấu hình SMTP trước khi tạo.</p>
           <input
             aria-label="Họ tên"
             className={input}

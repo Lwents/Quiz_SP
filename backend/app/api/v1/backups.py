@@ -36,7 +36,7 @@ MAX_ROWS = 200_000
 # list. New application tables are therefore included automatically once their
 # model is imported by app.models.
 TABLES = {table.name: table for table in Base.metadata.sorted_tables}
-OPTIONAL_LEGACY_TABLES = {"audit_logs", "admin_settings", "login_sessions", "announcements", "announcement_reads", "user_presence"}
+OPTIONAL_LEGACY_TABLES = {"audit_logs", "admin_settings", "login_sessions", "announcements", "announcement_reads", "user_presence", "email_verifications"}
 
 BACKUP_CONTENTS = {
     "accounts": ["users"],

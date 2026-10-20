@@ -43,6 +43,15 @@ practice reports, notices, and the existing backup/restore screen.
   SMTP tests send only to the administrator-specified address using verified
   SSL/TLS or STARTTLS. Blank secret inputs preserve the existing credential.
 - The UI does not claim to implement 2FA, Google SSO or scheduled backups.
+- New self-registered and administrator-created accounts receive a single-use
+  email verification link valid for 24 hours. Login is blocked until confirmation;
+  existing accounts remain usable. Resending is limited to once per minute per
+  account and rotates the token. Only the token hash is stored in the database.
+  SMTP must be configured before creating accounts; delivery failure rolls back
+  creation. `PUBLIC_APP_URL` is the trusted frontend address for these links
+  (local default `http://localhost:5173`; production compose uses the website).
+  Opening the link does not consume it: users explicitly confirm on the page.
+- Both roles open profile and logout actions through the avatar dropdown.
 
 ## Data and verification
 

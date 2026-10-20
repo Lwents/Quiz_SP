@@ -5,7 +5,7 @@ from app.models.question import Question, QuestionType, QuizQuestion
 from app.models.attempt import Attempt, AttemptAnswer, AttemptStatus
 from app.models.lesson import Lesson, UserLessonProgress
 from app.models.audit import AuditLog
-from app.models.admin import AdminSetting, LoginSession, Announcement, AnnouncementRead, UserPresence
+from app.models.admin import AdminSetting, LoginSession, Announcement, AnnouncementRead, UserPresence, EmailVerification
 
 __all__ = [
     "Base",
@@ -27,5 +27,5 @@ __all__ = [
     "Lesson",
     "UserLessonProgress",
     "AuditLog",
-    "AdminSetting", "LoginSession", "Announcement", "AnnouncementRead", "UserPresence",
+    "AdminSetting", "LoginSession", "Announcement", "AnnouncementRead", "UserPresence", "EmailVerification",
 ]

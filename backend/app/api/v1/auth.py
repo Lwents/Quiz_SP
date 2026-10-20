@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -28,6 +29,9 @@ from app.schemas.user import (
 )
 from app.api.deps import get_current_user, oauth2_scheme
 from app.core.rate_limit import limit_auth_requests
+from pydantic import BaseModel, EmailStr, Field
+from app.core.email_verification import send_verification, require_verified, token_digest
+from app.models.admin import EmailVerification
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -42,7 +46,7 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "EMAIL_EXISTS", "message": "Email already registered"}}
+            detail={"error": {"code": "EMAIL_EXISTS", "message": "Email đã được đăng ký. Bạn có thể yêu cầu gửi lại link xác minh."}}
         )
 
     db_user = User(
@@ -52,7 +56,13 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
         role=UserRole.STUDENT
     )
     db.add(db_user)
-    await db.commit()
+    try:
+        await db.flush()
+        await send_verification(db, db_user)
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(409, "Email đã được đăng ký") from None
     await db.refresh(db_user)
     return db_user
 
@@ -87,6 +97,7 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
             detail={"error": {"code": "INVALID_CREDENTIALS", "message": "Incorrect email or password"}}
         )
 
+    await require_verified(db, user)
     if not user.is_active:
         db.add(AuditLog(user_id=user.id, action="login_blocked", email=user.email))
         await db.commit()
@@ -168,3 +179,35 @@ async def logout(token: str = Depends(oauth2_scheme), user: User = Depends(get_c
     db.add(AuditLog(user_id=user.id, email=user.email, action="logout"))
     await db.commit()
     return {"message": "Đã đăng xuất"}
+
+
+class VerificationToken(BaseModel):
+    token: str = Field(min_length=32, max_length=128)
+
+
+class VerificationEmail(BaseModel):
+    email: EmailStr
+
+
+@router.post("/verify-email", dependencies=[Depends(limit_auth_requests)])
+async def verify_email(data: VerificationToken, db: AsyncSession = Depends(get_db)):
+    row = (await db.execute(select(EmailVerification).where(
+        EmailVerification.token_hash == token_digest(data.token)).with_for_update())).scalar_one_or_none()
+    if row is None or row.verified_at is not None or row.expires_at <= datetime.now(timezone.utc):
+        raise HTTPException(400, "Link không hợp lệ, đã dùng hoặc đã hết hạn. Hãy yêu cầu gửi lại link.")
+    row.verified_at = datetime.now(timezone.utc)
+    await db.commit()
+    return {"message": "Đã xác minh email. Bạn có thể đăng nhập."}
+
+
+@router.post("/resend-verification", dependencies=[Depends(limit_auth_requests)])
+async def resend_verification(data: VerificationEmail, db: AsyncSession = Depends(get_db)):
+    user = (await db.execute(select(User).where(func.lower(User.email) == str(data.email).lower()).with_for_update())).scalar_one_or_none()
+    if user is not None:
+        pending = (await db.execute(select(EmailVerification).where(EmailVerification.user_id == user.id))).scalar_one_or_none()
+        if pending is not None and pending.verified_at is None:
+            # Generic response prevents the resend endpoint exposing account existence.
+            if pending.sent_at <= datetime.now(timezone.utc) - timedelta(seconds=60):
+                await send_verification(db, user)
+                await db.commit()
+    return {"message": "Nếu email có tài khoản chưa xác minh, hệ thống sẽ gửi link. Kiểm tra cả thư rác; chờ 60 giây trước khi gửi lại."}
