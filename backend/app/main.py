@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.core.request_limits import RequestSizeLimitMiddleware
 from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons, users, backups, media
+from app.api.v1 import admin
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -64,6 +65,8 @@ app.include_router(ai.router, prefix=settings.API_V1_STR)
 app.include_router(lessons.router, prefix=settings.API_V1_STR)
 app.include_router(backups.router, prefix=settings.API_V1_STR)
 app.include_router(media.router, prefix=settings.API_V1_STR)
+app.include_router(admin.router, prefix=settings.API_V1_STR)
+app.include_router(admin.inbox_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health")

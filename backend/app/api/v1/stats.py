@@ -62,7 +62,7 @@ async def get_admin_overview(
     events = (
         await db.execute(
             select(AuditLog)
-            .where(and_(AuditLog.occurred_at >= start_day, AuditLog.action.in_(["login_success", "login_failed", "login_blocked"])))
+            .where(and_(AuditLog.occurred_at >= start_day, AuditLog.action.in_(["login_success", "login_failed", "login_blocked", "login_locked"])))
             .order_by(AuditLog.occurred_at.desc())
         )
     ).scalars().all()
@@ -85,7 +85,7 @@ async def get_admin_overview(
         await db.execute(
             select(AuditLog, User.full_name)
             .outerjoin(User, AuditLog.user_id == User.id)
-            .where(AuditLog.action.in_(["login_success", "login_failed", "login_blocked"]))
+            .where(AuditLog.action.in_(["login_success", "login_failed", "login_blocked", "login_locked"]))
             .order_by(AuditLog.occurred_at.desc())
             .limit(30)
         )
@@ -108,7 +108,7 @@ async def get_admin_overview(
         },
         "security": {
             "failed_logins_in_period": sum(1 for event in events if event.action == "login_failed"),
-            "blocked_logins_in_period": sum(1 for event in events if event.action == "login_blocked"),
+            "blocked_logins_in_period": sum(1 for event in events if event.action in ("login_blocked", "login_locked")),
             "controls": [
                 "Giới hạn yêu cầu đăng nhập đang bật",
                 "Phiên đăng nhập bị thu hồi khi đổi mật khẩu hoặc khóa tài khoản",
@@ -120,7 +120,7 @@ async def get_admin_overview(
                 "date": date,
                 "success": counts["login_success"],
                 "failed": counts["login_failed"],
-                "blocked": counts["login_blocked"],
+                "blocked": counts["login_blocked"] + counts["login_locked"],
             }
             for date, counts in chart_counts.items()
         ],

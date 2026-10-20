@@ -34,24 +34,28 @@ def token_matches_user(payload: dict, user) -> bool:
                 and hmac.compare_digest(fingerprint, password_fingerprint(user.hashed_password)))
 
 
-def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None, *, password_hash: Optional[str] = None) -> str:
+def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None, *, password_hash: Optional[str] = None, session_id=None) -> str:
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": str(subject), "type": "access"}
+    if session_id is not None:
+        to_encode["sid"] = str(session_id)
     if password_hash is not None:
         to_encode["pwd"] = password_fingerprint(password_hash)
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
 
-def create_refresh_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None, *, password_hash: Optional[str] = None) -> str:
+def create_refresh_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None, *, password_hash: Optional[str] = None, session_id=None) -> str:
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
+    if session_id is not None:
+        to_encode["sid"] = str(session_id)
     if password_hash is not None:
         to_encode["pwd"] = password_fingerprint(password_hash)
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)

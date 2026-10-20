@@ -1,18 +1,20 @@
 import uuid
 from typing import AsyncGenerator, Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.database import get_db
 from app.core.security import decode_token, token_matches_user
+from app.core.login_sessions import validate_session
 from app.models.user import User, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 async def get_current_user(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ) -> User:
@@ -41,6 +43,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Inactive or deleted user"
         )
+    await validate_session(db, payload, user.id, touch=not request.url.path.endswith(("/notifications", "/admin/sessions")))
     return user
 
 
@@ -59,6 +62,7 @@ oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", aut
 
 
 async def get_optional_current_user(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     token: Optional[str] = Depends(oauth2_scheme_optional)
 ) -> Optional[User]:
@@ -76,4 +80,10 @@ async def get_optional_current_user(
         return None
     result = await db.execute(select(User).where(User.id == user_uuid))
     user = result.scalar_one_or_none()
-    return user if token_matches_user(payload, user) else None
+    if not token_matches_user(payload, user):
+        return None
+    try:
+        await validate_session(db, payload, user.id)
+    except HTTPException:
+        return None
+    return user

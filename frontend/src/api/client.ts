@@ -30,6 +30,7 @@ apiClient.interceptors.response.use(
           });
           const newToken = res.data.access_token;
           localStorage.setItem('token', newToken);
+          localStorage.setItem('refreshToken', res.data.refresh_token);
           error.config.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(error.config);
         } catch {

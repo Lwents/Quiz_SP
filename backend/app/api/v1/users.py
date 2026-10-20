@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash
 from app.models.user import User, UserRole
 from app.models.audit import AuditLog
+from app.models.admin import LoginSession
 from app.models.attempt import Attempt, AttemptStatus
 from app.models.lesson import UserLessonProgress
 from app.schemas.user import AdminUserResponse, AdminUserUpdate, UserResponse, UserUpdate, ChangePasswordRequest
@@ -24,11 +25,12 @@ async def list_users_for_admin(
     role: Optional[UserRole] = None,
     active: Optional[bool] = None,
     limit: int = Query(default=100, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
     del current_user
-    statement = select(User).order_by(User.created_at.desc()).limit(limit)
+    statement = select(User).order_by(User.created_at.desc(), User.id).limit(limit).offset(offset)
     filters = []
     term = search.strip()
     if term:
@@ -78,6 +80,9 @@ async def update_user_for_admin(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
+    # Serialize role/status changes so two concurrent requests cannot both
+    # remove what each believes is the other remaining administrator.
+    await db.execute(select(func.pg_advisory_xact_lock(724021)))
     target = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if target is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy tài khoản")
@@ -106,6 +111,11 @@ async def update_user_for_admin(
         target.role = changes.role
     if changes.is_active is not None:
         target.is_active = changes.is_active
+        if not changes.is_active:
+            sessions = (await db.execute(select(LoginSession).where(LoginSession.user_id == target.id))).scalars().all()
+            for session in sessions:
+                session.revoked = True
+    db.add(AuditLog(user_id=current_user.id, email=current_user.email, action="account_updated"))
     await db.commit()
     await db.refresh(target)
     latest_login = (

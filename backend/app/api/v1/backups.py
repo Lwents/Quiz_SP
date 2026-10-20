@@ -36,12 +36,14 @@ MAX_ROWS = 200_000
 # list. New application tables are therefore included automatically once their
 # model is imported by app.models.
 TABLES = {table.name: table for table in Base.metadata.sorted_tables}
+OPTIONAL_LEGACY_TABLES = {"audit_logs", "admin_settings", "login_sessions", "announcements", "announcement_reads"}
 
 BACKUP_CONTENTS = {
     "accounts": ["users"],
     "curriculum": ["subjects", "topics", "lessons"],
     "assessment": ["questions", "quizzes", "quiz_questions"],
     "learning_records": ["attempts", "attempt_answers", "user_lesson_progress"],
+    "operations": ["audit_logs", "admin_settings", "login_sessions", "announcements", "announcement_reads"],
 }
 
 
@@ -131,8 +133,9 @@ def _decode_value(column, value: object) -> object:
 
 
 def _validate_rows(tables: dict) -> dict:
-    if set(tables) != set(TABLES):
+    if set(tables) - set(TABLES) or (set(TABLES) - set(tables)) - OPTIONAL_LEGACY_TABLES:
         raise ValueError("Backup tables do not match this application version")
+    tables = {name: tables.get(name, []) for name in TABLES}
 
     parsed = {}
     total = 0
@@ -166,7 +169,8 @@ def _validate_rows(tables: dict) -> dict:
                     raise ValueError(f"Duplicate value in {name}: {', '.join(keys)}")
                 seen.add(key)
 
-    ids = {name: {row["id"] for row in rows} for name, rows in parsed.items()}
+    ids = {name: {row[next(iter(TABLES[name].primary_key.columns)).name] for row in rows}
+           for name, rows in parsed.items()}
     for name, table in TABLES.items():
         for column in table.columns:
             for foreign_key in column.foreign_keys:
@@ -201,11 +205,13 @@ def parse_backup(raw: bytes) -> tuple[dict, dict]:
         if not hmac.compare_digest(data["checksum"], actual_checksum):
             raise ValueError("Backup checksum does not match")
         parsed = _validate_rows(data["tables"])
-        return parsed, _build_summary(
+        summary = _build_summary(
             data["created_at"],
             data["checksum"],
             {name: len(rows) for name, rows in parsed.items()},
         )
+        summary["initialized_missing_tables"] = sorted(set(TABLES) - set(data["tables"]))
+        return parsed, summary
     except (UnicodeError, json.JSONDecodeError, TypeError, KeyError, OverflowError) as exc:
         raise ValueError("Invalid backup file") from exc
 

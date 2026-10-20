@@ -44,6 +44,13 @@ class AdminUserUpdate(BaseModel):
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None
 
+    @field_validator("full_name")
+    @classmethod
+    def trim_name(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and not value.strip():
+            raise ValueError("Họ tên không được để trống")
+        return value.strip() if value is not None else value
+
     @field_validator("role")
     @classmethod
     def only_allow_product_roles(cls, value: Optional[UserRole]) -> Optional[UserRole]:

@@ -30,7 +30,9 @@ async def test_failed_login_creates_minimal_audit_event():
     result = MagicMock()
     result.scalar_one_or_none.return_value = None
     db = MagicMock()
-    db.execute = AsyncMock(return_value=result)
+    counts = MagicMock()
+    counts.scalar.return_value = 0
+    db.execute = AsyncMock(side_effect=[result, result, counts, counts])
     db.commit = AsyncMock()
 
     with pytest.raises(HTTPException) as failure:
@@ -56,7 +58,11 @@ async def test_successful_login_creates_success_audit_event():
     result = MagicMock()
     result.scalar_one_or_none.return_value = user
     db = MagicMock()
-    db.execute = AsyncMock(return_value=result)
+    no_policy = MagicMock()
+    no_policy.scalar_one_or_none.return_value = None
+    counts = MagicMock()
+    counts.scalar.return_value = 0
+    db.execute = AsyncMock(side_effect=[result, no_policy, counts])
     db.commit = AsyncMock()
 
     response = await login(LoginRequest(email=user.email, password="right123"), db)

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Logo } from '../components/Logo';
+import { NotificationInbox } from '../components/NotificationInbox';
+import { apiClient } from '../api/client';
 import {
   BookOpen,
   LogOut,
@@ -47,8 +49,9 @@ export const Navbar: React.FC = () => {
     }
   };
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setShowLogoutConfirm(false);
+    try { await apiClient.post('/auth/logout'); } catch { /* Clear the local session even if it has already expired. */ }
     logout();
     navigate('/login');
   };
@@ -110,7 +113,7 @@ export const Navbar: React.FC = () => {
                       }`}
                     >
                       <BarChart3 className="w-4 h-4" />
-                      Thống kê hệ thống
+                      Quản trị hệ thống
                     </Link>
                   )}
 
@@ -166,6 +169,7 @@ export const Navbar: React.FC = () => {
           <div className="flex shrink-0 items-center gap-1 sm:gap-4">
             {user ? (
               <div className="flex items-center gap-1 sm:gap-3">
+                <NotificationInbox />
                 <Link
                   to="/profile"
                   onClick={(e) => handleGuardedNav(e, '/profile')}

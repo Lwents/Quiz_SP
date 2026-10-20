@@ -11,6 +11,7 @@ from app.models import Base
 EXPECTED_TABLES = {
     "users", "subjects", "topics", "lessons", "questions", "quizzes",
     "quiz_questions", "attempts", "attempt_answers", "user_lesson_progress", "audit_logs",
+    "admin_settings", "login_sessions", "announcements", "announcement_reads",
 }
 
 
@@ -49,6 +50,25 @@ def test_valid_backup_preview_counts():
 def test_backup_covers_every_application_database_table():
     assert set(TABLES) == EXPECTED_TABLES
     assert set(TABLES) == set(Base.metadata.tables)
+
+
+def test_backup_supports_operational_settings_with_string_primary_key():
+    backup = sample_backup()
+    now = datetime.now(timezone.utc).isoformat()
+    backup["tables"]["admin_settings"] = [{"key": "auth_policy", "value": {"registration_enabled": False}, "created_at": now, "updated_at": now}]
+    backup["checksum"] = hashlib.sha256(_json_bytes(backup["tables"])).hexdigest()
+    parsed, _ = parse_backup(_json_bytes(backup))
+    assert parsed["admin_settings"][0]["key"] == "auth_policy"
+
+
+def test_old_backup_initializes_new_operational_tables():
+    backup = sample_backup()
+    for name in ("audit_logs", "admin_settings", "login_sessions", "announcements", "announcement_reads"):
+        backup["tables"].pop(name)
+    backup["checksum"] = hashlib.sha256(_json_bytes(backup["tables"])).hexdigest()
+    parsed, summary = parse_backup(_json_bytes(backup))
+    assert parsed["login_sessions"] == []
+    assert "admin_settings" in summary["initialized_missing_tables"]
 
 
 def test_modified_backup_is_rejected():
