@@ -44,6 +44,13 @@ class AdminUserUpdate(BaseModel):
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None
 
+    @field_validator("role")
+    @classmethod
+    def only_allow_product_roles(cls, value: Optional[UserRole]) -> Optional[UserRole]:
+        if value == UserRole.TEACHER:
+            raise ValueError("Vai trò giáo viên cũ không còn được cấp mới")
+        return value
+
 
 class AdminUserResponse(UserResponse):
     created_at: datetime
