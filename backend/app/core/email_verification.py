@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.integrations import mail_runtime
 from app.models.admin import EmailVerification
 from app.core.mailer import send_mail
+from app.core.email_templates import verification_email
 
 
 def token_digest(token: str) -> str:
@@ -45,11 +46,10 @@ async def send_verification(db, user):
     row.sent_at = now
     row.expires_at = now + timedelta(hours=24)
     await db.flush()
+    subject, body, html_body = verification_email(link)
     try:
         await asyncio.to_thread(send_mail, config, password, user.email,
-            subject="Xác minh tài khoản HNUE PRO",
-            body="Vui lòng mở link dưới đây và bấm Xác minh email để kích hoạt tài khoản:\n\n" + link
-                 + "\n\nLink có hiệu lực 24 giờ và chỉ dùng một lần. Nếu bạn không tạo tài khoản, hãy bỏ qua thư này.")
+            subject=subject, body=body, html_body=html_body)
     except (smtplib.SMTPException, OSError, ValueError):
         raise HTTPException(502, "Không gửi được email xác minh. Vui lòng thử lại sau.") from None
 

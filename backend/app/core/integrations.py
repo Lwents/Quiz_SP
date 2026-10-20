@@ -81,7 +81,7 @@ class MailConfig(BaseModel):
     tls_mode: Literal["ssl", "starttls"] = "ssl"
     username: str = Field(default="", max_length=255)
     from_email: str = Field(default="", max_length=255)
-    from_name: str = Field(default="HNUE PRO", min_length=1, max_length=120)
+    from_name: str = Field(default="Lwent Pro", min_length=1, max_length=120)
 
     @field_validator("host", "username", "from_email", "from_name")
     @classmethod
@@ -145,7 +145,12 @@ async def mail_runtime(db, *, decrypt=True):
     saved = await read_config(db, "mail_integration")
     defaults = MailConfig(host=settings.SMTP_HOST, port=settings.SMTP_PORT, tls_mode=settings.SMTP_TLS_MODE,
         username=settings.SMTP_USERNAME, from_email=settings.SMTP_FROM_EMAIL, from_name=settings.SMTP_FROM_NAME).model_dump()
-    config = MailConfig(**{**defaults, **{k: v for k, v in saved.items() if k != "secret"}})
+    values = {**defaults, **{k: v for k, v in saved.items() if k != "secret"}}
+    # Existing installations may have saved the former product name as the
+    # default sender. Keep custom sender names while updating that old default.
+    if values.get("from_name", "").strip().casefold() in {"hnue", "hnue pro"}:
+        values["from_name"] = "Lwent Pro"
+    config = MailConfig(**values)
     encrypted = stored_secret("smtp")
     password = (decrypt_secret(encrypted, "smtp") if decrypt else "configured") if encrypted else settings.SMTP_PASSWORD
     return config, password

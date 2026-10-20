@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     SMTP_USERNAME: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM_EMAIL: str = ""
-    SMTP_FROM_NAME: str = "HNUE PRO"
+    SMTP_FROM_NAME: str = "Lwent Pro"
     INTEGRATIONS_ENV_FILE: str = ".private/integrations.env"
 
     class Config:
