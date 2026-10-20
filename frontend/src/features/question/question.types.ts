@@ -5,6 +5,7 @@ export interface QuestionRendererProps {
   value: any;
   onChange: (val: any) => void;
   disabled?: boolean;
+  revealCorrectAnswer?: boolean;
 }
 
 export interface QuestionEditorProps {

@@ -219,6 +219,7 @@ export const QuizPreviewPage: React.FC = () => {
                     value={currentVal}
                     onChange={(val) => handleAnswerChange(currentQ.id, val)}
                     disabled={false}
+                    revealCorrectAnswer={showAnswer}
                   />
                 ) : (
                   <div className="p-4 rounded-xl bg-slate-100 text-slate-500 text-sm">
