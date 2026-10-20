@@ -31,39 +31,39 @@ const PageTitleHandler: React.FC = () => {
   useEffect(() => {
     const path = location.pathname;
     if (path.startsWith('/verify-email')) {
-      document.title = 'Xác minh email | HNUE PRO';
+      document.title = 'Xác minh email | Lwent Pro';
     } else if (path.startsWith('/login')) {
-      document.title = 'Đăng nhập | HNUE PRO';
+      document.title = 'Đăng nhập | Lwent Pro';
     } else if (path.startsWith('/register')) {
-      document.title = 'Đăng ký | HNUE PRO';
+      document.title = 'Đăng ký | Lwent Pro';
     } else if (path.startsWith('/courses/') && path.includes('/lessons/')) {
-      document.title = 'Bài giảng | HNUE PRO';
+      document.title = 'Bài giảng | Lwent Pro';
     } else if (path.startsWith('/courses/')) {
-      document.title = 'Chi tiết khóa học | HNUE PRO';
+      document.title = 'Chi tiết khóa học | Lwent Pro';
     } else if (path.startsWith('/network-lab')) {
-      document.title = 'RouterSim Network Visualizer';
+      document.title = 'RouterSim | Lwent Pro';
     } else if (path.startsWith('/courses')) {
-      document.title = 'Khóa học môn học | HNUE PRO';
+      document.title = 'Khóa học môn học | Lwent Pro';
     } else if (path.includes('/preview')) {
-      document.title = 'Xem trước đề thi | HNUE PRO';
+      document.title = 'Xem trước đề thi | Lwent Pro';
     } else if (path.startsWith('/practice/')) {
-      document.title = 'Làm bài thi | HNUE PRO';
+      document.title = 'Làm bài thi | Lwent Pro';
     } else if (path.startsWith('/practice')) {
-      document.title = 'Luyện tập & Đề thi | HNUE PRO';
+      document.title = 'Luyện tập & Đề thi | Lwent Pro';
     } else if (path.startsWith('/teacher/subjects')) {
-      document.title = 'Quản lý môn học | HNUE PRO';
+      document.title = 'Quản lý môn học | Lwent Pro';
     } else if (path.startsWith('/teacher')) {
-      document.title = 'Quản trị đề thi | HNUE PRO';
+      document.title = 'Quản trị đề thi | Lwent Pro';
     } else if (path.startsWith('/settings/backup')) {
-      document.title = 'Sao lưu dữ liệu | HNUE PRO';
+      document.title = 'Sao lưu dữ liệu | Lwent Pro';
     } else if (path.startsWith('/admin/analytics')) {
-      document.title = 'Quản trị hệ thống | HNUE PRO';
+      document.title = 'Quản trị hệ thống | Lwent Pro';
     } else if (path.startsWith('/dashboard') || path.startsWith('/profile')) {
-      document.title = 'Tiến độ & Thống kê | HNUE PRO';
+      document.title = 'Tiến độ & Thống kê | Lwent Pro';
     } else if (path.startsWith('/results')) {
-      document.title = 'Kết quả thi | HNUE PRO';
+      document.title = 'Kết quả thi | Lwent Pro';
     } else {
-      document.title = 'HNUE PRO';
+      document.title = 'Lwent Pro';
     }
   }, [location]);
 

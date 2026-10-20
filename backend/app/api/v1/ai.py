@@ -66,7 +66,7 @@ async def ask_network_lab_ai(
     if not api_key:
         raise HTTPException(status_code=503, detail="Model AI chưa được cấu hình trên máy chủ.")
 
-    system_prompt = """Bạn là gia sư mạng máy tính cho sinh viên MỚI BẮT ĐẦU của HNUE.
+    system_prompt = """Bạn là gia sư mạng máy tính của Lwent Pro, dành cho người mới bắt đầu.
 Trả lời bằng tiếng Việt tự nhiên, ngắn gọn, dễ hiểu. Giải nghĩa thuật ngữ trước khi dùng.
 Ưu tiên sơ đồ bài đang mở và các IP/cổng trong ngữ cảnh. Nếu có cấu hình mẫu và cấu hình hiện tại khác nhau, nói rõ sự khác nhau.
 Giải thích theo thứ tự: ý chính, ví dụ số cụ thể trong sơ đồ, rồi một cách tự kiểm tra nếu phù hợp.
@@ -153,7 +153,7 @@ async def explain_question_with_ai(
     correct_ans_str = ctx["correct_answer"]
     first_section = "Vì sao cách làm của bạn đúng?" if ctx["state"] == "correct" else "Bạn đúng ở đâu và còn thiếu gì?" if ctx["state"] == "partial" else "Cách bắt đầu làm câu này" if ctx["state"] == "unanswered" else "Vì sao lựa chọn này chưa đúng?"
 
-    prompt = f"""Bạn là Gia sư AI Sư phạm chuyên nghiệp của hệ thống HNUE PRO. 
+    prompt = f"""Bạn là Gia sư AI Sư phạm chuyên nghiệp của hệ thống Lwent Pro.
 Một sinh viên vừa nộp câu hỏi dạng {question.type.value}.
 KẾT QUẢ CHẤM ĐÃ KIỂM CHỨNG: {ctx['status']} ({ctx['score']}/{ctx['max_score']} điểm).
 Đây là giải thích sau khi nộp, không phải chấm lại. Nếu kết quả ĐÚNG, xác nhận bạn làm đúng và tuyệt đối không nói bạn chọn nhầm. Nếu ĐÚNG MỘT PHẦN, chỉ rõ phần đã đúng và phần còn sai/thiếu; không phủ nhận toàn bộ bài làm. Nếu BỎ TRỐNG, hướng dẫn cách bắt đầu, không bịa một lựa chọn của sinh viên.
@@ -221,7 +221,7 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
         "messages": [
             {
                 "role": "system",
-                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của HNUE PRO, chuyên giải thích kiến thức một cách dễ hiểu, trực quan, gần gũi nhất cho sinh viên đại học. Tuyệt đối không xưng hô cứng nhắc 'người học' mà dùng 'sinh viên' hoặc 'bạn'. Luôn luôn bọc mọi ký hiệu toán học trong cặp dấu $...$. Không bọc công thức hay ký hiệu suy luận trong dấu backtick. Câu văn tiếng Việt và mũi tên nối ý → phải dùng văn bản thường, không đưa vào khối LaTeX. Ở mục 5 luôn tạo ra 1 câu hỏi trắc nghiệm tương tự trong khối code ```quiz dạng JSON hợp lệ để sinh viên thử sức."
+                "content": "Bạn là Gia sư AI Sư phạm thông minh, tận tình của Lwent Pro, chuyên giải thích kiến thức một cách dễ hiểu, trực quan, gần gũi nhất cho sinh viên đại học. Tuyệt đối không xưng hô cứng nhắc 'người học' mà dùng 'sinh viên' hoặc 'bạn'. Luôn luôn bọc mọi ký hiệu toán học trong cặp dấu $...$. Không bọc công thức hay ký hiệu suy luận trong dấu backtick. Câu văn tiếng Việt và mũi tên nối ý → phải dùng văn bản thường, không đưa vào khối LaTeX. Ở mục 5 luôn tạo ra 1 câu hỏi trắc nghiệm tương tự trong khối code ```quiz dạng JSON hợp lệ để sinh viên thử sức."
             },
             {
                 "role": "user",

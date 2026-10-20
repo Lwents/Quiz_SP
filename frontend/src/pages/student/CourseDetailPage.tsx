@@ -184,7 +184,7 @@ export const CourseDetailPage: React.FC = () => {
                 {curriculum.subject_code}
               </span>
               <span className="px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs font-semibold">
-                Chuẩn Sư phạm HNUE PRO
+                Lộ trình học trên Lwent Pro
               </span>
             </div>
 

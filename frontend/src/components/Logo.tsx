@@ -79,7 +79,7 @@ export const Logo: React.FC<LogoProps> = ({
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5 leading-none">
           <span className={`font-black tracking-tight text-slate-900 ${textSizes[size]}`}>
-            HNUE
+            Lwent
           </span>
           <span className={`font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white rounded-md uppercase tracking-wider shadow-xs ${badgeSizes[size]}`}>
             {badgeText}
@@ -87,7 +87,7 @@ export const Logo: React.FC<LogoProps> = ({
         </div>
         {showSubtitle && (
           <span className="text-[11px] font-semibold text-slate-500 tracking-tight mt-0.5">
-            Khảo thí & Luyện tập SP
+            Ôn luyện & Thi trắc nghiệm
           </span>
         )}
       </div>

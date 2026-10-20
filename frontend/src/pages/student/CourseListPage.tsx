@@ -94,7 +94,7 @@ export const CourseListPage: React.FC = () => {
             Khóa học Môn học
           </h1>
           <p className="text-slate-500 text-sm mt-1 max-w-2xl">
-            Lộ trình học tập bài bản: Lý thuyết cô đọng, ví dụ trực quan dễ hiểu và bài kiểm tra củng cố kiến thức theo chuẩn sư phạm HNUE PRO.
+            Lộ trình học tập bài bản với lý thuyết cô đọng, ví dụ trực quan dễ hiểu và bài kiểm tra củng cố kiến thức.
           </p>
         </div>
 
@@ -155,7 +155,7 @@ export const CourseListPage: React.FC = () => {
                       {sub.name}
                     </h3>
                     <p className="text-xs text-slate-500 line-clamp-3 mt-2 leading-relaxed">
-                      {sub.description || 'Học phần nền tảng được biên soạn theo chương trình chuẩn Sư phạm HNUE.'}
+                      {sub.description || 'Học phần nền tảng hỗ trợ ôn luyện kiến thức và thực hành.'}
                     </p>
                   </div>
 

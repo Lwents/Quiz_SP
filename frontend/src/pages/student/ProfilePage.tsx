@@ -26,7 +26,7 @@ import {
 
 const PRESET_AVATARS = [
   'https://api.dicebear.com/7.x/bottts/svg?seed=student1&backgroundColor=b6e3f4',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=hnue_robot&backgroundColor=c0aede',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=lwent_robot&backgroundColor=c0aede',
   'https://api.dicebear.com/7.x/bottts/svg?seed=super_quiz&backgroundColor=d1d4f9',
   'https://api.dicebear.com/7.x/bottts/svg?seed=scholar&backgroundColor=ffd5dc',
   'https://api.dicebear.com/7.x/bottts/svg?seed=coder_cat&backgroundColor=ffdfbf',

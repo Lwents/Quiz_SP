@@ -65,7 +65,7 @@ export function AdminCenterPage() {
     <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-6">
       <header className="mb-5">
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
-          HNUE PRO · Admin
+          Lwent Pro · Admin
         </p>
         <h1 className="mt-1 text-2xl font-black text-slate-900">
           Trung tâm quản trị
