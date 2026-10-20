@@ -9,7 +9,6 @@ import {
   LogOut,
   Layers,
   GraduationCap,
-  Settings,
   ShieldCheck,
   BarChart3,
   FileSpreadsheet,
@@ -117,20 +116,6 @@ export const Navbar: React.FC = () => {
                     </Link>
                   )}
 
-                  {isAdmin && (
-                    <Link
-                      to="/settings/backup"
-                      onClick={(e) => handleGuardedNav(e, '/settings/backup')}
-                      className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                        location.pathname.startsWith('/settings/backup')
-                          ? 'text-blue-600 bg-blue-50 font-semibold'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                      }`}
-                    >
-                      <Settings className="w-4 h-4" />
-                      Sao lưu dữ liệu
-                    </Link>
-                  )}
                 </>
               ) : (
                 /* Menu học tập dành riêng cho STUDENT & Khách */
