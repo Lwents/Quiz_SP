@@ -5,6 +5,7 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { apiClient } from '../../api/client';
 import { resolveMediaUrl } from '../../api/urls';
+import { QuestionContent } from '../../components/QuestionContent';
 import { LessonDetail, CourseCurriculum, CourseTopic } from '../../types';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from '../../stores/toastStore';
@@ -40,9 +41,9 @@ const renderKatexSafe = (formula: string, displayMode: boolean = false): string 
   let cleaned = formula.trim();
   cleaned = cleaned.replace(/\\\\([a-zA-Z]+)/g, '\\$1');
   try {
-    return katex.renderToString(cleaned, { displayMode, throwOnError: false });
+    return katex.renderToString(cleaned, { displayMode, throwOnError: false, trust: false, maxExpand: 100, maxSize: 12 });
   } catch (e) {
-    return cleaned;
+    return cleaned.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
   }
 };
 
@@ -299,7 +300,7 @@ export const LessonPlayerPage: React.FC = () => {
           return subParts.map((sp, spIdx) => {
             if (/^\\[a-zA-Z]+/.test(sp)) {
               try {
-                const html = katex.renderToString(sp, { throwOnError: true });
+                const html = katex.renderToString(sp, { throwOnError: true, trust: false, maxExpand: 100, maxSize: 12 });
                 return (
                   <span
                     key={`latex-${index}-${spIdx}`}
@@ -350,6 +351,14 @@ export const LessonPlayerPage: React.FC = () => {
         return;
       }
       flushTable();
+
+      // Use the same image viewer as quizzes so lesson illustrations can be
+      // opened at full size on phones as well as desktop screens.
+      if (/^!\[[^\]]*\]\((?:https?:\/\/|\/media\/)[^\s)]+\)$/.test(trimmed)) {
+        flushList();
+        elements.push(<QuestionContent key={`image-${idx}`} content={trimmed} />);
+        return;
+      }
 
       // Check for numbered list e.g. "1. Item" or bullet "- Item"
       const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);

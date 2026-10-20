@@ -24,10 +24,21 @@ from app.schemas.attempt import (
 from app.schemas.question import QuestionStudentResponse, QuestionTeacherResponse
 from app.scoring.base import score_question
 from app.api.deps import get_current_user
+from app.student_questions import student_question_config
 
 router = APIRouter(prefix="/attempts", tags=["attempts"])
 
 async def grade_and_finalize_attempt(attempt: Attempt, db: AsyncSession) -> Attempt:
+    # Serialize grading and answer writes, then reload after acquiring the lock.
+    locked = await db.execute(
+        select(Attempt).where(Attempt.id == attempt.id).with_for_update()
+        .execution_options(populate_existing=True)
+        .options(
+            selectinload(Attempt.quiz).selectinload(Quiz.quiz_questions).selectinload(QuizQuestion.question),
+            selectinload(Attempt.answers),
+        )
+    )
+    attempt = locked.scalar_one()
     if attempt.status in (AttemptStatus.SUBMITTED, AttemptStatus.GRADED):
         return attempt
 
@@ -119,6 +130,10 @@ async def start_quiz_attempt(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Chỉ sinh viên mới được tham gia làm bài thi"}}
         )
+
+    # Multiple start requests must not bypass max_attempts or create duplicate
+    # in-progress attempts for this student.
+    await db.execute(select(User.id).where(User.id == current_user.id).with_for_update())
 
     query = (
         select(Quiz)
@@ -231,31 +246,8 @@ async def start_quiz_attempt(
     for idx, qq in enumerate(qq_list):
         q = qq.question
         points = qq.points_override if qq.points_override is not None else q.points
-        sanitized_config = dict(q.config or {})
-        sanitized_config.pop("correct", None)
-        sanitized_config.pop("accepted_answers", None)
-
-        # Do not expose the correct order, but always provide the items the
-        # student must arrange. This also supports legacy questions that only
-        # persisted `correct_order`.
-        if q.type == "ordering":
-            sanitized_config["items"] = list(
-                sanitized_config.get("items")
-                or (q.config or {}).get("correct_order", [])
-            )
-        sanitized_config.pop("correct_order", None)
-
+        sanitized_config = student_question_config(q.type, q.config, f"{attempt.id}_{q.id}")
         q_rng = random.Random(f"{attempt.id}_{q.id}")
-
-        if q.type in ("matching", "drag_drop"):
-            pairs = sanitized_config.get("pairs", [])
-            left_items = [p.get("left") for p in pairs if "left" in p]
-            right_items = [p.get("right") for p in pairs if "right" in p]
-            if quiz.shuffle_answers:
-                q_rng.shuffle(right_items)
-            sanitized_config["left_items"] = left_items
-            sanitized_config["right_items"] = right_items
-            sanitized_config.pop("pairs", None)
 
         if quiz.shuffle_answers and "options" in sanitized_config and isinstance(sanitized_config["options"], list):
             opts = list(sanitized_config["options"])
@@ -410,7 +402,9 @@ async def save_answer(
             detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Chỉ sinh viên mới được lưu đáp án bài thi"}}
         )
 
-    attempt = await db.get(Attempt, attempt_id)
+    attempt = (await db.execute(
+        select(Attempt).where(Attempt.id == attempt_id).with_for_update()
+    )).scalar_one_or_none()
     if not attempt:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -439,6 +433,13 @@ async def save_answer(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"error": {"code": "TIME_EXPIRED", "message": "Thời gian làm bài thi đã kết thúc"}}
             )
+
+    membership = await db.execute(select(QuizQuestion.id).where(
+        QuizQuestion.quiz_id == attempt.quiz_id,
+        QuizQuestion.question_id == question_id,
+    ))
+    if membership.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Question does not belong to this quiz")
 
     # Upsert attempt answer
     res = await db.execute(
@@ -533,6 +534,9 @@ async def get_attempt_result(
             detail={"error": {"code": "FORBIDDEN", "message": "Forbidden"}}
         )
 
+    if attempt.status == AttemptStatus.IN_PROGRESS:
+        raise HTTPException(status_code=409, detail="Submit the attempt before viewing results")
+
     quiz = attempt.quiz
     ans_map = {a.question_id: a for a in attempt.answers}
 
@@ -551,7 +555,9 @@ async def get_attempt_result(
             points = qq.points_override if qq.points_override is not None else q.points
             att_ans = ans_map.get(q.id)
 
-            if att_ans and att_ans.is_correct == "true":
+            if not att_ans or att_ans.answer in (None, "", [], {}):
+                unanswered_count += 1
+            elif att_ans.is_correct == "true":
                 correct_count += 1
             elif att_ans and att_ans.is_correct in ("false", "partial"):
                 incorrect_count += 1
@@ -581,7 +587,9 @@ async def get_attempt_result(
     else:
         for qq in quiz.quiz_questions:
             att_ans = ans_map.get(qq.question_id)
-            if att_ans and att_ans.is_correct == "true":
+            if not att_ans or att_ans.answer in (None, "", [], {}):
+                unanswered_count += 1
+            elif att_ans.is_correct == "true":
                 correct_count += 1
             elif att_ans and att_ans.is_correct in ("false", "partial"):
                 incorrect_count += 1

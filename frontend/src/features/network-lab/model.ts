@@ -40,7 +40,7 @@ export function makeDevice(id: string, kind: DeviceKind, name: string, x: number
     id, kind, name, x, y,
     ...(kind === 'switch' ? { switchModel } : {}),
     gateway: '', ripNetworks: [],
-    ports: names.map(port => ({ name: port, ip: '', mask: '255.255.255.0', enabled: kind !== 'router' })),
+    ports: names.map(port => ({ name: port, ip: '', mask: kind === 'pc' ? '' : '255.255.255.0', enabled: kind !== 'router' })),
   };
 }
 
@@ -84,10 +84,10 @@ export function createPreset(preset: LabPreset): Topology {
   if (preset === 'one-router') return {
     devices: [
       pc('pc1', 'PC1', 95, 225, '192.168.10.10', m24, '192.168.10.1'),
-      router('r1', 'R1', 435, 225, { 'F0/0': ['192.168.10.1', m24], 'F0/1': ['192.168.20.1', m24] }),
+      router('r1', 'R1', 435, 225, { 'F0/1': ['192.168.10.1', m24], 'F0/0': ['192.168.20.1', m24] }),
       pc('pc2', 'PC2', 785, 225, '192.168.20.10', m24, '192.168.20.1'),
     ],
-    cables: [cable('c1', 'pc1', 'Eth0', 'r1', 'F0/0'), cable('c2', 'r1', 'F0/1', 'pc2', 'Eth0')],
+    cables: [cable('c1', 'pc1', 'Eth0', 'r1', 'F0/1'), cable('c2', 'r1', 'F0/0', 'pc2', 'Eth0')],
   };
   if (preset === 'switch') return {
     devices: [
@@ -233,7 +233,7 @@ function traceOneWay(topology: Topology, source: Device, target: Device): PingRe
   const targetInfo = networkInfo(targetPort.ip, targetPort.mask);
   const path = [source.name];
   const fail = (message: string, why: string): PingResult => ({ ok: false, path, message, why });
-  if (!sourcePort.enabled || !targetPort.enabled) return fail('Cổng PC đang tắt.', 'Bật cổng mạng trước khi thử ping.');
+  if (!sourcePort.enabled || !targetPort.enabled) return fail('Cổng nguồn hoặc đích đang tắt.', 'Bật cổng mạng trước khi thử ping.');
   if (!sourceInfo || !targetInfo) return fail('IP hoặc subnet mask không hợp lệ.', 'Nhập IPv4 và mask liên tiếp như 255.255.255.192.');
   const sourcePoint = { deviceId: source.id, port: sourcePort.name };
   if (sameNetwork(sourcePort.ip, sourcePort.mask, targetPort.ip, targetPort.mask)) {
@@ -252,6 +252,7 @@ function traceOneWay(topology: Topology, source: Device, target: Device): PingRe
   while (queue.length) {
     const step = queue.shift()!;
     const current = step.device;
+    if (target.kind === 'router' && current.id === target.id) return { ok: true, path: step.path, message: 'Ping thành công.', why: 'Đã tới router sở hữu IP đích; cổng đích đang bật.' };
     if (visited.has(current.id)) continue;
     visited.add(current.id);
     for (const port of current.ports) {
@@ -279,6 +280,19 @@ function traceOneWay(topology: Topology, source: Device, target: Device): PingRe
 export function simulatePing(topology: Topology, sourceId: string, targetIp: string): PingResult {
   const source = topology.devices.find(device => device.id === sourceId);
   if (!source || source.kind !== 'pc') return { ok: false, path: [], message: 'Chọn PC nguồn.', why: 'Ping được phát từ PC trong bài thực hành.' };
+  const routerTarget = topology.devices.find(device => device.kind === 'router' && device.ports.some(port => port.ip === targetIp));
+  if (routerTarget) {
+    const targetPort = routerTarget.ports.find(port => port.ip === targetIp)!;
+    const ips = topology.devices.flatMap(device => device.ports.filter(port => port.ip).map(port => port.ip));
+    if (new Set(ips).size !== ips.length) return { ok: false, path: [source.name], message: 'Có địa chỉ IP bị dùng trùng.', why: 'Mỗi giao diện lớp 3 phải có một IP riêng.' };
+    const destination = { ...routerTarget, ports: [targetPort] };
+    const forward = traceOneWay(topology, source, destination);
+    if (!forward.ok) return forward;
+    // A reply on the same LAN does not need a default gateway on the PC.
+    if (sameNetwork(source.ports[0].ip, source.ports[0].mask, targetPort.ip, targetPort.mask)) return forward;
+    const backward = simulateRouterPing(topology, routerTarget.id, source.ports[0].ip);
+    return backward.ok ? forward : { ok: false, path: forward.path, message: 'Router đích không có đường phản hồi.', why: backward.why };
+  }
   const target = topology.devices.find(device => device.kind === 'pc' && device.ports[0].ip === targetIp);
   if (!target) return { ok: false, path: [source.name], message: 'Không tìm thấy PC đích với IP này.', why: 'Kiểm tra IP đích đã cấu hình và nhập đúng bốn octet.' };
   if (source.id === target.id) return { ok: false, path: [source.name], message: 'Đang ping chính PC nguồn.', why: 'Chọn IP của một PC khác để kiểm tra đường mạng.' };

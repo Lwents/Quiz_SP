@@ -19,3 +19,12 @@ Before running any `git add`, `git commit`, or `git push`:
 ### 3. File Protection
 - `.env`, `.env.*`, `backend/.env`, and any credentials MUST remain in `.gitignore`.
 - If new sensitive files are created, add them to `.gitignore` before creating them.
+
+## Active data source
+
+The user configured local frontend and deployed website to share the VPS backend.
+Check `BACKEND_UPSTREAM` in the ignored root `.env` before changing application data.
+When it points to the VPS, use that backend's authenticated API for question/course
+updates. The local PostgreSQL container and local backend at port 8000 remain a
+separate saved copy; direct SQL edits there do not update the active frontend.
+Do not replace the VPS database with the local snapshot to apply incremental edits.

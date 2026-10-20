@@ -22,6 +22,7 @@ export const MultipleChoiceQuestion: React.FC<QuestionRendererProps> = ({
 
   return (
     <div className="space-y-3">
+      <p className="text-sm text-slate-600">Chọn tất cả đáp án đúng (có thể có một hoặc nhiều đáp án).</p>
       {options.map((opt: any) => {
         const isChecked = selectedList.includes(opt.id);
         return (

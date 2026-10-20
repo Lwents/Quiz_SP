@@ -50,16 +50,16 @@ function subnet26(): TeachingStep[] {
 function subnet27(base: string, needed: number): TeachingStep[] {
   return [
     {
-      title: 'Vì sao bài này dùng /27?',
-      explanation: `Đếm trên sơ đồ có ${needed} đoạn cần mạng riêng. /26 chỉ tạo được bốn mạng từ một dải /24, không đủ. /27 tạo được tám mạng, nên đủ ${needed} đoạn. Đây là cách chia đều để dễ học, không phải mọi hệ thống ngoài đời đều bắt buộc dùng /27.`,
-      example: `Mask /27 là 255.255.255.224. Lấy 256 − 224 = 32. Vì vậy các mạng bắt đầu ở ${base}.0, .32, .64, .96, .128, .160, .192 và .224.`,
-      analogy: `Cần ${needed} khu có biển tên riêng. Chia thành bốn khu không đủ; chia thành tám khu thì xếp được hết và còn chỗ dự phòng.`,
+      title: 'Từ /24 mượn 3 bit thành /27 như thế nào?',
+      explanation: `Bắt đầu với một dải /24 thì còn 8 bit dành cho địa chỉ thiết bị. Hình cần ${needed} mạng riêng. Mượn 2 bit chỉ tạo 2² = 4 mạng, chưa đủ; mượn 3 bit tạo 2³ = 8 mạng. Vì vậy prefix tăng từ /24 lên /27 (24 + 3). Ta dùng ${needed} mạng và còn ${8 - needed} mạng dự phòng.`,
+      example: `Trong dải ${base}.0/24, 3 bit được mượn từ phần host để đánh số subnet. Kết quả là tám mạng /27: ${base}.0, .32, .64, .96, .128, .160, .192 và .224.`,
+      analogy: `Có ${needed} khu cần biển tên riêng. Mượn thêm 3 bit giống như tạo được 8 số hiệu khu; dùng ${needed} khu cho sơ đồ, ${8 - needed} khu còn lại để trống.`,
     },
     {
-      title: 'Một mạng /27 chứa các địa chỉ nào?',
-      explanation: 'Mỗi mạng /27 chiếm 32 địa chỉ liên tiếp. Số đầu gọi tên mạng, số cuối dùng để gọi cả mạng; 30 số ở giữa mới đặt cho máy và cổng router. Hai đầu một dây phải nằm trong cùng một nhóm 32 số.',
-      example: `${base}.64/27 gồm .64–.95. .64 là tên mạng, .65–.94 gán được, .95 là broadcast. PC ${base}.66 và cổng router ${base}.65 cùng nhóm nên nối trực tiếp được.`,
-      analogy: 'Một khu có 32 số phòng; hai số ở hai đầu dành cho biển khu và loa chung, còn 30 số là phòng thật.',
+      title: 'Mỗi mạng /27 có bao nhiêu địa chỉ dùng được?',
+      explanation: 'Sau khi mượn 3 bit, phần host còn 5 bit. Mỗi subnet có 2⁵ = 32 địa chỉ; trừ địa chỉ mạng và broadcast thì còn 30 địa chỉ dùng được cho máy hoặc cổng router. Mask /27 là 255.255.255.224; bước nhảy là 256 − 224 = 32.',
+      example: `${base}.64/27 gồm .64–.95: .64 là địa chỉ mạng, .65–.94 là 30 địa chỉ dùng được, .95 là broadcast. Vì vậy PC ${base}.66 và cổng router ${base}.65 ở cùng subnet.`,
+      analogy: 'Một khu có 32 số địa chỉ; một số đặt tên khu, một số gọi chung cả khu, còn 30 số cấp cho thiết bị.',
     },
   ];
 }
@@ -152,29 +152,29 @@ function oneRouterExplanation(): TeacherExplanation {
       ...firstThingsToKnow(),
       {
         title: 'Vì sao hai PC có hai dải IP khác nhau?',
-        explanation: 'Bài yêu cầu hai khu mạng. PC1 ở khu 192.168.10.x, PC2 ở khu 192.168.20.x. Hai cổng của router nối vào hai khu này nên mỗi cổng mang địa chỉ thuộc khu của nó. Các số cụ thể là ví dụ minh họa vì đề không ấn định từng IP.',
-        example: 'PC1 192.168.10.10 nối với R1 192.168.10.1. PC2 192.168.20.10 nối với R1 192.168.20.1.',
+        explanation: 'Bài yêu cầu hai khu mạng. PC1 ở khu 160.10.x.x, PC2 ở khu 195.10.10.x. Hai cổng của router nối vào hai khu này nên mỗi cổng mang địa chỉ thuộc khu của nó. Các địa chỉ và mask lấy từ sơ đồ phía dưới trong hình thứ 3 của Bài 1.docx.',
+        example: 'PC1 160.10.10.2 nối với R1 160.10.10.1. PC2 195.10.10.2 nối với R1 195.10.10.1.',
         analogy: 'Hai lớp ở hai tòa nhà có hai dãy số phòng khác nhau; R1 là chỗ nối giữa hai tòa.',
       },
       {
-        title: '/24 và mask 255.255.255.0 nghĩa là gì?',
-        explanation: 'Hai cách viết này chỉ cùng một ranh giới mạng: ba nhóm số đầu dùng để gọi tên khu, nhóm cuối là số của từng thiết bị. Một khu /24 có 256 số; số .0 là tên khu, .255 là địa chỉ gọi cả khu, còn .1–.254 đặt được cho máy.',
-        example: '192.168.10.10 và 192.168.10.1 cùng khu 192.168.10.0/24. 192.168.20.10 thuộc khu 192.168.20.0/24 khác.',
+        title: 'Vì sao PC1 dùng /16 còn PC2 dùng /24?',
+        explanation: 'Trong hình Word, PC1 dùng /16 (255.255.0.0), nên hai nhóm số đầu 160.10 là phần mạng. PC2 dùng /24 (255.255.255.0), nên ba nhóm số đầu 195.10.10 là phần mạng. Hai PC có mask khác nhau; phải nhập đúng mask riêng của từng máy.',
+        example: '160.10.10.2 và 160.10.10.1 cùng khu 160.10.0.0/16. 195.10.10.2 thuộc khu 195.10.10.0/24 khác.',
       },
       {
         title: 'Vì sao PC phải đặt default gateway?',
-        explanation: 'PC1 không tự bước sang khu PC2 được. Khi gặp địa chỉ ngoài khu mình, PC1 đưa gói cho cổng R1 ngay cạnh là 192.168.10.1. PC2 cũng phải có cổng về là 192.168.20.1 để gửi lời đáp. Gateway của mỗi PC luôn là cổng router cùng khu với PC đó.',
-        example: 'PC1 đặt gateway 192.168.10.1; PC2 đặt gateway 192.168.20.1. Đặt PC1 thành 192.168.20.1 là sai vì cổng đó ở khu khác.',
+        explanation: 'PC1 không tự bước sang khu PC2 được. Khi gặp địa chỉ ngoài khu mình, PC1 đưa gói cho cổng R1 ngay cạnh là 160.10.10.1. PC2 cũng phải có cổng về là 195.10.10.1 để gửi lời đáp. Gateway của mỗi PC luôn là cổng router cùng khu với PC đó.',
+        example: 'PC1 đặt gateway 160.10.10.1; PC2 đặt gateway 195.10.10.1. Đặt PC1 thành 195.10.10.1 là sai vì cổng đó ở khu khác.',
         analogy: schoolGate,
       },
       {
         title: 'Vì sao chưa cần RIP?',
         explanation: 'R1 cắm trực tiếp vào cả hai khu nên đã biết đường tới cả hai. RIP chỉ cần khi có nhiều router và một router phải hỏi router khác về khu mình không nối trực tiếp.',
-        example: 'Trên R1, show ip route sẽ thấy cả 192.168.10.0/24 và 192.168.20.0/24 là mạng nối trực tiếp.',
+        example: 'Trên R1, show ip route sẽ thấy cả 160.10.0.0/16 và 195.10.10.0/24 là mạng nối trực tiếp.',
       },
     ],
-    packetJourney: ['PC1 gửi gói cho cổng R1 192.168.10.1.', 'R1 thấy PC2 ở khu 192.168.20.x và chuyển qua cổng 192.168.20.1.', 'PC2 trả lời qua gateway 192.168.20.1, R1 chuyển về PC1.'],
-    commonMistakes: ['Chọn gateway của PC1 ở khu 192.168.20.x thay vì khu 192.168.10.x.', 'Đặt hai cổng router cùng một dải IP nên không tách được hai khu.', 'Quên bật cổng router bằng no shutdown.'],
+    packetJourney: ['PC1 gửi gói cho cổng R1 160.10.10.1.', 'R1 thấy PC2 ở khu 195.10.10.x và chuyển qua cổng 195.10.10.1.', 'PC2 trả lời qua gateway 195.10.10.1, R1 chuyển về PC1.'],
+    commonMistakes: ['Chọn gateway của PC1 ở khu 195.10.10.x thay vì khu 160.10.x.x.', 'Đặt hai cổng router cùng một dải IP nên không tách được hai khu.', 'Quên bật cổng router bằng no shutdown.'],
   };
 }
 

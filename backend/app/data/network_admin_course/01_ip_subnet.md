@@ -28,7 +28,18 @@ Slide gốc giới thiệu cách chia địa chỉ theo lớp A (`/8`), B (`/16`
 
 ## 5. Vì sao chia mạng con?
 
-Ví dụ một `/24` có 256 địa chỉ. Chia thành bốn mạng `/26` giúp đặt các nhóm máy ở những LAN riêng; broadcast của một LAN không đi tràn sang các LAN khác qua router. `/26` có `2^(32−26) = 64` địa chỉ mỗi mạng, gồm một địa chỉ mạng, một broadcast và **62 địa chỉ host dùng được**. Các mạng bắt đầu ở `.0`, `.64`, `.128`, `.192`. Nếu cần sáu LAN, `/27` tạo tám mạng, mỗi mạng 32 địa chỉ và 30 host dùng được. Chọn mask theo **cả số LAN cần tạo lẫn số host tối đa của mỗi LAN**.
+Ví dụ một `/24` có 256 địa chỉ. Chia thành bốn mạng `/26` giúp đặt các nhóm máy ở những LAN riêng; broadcast của một LAN không đi tràn sang các LAN khác qua router. `/26` có `2^(32−26) = 64` địa chỉ mỗi mạng, gồm một địa chỉ mạng, một broadcast và **62 địa chỉ host dùng được**. Các mạng bắt đầu ở `.0`, `.64`, `.128`, `.192`.
+
+### Tự tính từ `/24` sang `/27`
+
+Giả sử sơ đồ cần sáu mạng con có kích thước bằng nhau. Trong `/24`, có 8 bit host để chia. Mượn `n` bit host sẽ tạo `2^n` subnet:
+
+- Mượn 2 bit: `2² = 4` subnet, chưa đủ sáu mạng.
+- Mượn 3 bit: `2³ = 8` subnet, đủ sáu mạng và còn hai mạng dự phòng.
+
+Mỗi bit mượn được cộng vào prefix, nên `/24 + 3 = /27`. Còn `32 − 27 = 5` bit host; mỗi subnet có `2⁵ = 32` địa chỉ, trong đó 30 địa chỉ host dùng được sau khi bỏ địa chỉ mạng và broadcast. Mask `/27` là `255.255.255.224`, nên bước nhảy là `256 − 224 = 32`: các subnet bắt đầu ở `.0`, `.32`, `.64`, `.96`, `.128`, `.160`, `.192`, `.224`.
+
+Chọn mask theo **cả số mạng cần tạo lẫn số host tối đa của mỗi mạng**. `/27` là cách chia đều phù hợp với bài tam giác sáu mạng; hệ thống thật có thể dùng VLSM để chọn kích thước khác nhau cho LAN và liên kết router.
 
 > Slide có chỗ viết “số mạng con khả dụng = 2^số bit mượn − 2”. Đó là quy tắc lịch sử loại bỏ subnet toàn bit 0 và toàn bit 1. Với cách dùng CIDR hiện nay, cả hai subnet đều dùng được; mượn 3 bit từ `/24` tạo **8 mạng `/27`**, không phải 6. Công thức `2^h − 2` cho **host dùng được** vẫn áp dụng trong các bài IPv4 thông thường.
 

@@ -362,6 +362,7 @@ export const QuizPlayerPage: React.FC = () => {
               <div className="flex-1 mb-8">
                 {Renderer && (
                   <Renderer
+                    key={currentQuestion.id}
                     question={currentQuestion}
                     value={answers[currentQuestion.id]}
                     onChange={(val) => handleAnswerChange(currentQuestion.id, val)}

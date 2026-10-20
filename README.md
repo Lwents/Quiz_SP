@@ -43,6 +43,16 @@ Các tài khoản mẫu `student@example.com`, `teacher@example.com` và `admin@
 
 ## 💾 Sao lưu và chuyển dữ liệu sang máy khác
 
+### Dùng chung dữ liệu giữa local và website
+
+Đặt `BACKEND_UPSTREAM` trong `.env` ở thư mục gốc thành URL backend HTTPS đã triển khai, gồm cả tiền tố đường dẫn nếu có, không thêm dấu `/` cuối. Ví dụ: `BACKEND_UPSTREAM=https://api.example.com/quiz`.
+
+Frontend Docker và Vite sẽ chuyển cả `/api/` và `/media/` tới backend đó. Để `VITE_API_URL` trống khi chạy local để các yêu cầu đi qua proxy. Đây là dùng chung API/database, không phải đồng bộ hai database: mọi thay đổi dữ liệu qua frontend local sẽ ghi trực tiếp lên máy chủ. Bản database local vẫn được giữ riêng; API ở cổng 8000 vẫn là backend local.
+
+Sau khi đổi cấu hình, chạy `docker compose up -d --build --no-deps frontend`, hoặc khởi động lại `npm run dev` trong thư mục `frontend`. Đăng nhập lại bằng tài khoản của website nếu phiên local cũ không còn hợp lệ. Nếu để `BACKEND_UPSTREAM` trống, Docker và Vite trở lại dùng backend local mặc định. Khi dùng chung dữ liệu, local cần kết nối Internet.
+
+### Chuyển một bản sao dữ liệu
+
 Đăng nhập bằng tài khoản `ADMIN`, bấm biểu tượng **Cài đặt sao lưu dữ liệu** trên thanh đầu trang hoặc mở `/settings/backup`.
 
 1. Ở máy nguồn, chọn **Tải bản sao lưu** và giữ tệp JSON tải về ở nơi riêng tư.

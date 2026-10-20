@@ -22,3 +22,27 @@ test('explicit display formulas and bare arrows keep their intended formatting',
   assert.equal((result.match(/###MATH_INLINE###/g) || []).length, 1);
   assert.ok(!result.includes('###MATH_BLOCK###'));
 });
+
+test('forged encoded HTML math markers remain inert text', () => {
+  const html = '<img src=x onerror="window.audit=1">';
+  const input = `###MATH_INLINE###${encodeURIComponent(html)}###END###`;
+  const result = preprocessAllMath(input);
+  assert.ok(!result.includes('###MATH_INLINE###'));
+  assert.ok(result.includes('＃＃＃MATH_INLINE＃＃＃'));
+});
+
+test('HTML inside prose math is escaped before rendering', () => {
+  const result = preprocessAllMath('$\\text{<img src=x onerror=alert(1)>}$');
+  const encoded = result.match(/###MATH_INLINE###(.*?)###END###/)[1];
+  const html = decodeURIComponent(encoded);
+  assert.ok(!html.includes('<img'));
+  assert.ok(html.includes('&lt;img'));
+});
+
+test('untrusted math cannot create JavaScript links or expand macros forever', () => {
+  const result = preprocessAllMath('$\\href{javascript:alert(1)}{click}$\n$\\def\\a{\\a}\\a$');
+  for (const match of result.matchAll(/###MATH_(?:INLINE|BLOCK)###(.*?)###END###/g)) {
+    assert.ok(!/href=["']javascript:/i.test(decodeURIComponent(match[1])));
+  }
+  assert.ok(result.length < 5000);
+});

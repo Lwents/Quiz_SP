@@ -214,6 +214,7 @@ export const QuizPreviewPage: React.FC = () => {
               <div className="pt-2">
                 {Renderer ? (
                   <Renderer
+                    key={currentQ.id}
                     question={currentQ}
                     value={currentVal}
                     onChange={(val) => handleAnswerChange(currentQ.id, val)}

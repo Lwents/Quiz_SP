@@ -1,7 +1,8 @@
 import uuid
 from typing import Optional, Dict, Any, List
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+import json
 from app.models.attempt import AttemptStatus
 from app.schemas.question import QuestionStudentResponse, QuestionTeacherResponse
 
@@ -9,9 +10,16 @@ from app.schemas.question import QuestionStudentResponse, QuestionTeacherRespons
 class SaveAnswerRequest(BaseModel):
     answer: Any # user-selected answer (string, list, dict, number, etc.)
 
+    @field_validator("answer")
+    @classmethod
+    def bounded_answer(cls, value):
+        if len(json.dumps(value, ensure_ascii=False, allow_nan=False).encode()) > 65536:
+            raise ValueError("Answer exceeds 64 KiB")
+        return value
+
 
 class AttemptProgressRequest(BaseModel):
-    duration_seconds: Optional[int] = None
+    duration_seconds: Optional[int] = Field(default=None, ge=0, le=31536000)
 
 
 class AttemptAnswerResponse(BaseModel):

@@ -13,11 +13,11 @@ export interface TeacherLab {
 export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week1-one-router', title: 'Tuần 1 · 1 router, 2 PC, 2 dải IP',
-    source: 'Tong_hop_noi_dung_bai_tap.txt · Tuần 1, bài 1', basis: 'Yêu cầu bài tập · phương án minh họa',
+    source: 'Bài 1.docx · hình thứ 3, sơ đồ 1 router phía dưới', basis: 'Sơ đồ trong tài liệu',
     summary: 'Hai máy tính ở hai khu mạng khác nhau. Một router đứng giữa để chuyển dữ liệu từ khu này sang khu kia.',
     networkPlan: [
-      { network: '192.168.10.0/24', purpose: 'PC1 ↔ R1 F0/0', reason: 'PC1 đặt gateway 192.168.10.1 để ra khỏi LAN thứ nhất.' },
-      { network: '192.168.20.0/24', purpose: 'R1 F0/1 ↔ PC2', reason: 'PC2 đặt gateway 192.168.20.1; hai cổng router phải ở hai mạng khác nhau.' },
+      { network: '160.10.0.0/16', purpose: 'PC1 ↔ R1 F0/1', reason: 'PC1 đặt gateway 160.10.10.1 để ra khỏi LAN thứ nhất.' },
+      { network: '195.10.10.0/24', purpose: 'R1 F0/0 ↔ PC2', reason: 'PC2 đặt gateway 195.10.10.1; hai cổng router phải ở hai mạng khác nhau.' },
     ],
     verify: ['Ping từ mỗi PC tới gateway của nó.', 'Ping PC1 → PC2; nếu lỗi, kiểm tra mask, gateway và trạng thái hai cổng.'],
   },
@@ -54,7 +54,7 @@ export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week34-three-router-guide', title: 'Tuần 3–4 · 3 router tam giác theo hướng dẫn',
     source: 'HD_bai_tap_3_Router.docx · cùng nội dung ở Tuần 1 và Tuần 3–4', basis: 'Sơ đồ trong tài liệu',
-    summary: 'Ba router nối thành hình tam giác. Mỗi router có một máy tính bên cạnh; máy ở khu này có thể liên lạc với máy ở khu kia.',
+    summary: 'Bài thực hành bắt đầu với canvas trống để bạn tự thêm 3 PC, 3 router, nối 6 dây và nhập lệnh. Ví dụ của thầy lấy 192.168.1.0/24: cần 6 mạng nên mượn 3 bit thành /27; bài hướng dẫn từng thao tác và giải thích từng nhóm lệnh.',
     networkPlan: [
       { network: '192.168.1.0/27', purpose: 'PC1 – R1', reason: 'PC1 .2, gateway R1 .1.' },
       { network: '192.168.1.32/27', purpose: 'R1 – R2', reason: 'Hai đầu serial .40 và .41.' },
@@ -68,7 +68,7 @@ export const TEACHER_LABS: TeacherLab[] = [
   {
     id: 'week34-three-router-195', title: 'Tuần 3–4 · 3 router, dải 195.10.10.x',
     source: 'Tong_hop_noi_dung_bai_tap.txt · Tuần 3–4, bài 1', basis: 'Yêu cầu bài tập · phương án minh họa',
-    summary: 'Lấy hình tam giác ba router trong tài liệu làm mẫu, rồi dùng dải địa chỉ 195.10.10.x mà đề giao. Đây là một phương án minh họa.',
+    summary: 'Bài thực hành bắt đầu với canvas trống. Tự dựng tam giác 3 router theo ví dụ của thầy nhưng thay khối địa chỉ bằng 195.10.10.0/24; hướng dẫn sẽ giải thích cách chia /27, nối cổng và nhập từng lệnh.',
     networkPlan: [
       { network: '195.10.10.0/27', purpose: 'PC1 – R1', reason: 'PC1 và cổng R1 ở cùng khu; R1 là cổng ra của PC1.' },
       { network: '195.10.10.32/27', purpose: 'R1 – R2', reason: 'Hai đầu dây này cần hai IP thuộc cùng một nhóm riêng.' },
@@ -114,9 +114,19 @@ function keepClockOnlyOnDce(topology: Topology): Topology {
   return topology;
 }
 
-export function buildTeacherTopology(id: string, studentNumber = 1): Topology {
+export function buildTeacherExample(id: string, studentNumber = 1): Topology {
   let topology: Topology;
-  if (id === 'week1-one-router') topology = createPreset('one-router');
+  if (id === 'week1-one-router') {
+    topology = createPreset('one-router');
+    for (const device of topology.devices) {
+      if (device.id === 'pc1') { device.ports[0].ip = '160.10.10.2'; device.ports[0].mask = '255.255.0.0'; device.gateway = '160.10.10.1'; }
+      if (device.id === 'pc2') { device.ports[0].ip = '195.10.10.2'; device.ports[0].mask = '255.255.255.0'; device.gateway = '195.10.10.1'; }
+      if (device.id === 'r1') for (const port of device.ports) {
+        if (port.name === 'F0/1') { port.ip = '160.10.10.1'; port.mask = '255.255.0.0'; }
+        if (port.name === 'F0/0') { port.ip = '195.10.10.1'; port.mask = '255.255.255.0'; }
+      }
+    }
+  }
   else if (id === 'week1-switch') topology = createPreset('switch');
   else if (id === 'week1-two-router-diagram' || id === 'week34-two-router-guide') {
     topology = createPreset('two-routers');
@@ -138,6 +148,11 @@ export function buildTeacherTopology(id: string, studentNumber = 1): Topology {
   else if (id === 'week34-four-router-stt') topology = replaceIpBlock(createPreset('four-routers'), '200.10.1.', `200.10.${Math.max(1, Math.min(254, Math.trunc(studentNumber) || 1))}.`);
   else throw new Error(`Unknown teacher lab: ${id}`);
   return keepClockOnlyOnDce(topology);
+}
+
+export function buildTeacherTopology(id: string, _studentNumber = 1): Topology {
+  if (!TEACHER_LABS.some(lab => lab.id === id)) throw new Error(`Unknown teacher lab: ${id}`);
+  return { devices: [], cables: [] };
 }
 
 export function teacherText(value: string, studentNumber: number): string {

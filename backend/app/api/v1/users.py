@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import selectinload
@@ -64,7 +64,7 @@ async def change_password(
 
 @router.get("/activity-heatmap")
 async def get_activity_heatmap(
-    days: int = 365,
+    days: int = Query(default=365, ge=1, le=366),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):

@@ -1,0 +1,268 @@
+{
+  "source_url": "https://cst.hnue.edu.vn/mod/quiz/view.php?id=180125",
+  "source_review_count": 8,
+  "questions": [
+    {
+      "key": "quiz22-01",
+      "content": "Đâu là một hàm từ tập R vào tập R?",
+      "explanation": "Ánh xạ từ ℝ vào ℝ phải cho đúng một số thực với mọi đầu vào thực. x² + 1 luôn dương nên căn bậc hai luôn xác định; căn bậc ba nhận được cả số âm. 1/x không dùng được tại x = 0, còn √x không xác định trong ℝ khi x âm.",
+      "type": "multiple_choice",
+      "options": [
+        "f(x) = √(x² + 1)",
+        "f(x) = ∛x",
+        "f(x) = 1/x",
+        "f(x) = √x"
+      ],
+      "correct": [
+        0,
+        1
+      ]
+    },
+    {
+      "key": "quiz22-02",
+      "content": "Hàm nào là đơn ánh từ tập sinh viên, nếu gán mỗi sinh viên với:",
+      "explanation": "Đơn ánh nghĩa là hai sinh viên khác nhau phải có hai giá trị khác nhau, giống mỗi người có một số thứ tự riêng. Mã sinh viên là ví dụ rõ nhất. Đề gốc cũng chấm số điện thoại là đúng, với giả định mỗi sinh viên dùng một số riêng; nếu có người dùng chung số thì cách gán này không còn đơn ánh. Nguyên quán và điểm số có thể trùng nhau.",
+      "type": "multiple_choice",
+      "options": [
+        "Số điện thoại của sinh viên",
+        "Nguyên quán của sinh viên",
+        "Mã sinh viên của sinh viên",
+        "Điểm kết thúc môn học Toán rời rạc"
+      ],
+      "correct": [
+        0,
+        2
+      ]
+    },
+    {
+      "key": "quiz22-03",
+      "content": "Đâu là một hàm từ tập Z vào tập R?",
+      "explanation": "Với mọi số nguyên n, n² + 6 luôn dương và n² + 1 luôn dương, nên hai biểu thức tương ứng đều cho một số thực duy nhất. 1/(n² − 4) không xác định tại n = 2 hoặc −2. Quy tắc ±n cho hai giá trị khi n khác 0 nên không phải một hàm.",
+      "type": "multiple_choice",
+      "options": [
+        "f(n) = ±n",
+        "f(n) = (n³ + 10)/(n² + 6)",
+        "f(n) = 1/(n² − 4)",
+        "f(n) = √(n² + 1)"
+      ],
+      "correct": [
+        1,
+        3
+      ]
+    },
+    {
+      "key": "quiz22-04",
+      "content": "Hàm nào là đơn ánh từ Z vào tập Z",
+      "explanation": "Đơn ánh không cho hai đầu vào khác nhau cùng một kết quả. Trừ 1 và lấy lập phương đều giữ được sự khác nhau. n² + 1 cho cùng kết quả tại n = 1 và −1. Với [n/2] là phần nguyên, n = 0 và n = 1 cùng cho 0.",
+      "type": "multiple_choice",
+      "options": [
+        "f(n) = [n/2]",
+        "f(n) = n − 1",
+        "f(n) = n³",
+        "f(n) = n² + 1"
+      ],
+      "correct": [
+        1,
+        2
+      ]
+    },
+    {
+      "key": "quiz22-05",
+      "content": "Cho f là một quy tắc gán một phần tử trong tập A với một phần tử trong tập B Ghép nối các tính chất của f và điều kiện tương ứng.",
+      "explanation": "Ánh xạ: mỗi phần tử của A có đúng một ảnh trong B. Đơn ánh: không có hai phần tử khác nhau của A chung một ảnh. Toàn ánh: mọi phần tử của B đều được chạm tới. Song ánh có cả hai tính chất, nên ghép được từng phần tử A với từng phần tử B một cách một-một và không bỏ sót.",
+      "type": "matching",
+      "pairs": [
+        {
+          "left": "f là ánh xạ và mọi phần tử trong tập B đều có tạo ảnh trong tập A",
+          "right": "f là toàn ánh"
+        },
+        {
+          "left": "f là ánh xạ gán mỗi phần tử của A với duy nhất một phần tử trong B và ngược lại mỗi phần tử trong B là ảnh của duy nhất một phần tử trong A",
+          "right": "f là song ánh"
+        },
+        {
+          "left": "f là ánh xạ và hai phần tử khác nhau trong A được ánh xạ thành hai ảnh khác nhau trong B",
+          "right": "f là đơn ánh"
+        },
+        {
+          "left": "Mọi phần tử trong tập A được gán với duy nhất một phần tử trong tập B",
+          "right": "f là ánh xạ"
+        }
+      ]
+    },
+    {
+      "key": "quiz22-06",
+      "content": "Trong các tập mô tả sau đây, tập nào là tập đếm được?",
+      "explanation": "Tập đếm được là tập hữu hạn hoặc tập có thể liệt kê thành một dãy. Các số nguyên tố nhỏ hơn 1 000 000 chỉ có hữu hạn phần tử. Các số nguyên vừa chẵn vừa chia 5 dư 1 là một tập con của ℤ nên đếm được. Một khoảng số thực chứa quá nhiều điểm để liệt kê theo số thứ tự nên không đếm được.",
+      "type": "multiple_choice",
+      "options": [
+        "Tập hợp các số nguyên tố nhỏ hơn 1 000 000",
+        "Tập các số nguyên chia hết cho 2, nhưng chia 5 dư 1",
+        "Tập các số thực trong khoảng (0; 2)",
+        "Tập các số thực trong khoảng (0; 1)"
+      ],
+      "correct": [
+        0,
+        1
+      ]
+    },
+    {
+      "key": "quiz22-07",
+      "content": "Cho A là tập số các số nguyên dương nhỏ hơn 1 tỷ. Tập A thỏa tính chất nào sau đây?",
+      "explanation": "Các số nguyên dương nhỏ hơn 1 tỷ là 1, 2, …, 999 999 999. Dù rất lớn, số lượng vẫn có giới hạn nên hữu hạn. Trong quy ước của đề, tập hữu hạn cũng là tập đếm được: ta có thể lần lượt đánh số từng phần tử.",
+      "type": "multiple_choice",
+      "options": [
+        "Tập hữu hạn",
+        "Tập không đếm được",
+        "Tập vô hạn",
+        "Tập đếm được"
+      ],
+      "correct": [
+        0,
+        3
+      ]
+    },
+    {
+      "key": "quiz22-08",
+      "content": "Cho A là tập số các xâu nhị phân độ dài không quá 32 kí tự. Tập A thỏa tính chất nào sau đây?",
+      "explanation": "Mỗi độ dài k có 2ᵏ xâu nhị phân. Độ dài bị chặn ở 32 nên chỉ cộng hữu hạn số lượng 2ᵏ, kết quả vẫn hữu hạn. Nếu tính cả xâu rỗng thì tổng là 2³³ − 1; không tính xâu rỗng thì là 2³³ − 2. Cả hai cách đều cho tập hữu hạn và đếm được.",
+      "type": "multiple_choice",
+      "options": [
+        "Tập hữu hạn",
+        "Tập không đếm được",
+        "Tập đếm được",
+        "Tập vô hạn"
+      ],
+      "correct": [
+        0,
+        2
+      ]
+    },
+    {
+      "key": "quiz22-09",
+      "content": "Cho A là tập số các xâu nhị phân độ dài có từ 3 kí tự 0 trở lên. Tập A thỏa tính chất nào sau đây?",
+      "explanation": "Các xâu là những xâu hữu hạn chứa ít nhất ba ký tự 0. Có thể tạo 000, 0000, 00000, … nên tập vô hạn. Ta vẫn liệt kê được: xếp theo độ dài tăng dần, rồi theo thứ tự từ điển trong từng độ dài. Vì vậy tập vô hạn nhưng đếm được.",
+      "type": "multiple_choice",
+      "options": [
+        "Tập đếm được",
+        "Tập vô hạn",
+        "Tập không đếm được",
+        "Tập hữu hạn"
+      ],
+      "correct": [
+        0,
+        1
+      ]
+    },
+    {
+      "key": "quiz22-10",
+      "content": "Trong các tập mô tả sau đây, tập nào là tập đếm được?",
+      "explanation": "Các tập con của ℤ đều đếm được, kể cả tập số nguyên chia hết cho 7 nhưng không chia hết cho 5 và tập số nguyên không chia hết cho 3. Với các số có biểu diễn thập phân chỉ gồm chữ số 1, độ dài phần nguyên và phần thập phân hữu hạn (hoặc phần thập phân vô hạn toàn 1) có thể được liệt kê. Một khoảng số thực như (0; 2) thì không đếm được.",
+      "type": "multiple_choice",
+      "options": [
+        "Tập các số thực trong khoảng (0; 2)",
+        "Tập các số nguyên chia hết cho 7 nhưng không chia hết cho 5",
+        "Tập các số thực mà biểu diễn thập phân chỉ gồm các số 1",
+        "Tập các số nguyên không chia hết cho 3"
+      ],
+      "correct": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "key": "quiz22-11",
+      "content": "Hàm nào là toàn ánh từ tập R vào R?",
+      "explanation": "Toàn ánh từ ℝ vào ℝ nghĩa là với bất kỳ số thực y nào, ta tìm được đầu vào x tạo ra y. Với x³, chọn x = ∛y; với 2x + 1, chọn x = (y − 1)/2. x² + 2 chỉ cho giá trị từ 2 trở lên. (x² + 2)/(x² + 1) = 1 + 1/(x² + 1) chỉ nhận giá trị lớn hơn 1 và không quá 2.",
+      "type": "multiple_choice",
+      "options": [
+        "f(x) = (x² + 2)/(x² + 1)",
+        "f(x) = x³",
+        "f(x) = 2x + 1",
+        "f(x) = x² + 2"
+      ],
+      "correct": [
+        1,
+        2
+      ]
+    },
+    {
+      "key": "quiz22-12",
+      "content": "Một nhóm nghiên cứu muốn phân tích không gian \"tất cả các mã nguồn phần mềm hợp lệ có thể được viết bằng ngôn ngữ Python\". Biết rằng mỗi chương trình bản chất là một chuỗi ký tự (string) có độ dài hữu hạn, được cấu thành từ một bảng mã cố định như ASCII. Phát biểu nào đúng về lực lượng của tập hợp tất cả các chương trình Python có thể tồn tại?",
+      "explanation": "Mỗi chương trình là một chuỗi hữu hạn. Ta liệt kê chuỗi theo độ dài 1, 2, 3, …; với mỗi độ dài chỉ có hữu hạn chuỗi vì bảng ký tự cố định. Các chương trình hợp lệ là một tập con của danh sách đó. Có vô hạn chương trình khác nhau, nên tập này vô hạn đếm được.",
+      "type": "single_choice",
+      "options": [
+        "Tập hợp rỗng.",
+        "Tập vô hạn đếm được.",
+        "Tập hữu hạn.",
+        "Tập vô hạn không đếm được."
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "key": "quiz22-13",
+      "content": "Mệnh đề nào sau đây là đúng?",
+      "explanation": "Tập con của một tập đếm được cũng đếm được, vì có thể giữ lại những phần tử cần thiết trong một danh sách đã có. Một tập không đếm được vẫn có tập con đếm được, ví dụ ℕ nằm trong ℝ. Chiều ngược lại không đúng: chỉ có một tập con đếm được không đủ để kết luận cả tập đếm được. Câu cuối không được chọn theo đáp án đề gốc; không thể có tập mà mọi tập con đều không đếm được, vì tập rỗng luôn là một tập con hữu hạn.",
+      "type": "multiple_choice",
+      "options": [
+        "Nếu A có một tập con đếm được thì tập A là tập đếm được.",
+        "Tập A không đếm được, nhưng A có chứa tập con đếm được.",
+        "Tập con của một tập đếm được là một tập đếm được.",
+        "Nếu mọi tập con của tập A không đếm được thì tập A không đếm được"
+      ],
+      "correct": [
+        1,
+        2
+      ]
+    },
+    {
+      "key": "quiz22-14",
+      "content": "Trong lý thuyết thông tin, dữ liệu truyền tải thường được mã hóa thành các chuỗi bit (bit strings) gồm các số 0 và 1. Giả sử tập hợp S chứa tất cả các chuỗi bit hợp lệ có độ dài bất kỳ (từ 1 bit, 2 bit, cho đến vô tận). Phát biểu nào đúng về lực lượng của tập hợp S?",
+      "explanation": "Ở câu này, “độ dài bất kỳ” được hiểu là mỗi chuỗi có độ dài hữu hạn, nhưng không đặt giới hạn tối đa. Ta liệt kê 0, 1, rồi các chuỗi dài 2, dài 3, … nên tập vô hạn đếm được. Nếu cho phép mỗi chuỗi thật sự có vô hạn bit thì đó là bài khác và tập ấy không đếm được.",
+      "type": "single_choice",
+      "options": [
+        "Tập hữu hạn vì chỉ dùng 2 ký tự 0 và 1.",
+        "Tập vô hạn không đếm được vì độ dài chuỗi là vô tận.",
+        "Tập không thể xác định.",
+        "Tập vô hạn đếm được."
+      ],
+      "correct": [
+        3
+      ]
+    },
+    {
+      "key": "quiz22-15",
+      "content": "Trong quá trình quản trị hệ thống mạng của một trường đại học, quản trị viên cần kiểm soát tập hợp tất cả các thiết bị (laptop, smartphone, router...) đang kết nối và được cấp phát địa chỉ IP/MAC tại một thời điểm cụ thể. Phương án nào đúng về lực lượng của tập hợp các thiết bị đang kết nối này?",
+      "explanation": "Tại một thời điểm, số thiết bị thật sự đang kết nối với mạng trường là một số cụ thể có giới hạn, chẳng hạn 500 hoặc 10 000 thiết bị. Vì vậy tập hữu hạn. Việc sau này có thiết bị mới tham gia không làm tập thiết bị tại thời điểm đang xét trở thành vô hạn.",
+      "type": "single_choice",
+      "options": [
+        "Tập liên tục.",
+        "Tập hữu hạn.",
+        "Tập vô hạn không đếm được.",
+        "Tập vô hạn đếm được."
+      ],
+      "correct": [
+        1
+      ]
+    },
+    {
+      "key": "quiz22-16",
+      "content": "Cho A là tập hợp gồm các số nguyên lẻ. Tập A thỏa tính chất nào sau đây?",
+      "explanation": "Các số nguyên lẻ không có điểm kết thúc. Ta có thể liệt kê 1, −1, 3, −3, 5, −5, …; mỗi số lẻ đều xuất hiện ở một vị trí hữu hạn. Vì vậy tập vừa vô hạn vừa đếm được, khác với một khoảng số thực không thể liệt kê hết.",
+      "type": "multiple_choice",
+      "options": [
+        "Tập hữu hạn",
+        "Tập đếm được",
+        "Tập không đếm được",
+        "Tập vô hạn"
+      ],
+      "correct": [
+        1,
+        3
+      ]
+    }
+  ]
+}

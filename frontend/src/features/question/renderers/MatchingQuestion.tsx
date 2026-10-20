@@ -13,6 +13,7 @@ import {
 } from '@dnd-kit/core';
 import type { CollisionDetection } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { orderFromAnswers, moveMatch, chooseMatch } from './matchingPieces';
 
 /*
  * Component Matching SVG Puzzle Piece:
@@ -52,7 +53,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
     <div
       onClick={onClick}
       onContextMenu={onContextMenu}
-      className={`relative w-full h-[64px] select-none transition-all duration-150 ${
+      className={`relative w-full h-full min-h-[64px] select-none transition-all duration-150 ${
         draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
       } ${isSelected ? 'scale-[1.02] filter drop-shadow-md' : 'hover:drop-shadow-xs'} ${
         isDragging ? 'opacity-40' : 'opacity-100'
@@ -93,7 +94,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
 
       {/* Content overlay */}
       <div
-        className={`relative z-10 w-full h-full flex items-center justify-between px-5 pointer-events-none select-none ${
+        className={`relative z-10 w-full h-full min-h-[64px] flex items-center justify-between px-5 py-3 pointer-events-none select-none ${
           isLeft ? 'pr-8' : 'pl-8'
         }`}
       >
@@ -103,7 +104,7 @@ const PuzzlePiece: React.FC<PuzzlePieceProps> = ({
               {index}
             </span>
           )}
-          <span className="text-sm font-medium text-slate-800 break-words leading-snug line-clamp-2">
+          <span className="text-sm font-medium text-slate-800 break-words [overflow-wrap:anywhere] leading-snug">
             {text}
           </span>
         </div>
@@ -126,7 +127,7 @@ const LeftPiece: React.FC<{
 }> = ({ text, index, pieceWidth, disabled, onClick, onContextMenu }) => {
   const { setNodeRef, isOver } = useDroppable({ id: `left-${index}`, disabled });
   return (
-    <div ref={setNodeRef}>
+    <div ref={setNodeRef} className="h-full">
       <PuzzlePiece
         isLeft
         text={text}
@@ -157,7 +158,7 @@ const RightPiece: React.FC<{
   });
 
   return (
-    <div ref={setDropRef} className={matched ? 'matching-piece-connected' : undefined}>
+    <div ref={setDropRef} className={`h-full ${matched ? 'matching-piece-connected' : ''}`}>
       <div
         ref={setDragRef}
         {...attributes}
@@ -166,7 +167,7 @@ const RightPiece: React.FC<{
         onContextMenu={onContextMenu}
         title={matched ? 'Nhấn chuột phải để gỡ ghép' : undefined}
         style={{ transform: CSS.Translate.toString(transform), touchAction: 'none' }}
-        className={isDragging ? 'relative z-20' : undefined}
+        className={`h-full ${isDragging ? 'relative z-20' : ''}`}
       >
         <PuzzlePiece
           isLeft={false}
@@ -180,26 +181,6 @@ const RightPiece: React.FC<{
       </div>
     </div>
   );
-};
-
-const orderFromAnswers = (
-  leftItems: string[],
-  shuffledRight: string[],
-  answers: Record<string, string>
-): string[] => {
-  const order = Array<string | undefined>(shuffledRight.length).fill(undefined);
-  const used = new Set<string>();
-
-  leftItems.forEach((left, index) => {
-    const right = answers[left];
-    if (index < order.length && shuffledRight.includes(right) && !used.has(right)) {
-      order[index] = right;
-      used.add(right);
-    }
-  });
-
-  const remaining = shuffledRight.filter((right) => !used.has(right));
-  return order.map((right) => right ?? remaining.shift()!);
 };
 
 // Ưu tiên ô bên trái khi mảnh kéo chạm vào nó; con trỏ có thể vẫn nằm ở nửa phải.
@@ -242,7 +223,7 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [question.id]);
 
   // Sinh thứ tự xáo trộn ngẫu nhiên xác định cho danh sách bên phải
   const initialShuffledRight = useMemo(() => {
@@ -267,12 +248,20 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   const [rightOrder, setRightOrder] = useState<string[]>(() =>
     orderFromAnswers(leftItems, initialShuffledRight, currentMap)
   );
+  const orderQuestionId = useRef(question.id);
 
   useEffect(() => {
-    setRightOrder(orderFromAnswers(leftItems, initialShuffledRight, currentMap));
-  }, [leftItems, initialShuffledRight, currentMap]);
+    const changedQuestion = orderQuestionId.current !== question.id;
+    orderQuestionId.current = question.id;
+    // Preserve unassigned pieces after a match. Reshuffling them from the
+    // original order can move the next piece between pointer down and click.
+    setRightOrder((previous) => orderFromAnswers(
+      leftItems, changedQuestion ? initialShuffledRight : previous, currentMap,
+    ));
+  }, [question.id, leftItems, initialShuffledRight, currentMap]);
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  useEffect(() => setSelectedIdx(null), [question.id]);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   // Hoán đổi vị trí của 2 mảnh ghép ở cột phải
@@ -285,13 +274,7 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
     }
 
     if (matchLeft) {
-      const nextMap = { ...currentMap };
-      const right = rightOrder[fromIdx];
-      Object.keys(nextMap).forEach((left) => {
-        if (nextMap[left] === right) delete nextMap[left];
-      });
-      nextMap[leftItems[toIdx]] = right;
-      onChange(nextMap);
+      onChange(moveMatch(leftItems, rightOrder, currentMap, fromIdx, toIdx));
     }
 
     setSelectedIdx(null);
@@ -330,16 +313,45 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
   return (
     <div className="space-y-4">
       {/* Header hướng dẫn & đếm số câu đã ghép */}
-      <div className="flex items-center justify-between pb-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
         <div className="text-xs text-slate-500">
-          Kéo mảnh ghép bên phải để nối với mảnh ghép bên trái (hoặc bấm chọn mảnh ghép rồi bấm vào hàng muốn nối).
+          <span className="md:hidden">Chọn đáp án tương ứng bên dưới mỗi ý. Có thể đổi lựa chọn hoặc gỡ ghép.</span>
+          <span className="hidden md:inline">Kéo mảnh ghép bên phải để nối với mảnh ghép bên trái (hoặc bấm chọn mảnh ghép rồi bấm vào hàng muốn nối).</span>
         </div>
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
           {matchedCount} / {leftItems.length} đã ghép
         </span>
       </div>
 
+      {/* Native selects remain usable while scrolling on touch screens. */}
+      <div className="space-y-3 md:hidden">
+        {leftItems.map((left, idx) => (
+          <div key={left} className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 space-y-2">
+            <label htmlFor={`match-${question.id}-${idx}`} className="block text-sm font-medium text-slate-800 [overflow-wrap:anywhere]">
+              {idx + 1}. {left}
+            </label>
+            <select
+              id={`match-${question.id}-${idx}`}
+              aria-label={`Đáp án ghép cho ý ${idx + 1}`}
+              disabled={disabled}
+              value={currentMap[left] || ''}
+              onChange={(event) => onChange(chooseMatch(leftItems, rightItems, currentMap, idx, event.target.value))}
+              className="block min-h-12 w-full min-w-0 max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 focus:border-blue-500 focus:outline-2 focus:outline-blue-500 disabled:bg-slate-100"
+            >
+              <option value="">Chọn đáp án ghép…</option>
+              {[...new Set(rightItems)].map((right) => <option key={right} value={right}>{right}</option>)}
+            </select>
+            {currentMap[left] && <div className="flex items-start justify-between gap-2">
+              <span className="min-w-0 text-sm text-blue-800 [overflow-wrap:anywhere]">Đã ghép: {currentMap[left]}</span>
+              <button type="button" disabled={disabled} onClick={() => removeMatch(left)}
+                aria-label={`Gỡ ghép ý ${idx + 1}`} className="min-h-11 shrink-0 rounded-lg px-3 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50">Gỡ ghép</button>
+            </div>}
+          </div>
+        ))}
+      </div>
+
       {/* Grid 2 cột mảnh ghép đối xứng theo đúng ảnh mẫu */}
+      <div className="hidden md:block">
       <DndContext
         sensors={sensors}
         collisionDetection={matchingCollision}
@@ -352,11 +364,11 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
           }
         }}
       >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-start">
-        
-        {/* CỘT TRÁI: MẢNH CÂU HỎI (CẠNH PHẢI CÓ RÃNH LÕM NOTCH) */}
-        <div ref={leftColumnRef} className="space-y-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5 sm:gap-x-8 items-stretch">
+        {/* Each pair shares a grid row so long labels remain readable and aligned. */}
           {leftItems.map((left, idx) => (
+            <React.Fragment key={left}>
+            <div ref={idx === 0 ? leftColumnRef : undefined}>
             <LeftPiece
               key={idx}
               text={left}
@@ -369,31 +381,27 @@ export const MatchingQuestion: React.FC<QuestionRendererProps> = ({
                 removeMatch(left);
               }}
             />
-          ))}
-        </div>
-
-        {/* CỘT PHẢI: MẢNH ĐÁP ÁN (CẠNH TRÁI CÓ MẤU LỒI TAB/KNOB, KÉO ĐỔI TỰ DO) */}
-        <div className="space-y-3.5">
-          {rightOrder.map((piece, idx) => (
+            </div>
             <RightPiece
               key={idx}
-              text={piece}
+              text={rightOrder[idx]}
               index={idx}
               pieceWidth={pieceWidth}
               selected={selectedIdx === idx}
-              matched={currentMap[leftItems[idx]] === piece}
+              matched={currentMap[leftItems[idx]] === rightOrder[idx]}
               disabled={disabled}
               onClick={() => onRightPieceClick(idx)}
               onContextMenu={(event) => {
                 event.preventDefault();
-                removeMatch(Object.keys(currentMap).find((left) => currentMap[left] === piece));
+                const left = leftItems[idx];
+                if (currentMap[left] === rightOrder[idx]) removeMatch(left);
               }}
             />
+            </React.Fragment>
           ))}
-        </div>
-
       </div>
       </DndContext>
+      </div>
     </div>
   );
 };

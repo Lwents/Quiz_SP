@@ -7,8 +7,11 @@ import {
   type Device, type DeviceKind, type Endpoint, type LabPreset, type Port, type Topology,
 } from '../../features/network-lab/model';
 import { importRsm } from '../../features/network-lab/importRsm';
-import { buildTeacherTopology, TEACHER_LABS, teacherText, type TeacherLab } from '../../features/network-lab/teacherLabs';
+import { buildTeacherExample, buildTeacherTopology, TEACHER_LABS, teacherText, type TeacherLab } from '../../features/network-lab/teacherLabs';
 import { getTeacherExplanation } from '../../features/network-lab/teacherExplanation';
+import { getTeacherWalkthrough, type GuideTarget } from '../../features/network-lab/teacherWalkthrough';
+import { ClickTutor, restoreClickTutorStep } from '../../features/network-lab/ClickTutor';
+import { MarkdownAnswer } from '../../components/MarkdownAnswer';
 
 const WIDTH = 1040;
 const HEIGHT = 620;
@@ -28,7 +31,7 @@ type Menu = 'File' | 'Edit' | 'View' | 'Insert' | 'Tools' | 'Help' | null;
 type ConsoleMenu = 'File' | 'Edit' | 'View' | 'Tools' | 'Help' | null;
 type ConsoleMode = 'user' | 'privileged' | 'config' | 'interface' | 'rip';
 type Popup = { deviceId: string; x: number; y: number } | null;
-type HostDraft = { name: string; ip: string; mask: string; gateway: string };
+type HostDraft = { manual: boolean; name: string; ip: string; mask: string; gateway: string };
 type LabLibraryItem = { category: string; name: string; topology: Topology };
 
 function loadPreset(preset: LabPreset): Topology {
@@ -132,13 +135,21 @@ export const RouterSimPage: React.FC = () => {
   const [teacherStudentNumber, setTeacherStudentNumber] = useState(tabSnapshot.teacherStudentNumber ?? 1);
   const [draftStudentNumber, setDraftStudentNumber] = useState(tabSnapshot.teacherStudentNumber ?? 1);
   const [showTeacherLabs, setShowTeacherLabs] = useState(false);
-  const [showTeacherExplanation, setShowTeacherExplanation] = useState(false);
+  const [showTeacherExplanation, setShowTeacherExplanation] = useState(!!tabSnapshot.teacherLabId);
+  const [clickTutorActive, setClickTutorActive] = useState(false);
+  const tutorProgressKey = `click-tutor-progress:v2:${teacherLabId}:${teacherStudentNumber}`;
+  const [clickTutorStep, setClickTutorStep] = useState(() => restoreClickTutorStep(tabSnapshot.teacherLabId, tabSnapshot.teacherStudentNumber ?? 1, tabSnapshot.topology));
+  const [clickTutorStarted, setClickTutorStarted] = useState(() => ["click-tutor-progress:v2", "click-tutor-progress"].some(prefix => sessionStorage.getItem(`${prefix}:${tabSnapshot.teacherLabId}:${tabSnapshot.teacherStudentNumber ?? 1}`) !== null));
+  useEffect(() => { if (clickTutorStarted && teacherLabId) sessionStorage.setItem(tutorProgressKey, String(clickTutorStep)); }, [clickTutorStarted, clickTutorStep, teacherLabId, tutorProgressKey]);
+  const [guidedTargetId, setGuidedTargetId] = useState<string | null>(null);
   const [menu, setMenu] = useState<Menu>(null);
   const [popup, setPopup] = useState<Popup>(null);
   const [canvasMenu, setCanvasMenu] = useState<{ x: number; y: number } | null>(null);
   const [pending, setPending] = useState<Endpoint | null>(null);
   const [cableCursor, setCableCursor] = useState<{ x: number; y: number } | null>(null);
   const [dceEnd, setDceEnd] = useState<'first' | 'second' | null>(null);
+  const [showDceDialog, setShowDceDialog] = useState(false);
+  const [dceError, setDceError] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hostConfigId, setHostConfigId] = useState<string | null>(null);
   const [hostDraft, setHostDraft] = useState<HostDraft | null>(null);
@@ -244,6 +255,7 @@ export const RouterSimPage: React.FC = () => {
     setStatus(`Opened RouterSim lab: ${lab.name}.`);
   };
   const openTeacherLab = (lab: TeacherLab) => {
+    setClickTutorActive(false); setClickTutorStarted(false); setClickTutorStep(0);
     const studentNumber = Math.max(1, Math.min(254, Math.trunc(draftStudentNumber) || 1));
     const data = buildTeacherTopology(lab.id, studentNumber);
     setPreset('blank'); setLoadedNetworkName(lab.title); setTopology(data);
@@ -253,7 +265,8 @@ export const RouterSimPage: React.FC = () => {
     setConsoleId(null); setHostConfigId(null); setSelectedId(null); setPing(null);
     setSourceId(data.devices.find(device => device.kind === 'pc')?.id || '');
     setPingTarget(data.devices.filter(device => device.kind === 'pc').at(-1)?.ports[0]?.ip || '');
-    setStatus(`Đã mở ${lab.title}. Chọn “Giải thích sơ đồ” để xem cách chia mạng.`);
+    setGuidedTargetId(null);
+    setStatus(`Đã mở ${lab.title} trên canvas trống. Làm từng thao tác trong Hướng dẫn thực hành.`);
   };
   const addDeviceAt = (kind: DeviceKind, position?: { x: number; y: number }, switchModel: '1900' | '2950' | '3550' = '2950') => {
     const prefix = kind === 'pc' ? 'pc' : kind === 'router' ? 'r' : kind === 'netconnect' ? 'net' : 'sw';
@@ -321,7 +334,7 @@ export const RouterSimPage: React.FC = () => {
     if (occupied.has(key)) { setStatus('This port already has a cable. Disconnect it before connecting another.'); setPopup(null); return; }
     if (!pending) {
       setPending(point);
-      setDceEnd('first');
+      setDceEnd(null); setDceError(''); setShowDceDialog(point.port.startsWith('S'));
       const source = topology.devices.find(device => device.id === point.deviceId);
       if (source) setCableCursor(dot(source, point.port));
       setStatus(`Connect ${point.port} to a port on another device.`);
@@ -329,6 +342,7 @@ export const RouterSimPage: React.FC = () => {
     else if (pending.deviceId === point.deviceId) { setPending(null); setCableCursor(null); setDceEnd(null); setStatus('Cable canceled.'); }
     else {
       const serial = pending.port.startsWith('S') || point.port.startsWith('S');
+      if (pending.port.startsWith('S') !== point.port.startsWith('S')) { setStatus('Cáp serial phải nối hai cổng serial S0/x; không nối vào cổng Ethernet.'); return; }
       if (serial && dceEnd === null) { setStatus('Choose which end of the serial cable is DCE first.'); setPopup(null); return; }
       setTopology(old => ({ ...old, cables: [...old.cables, { id: `c${Date.now()}`, a: pending, b: point, ...(serial ? { dce: dceEnd === 'second' ? point : pending } : {}) }] }));
       setPending(null); setCableCursor(null); setDceEnd(null); setStatus(serial ? 'Serial cable connected. Set clock rate on the DCE interface.' : 'Cable connected.'); setPing(null);
@@ -498,7 +512,7 @@ export const RouterSimPage: React.FC = () => {
   };
   const openConsole = (device: Device) => {
     setConsoleId(device.id); setConsoleMode('user'); setLines(device.kind === 'pc' ? ['Microsoft Windows [Version 5.1]', '(C) Microsoft Corporation. All rights reserved.'] : [`${device.kind === 'switch' ? 'Switch' : 'Router'} Con0 is now available`, 'Press RETURN to get started!']);
-    setCommand(''); setCommandHistoryIndex(-1); setPopup(null); setSelectedId(device.id); setConsoleMenu(null); setConsoleMinimized(false); setConsoleMaximized(false); setConsolePosition(null);
+    setCommand(''); setCommandHistoryIndex(-1); setPopup(null); setSelectedId(device.id); setConsoleMenu(null); setConsoleMinimized(false); setConsoleMaximized(false); setConsolePosition(showTeacherExplanation && viewport.width >= 1200 ? { x: 12, y: 215 } : null);
   };
   const startConsoleDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     if (consoleMaximized || (event.target as HTMLElement).closest('button')) return;
@@ -530,14 +544,29 @@ export const RouterSimPage: React.FC = () => {
   };
   const openHostConfig = (device: Device) => {
     setHostConfigId(device.id);
-    setHostDraft({ name: device.name, ip: device.ports[0].ip, mask: device.ports[0].mask, gateway: device.gateway });
+    setHostDraft({ manual: !!device.ports[0].ip, name: device.name, ip: device.ports[0].ip, mask: device.ports[0].mask, gateway: device.gateway });
     setPopup(null);
   };
   const saveHostConfig = () => {
     if (!hostConfig || !hostDraft) return;
-    if (hostDraft.ip && !networkInfo(hostDraft.ip, hostDraft.mask)) { setStatus('Invalid host IP address or subnet mask.'); return; }
-    updateDevice(hostConfig.id, device => ({ ...device, name: hostDraft.name, gateway: hostDraft.gateway, ports: device.ports.map(port => port.name === 'Eth0' ? { ...port, ip: hostDraft.ip, mask: hostDraft.mask } : port) }));
+    if (hostDraft.manual && !networkInfo(hostDraft.ip, hostDraft.mask)) { setStatus('Invalid host IP address or subnet mask.'); return; }
+    updateDevice(hostConfig.id, device => ({ ...device, name: hostDraft.name, gateway: hostDraft.gateway, ports: device.ports.map(port => port.name === 'Eth0' ? { ...port, ip: hostDraft.manual ? hostDraft.ip : '', mask: hostDraft.mask } : port) }));
     setHostConfigId(null); setHostDraft(null);
+  };
+  const locateGuideTarget = (target: GuideTarget) => {
+    if (target.kind === 'devices') { setShowDeviceList(true); return; }
+    const device = topology.devices.find(item => item.id === target.deviceId);
+    if (!device) {
+      setShowDeviceList(true);
+      setStatus('Chưa có thiết bị này. Hãy thêm Host/Router theo bước đầu của hướng dẫn.');
+      return;
+    }
+    setSelectedId(device.id); setGuidedTargetId(device.id);
+    if (target.kind === 'host') openHostConfig(device);
+    else if (target.kind === 'console') {
+      if (consoleId !== device.id) openConsole(device);
+      else { setConsoleMinimized(false); requestAnimationFrame(() => consoleInputRef.current?.focus()); }
+    } else setPopup({ deviceId: device.id, x: Math.max(0, Math.min(canvasWidth - (device.kind === 'router' ? 497 : device.kind === 'pc' ? 355 : 430), device.x + 25)), y: Math.max(0, Math.min(canvasHeight - 110, device.y + 30)) });
   };
   const runPing = () => { setPing(simulatePing(topology, sourceId, pingTarget.trim())); };
   const newNetwork = () => {
@@ -596,14 +625,14 @@ export const RouterSimPage: React.FC = () => {
         <span className="ml-auto hidden max-w-[25%] truncate pl-3 text-xs text-slate-500 md:block">&lt;{loadedNetworkName || PRESET_LABELS[preset]}&gt;</span>
       </div>
       <div className="relative flex h-7 items-center gap-1 border-b border-slate-400 bg-[#ece9d8] px-1 text-[12px]">
-        {(['File', 'Edit', 'View', 'Insert', 'Tools', 'Help'] as const).map(name => <button key={name} onClick={() => setMenu(menu === name ? null : name)} className="px-2 py-0.5 hover:bg-blue-100" style={buttonStyle(menu === name)}>{name}</button>)}
+        {(['File', 'Edit', 'View', 'Insert', 'Tools', 'Help'] as const).map(name => <button data-guide-menu={name} key={name} onClick={() => setMenu(menu === name ? null : name)} className="px-2 py-0.5 hover:bg-blue-100" style={buttonStyle(menu === name)}>{name}</button>)}
         {menu && <div className="absolute left-1 top-7 z-40 min-w-52 border border-slate-600 bg-[#f5f5f1] p-1 shadow-lg" style={{ marginLeft: `${(['File', 'Edit', 'View', 'Insert', 'Tools', 'Help'] as const).indexOf(menu) * 37}px` }}>
           {menu === 'File' && <><MenuItem label="New..." shortcut="Ctrl+N" onClick={newNetwork} /><MenuItem label="Open..." shortcut="Ctrl+O" onClick={() => { fileRef.current?.click(); setMenu(null); }} /><MenuItem label="Save..." shortcut="Ctrl+S" onClick={saveFile} /><MenuItem label="Print..." shortcut="Ctrl+P" onClick={() => { setMenu(null); window.print(); }} /><div className="my-1 border-t" /><MenuItem label="Close" onClick={exitLab} /></>}
           {menu === 'Edit' && <><MenuItem label="Clear" onClick={clearNetwork} /><MenuItem label="Undo" shortcut="Ctrl+Z" onClick={undo} disabled={undoStack.current.length < 2} /><div className="my-1 border-t" /><MenuItem label="Cut" shortcut="Ctrl+X" onClick={cutSelected} disabled={!selected} /><MenuItem label="Copy" shortcut="Ctrl+C" onClick={copySelected} disabled={!selected} /><MenuItem label="Paste" shortcut="Ctrl+V" onClick={pasteDevice} disabled={!clipboardDevice.current} /><MenuItem label="Delete" shortcut="Del" onClick={deleteSelected} disabled={!selected} /></>}
           {menu === 'View' && <><LabsMenu labs={labLibrary} onPreset={openPreset} onLibrary={openLibraryLab} onTeacher={openTeacherLab} /><MenuSubmenu label="Console">{topology.devices.filter(d => d.kind !== 'netconnect').map(d => <MenuItem key={d.id} label={d.name} onClick={() => { openConsole(d); setMenu(null); }} />)}</MenuSubmenu><MenuSubmenu label="Toolbars"><MenuItem label={`${toolbarGroups.file ? '✓ ' : ''}File buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, file: !old.file })); setMenu(null); }} /><MenuItem label={`${toolbarGroups.insert ? '✓ ' : ''}Insert buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, insert: !old.insert })); setMenu(null); }} /><MenuItem label={`${toolbarGroups.tools ? '✓ ' : ''}Tools buttons`} onClick={() => { setToolbarGroups(old => ({ ...old, tools: !old.tools })); setMenu(null); }} /></MenuSubmenu><div className="my-1 border-t" /><MenuItem label={`${showIp ? '✓ ' : ''}IP Addresses`} onClick={() => { setShowIp(!showIp); setMenu(null); }} /><MenuItem label={`${showPort ? '✓ ' : ''}Port Numbers`} onClick={() => { setShowPort(!showPort); setMenu(null); }} /><MenuItem label={`${showHostnames ? '✓ ' : ''}Hostnames`} onClick={() => { setShowHostnames(!showHostnames); setMenu(null); }} /><MenuItem label={`${showTooltips ? '✓ ' : ''}Tooltips`} onClick={() => { setShowTooltips(!showTooltips); setMenu(null); }} /><MenuSubmenu label="Line Thickness">{[1, 2, 3].map(size => <MenuItem key={size} label={`${lineThickness === size ? '✓ ' : ''}${size === 1 ? 'Thin' : size === 2 ? 'Medium' : 'Thick'}`} onClick={() => { setLineThickness(size); setMenu(null); }} />)}</MenuSubmenu></>}
           {menu === 'Insert' && <><MenuItem label="File..." shortcut="Alt+F" onClick={() => { fileRef.current?.click(); setMenu(null); }} /><MenuItem label="Host" shortcut="Alt+H" onClick={() => addDevice('pc')} /><MenuItem label="Net Connect" shortcut="Alt+N" onClick={() => addDevice('netconnect')} /><MenuItem label="Router 2600" shortcut="Alt+R" onClick={() => addDevice('router')} /><MenuItem label="Switch 1900" shortcut="Alt+S" onClick={() => addDeviceAt('switch', undefined, '1900')} /><MenuItem label="Switch 2950" shortcut="Alt+T" onClick={() => addDeviceAt('switch', undefined, '2950')} /><MenuItem label="Switch 3550" shortcut="Alt+U" onClick={() => addDeviceAt('switch', undefined, '3550')} /></>}
           {menu === 'Tools' && <><MenuItem label="Device List" shortcut="Ctrl+D" onClick={() => { setShowDeviceList(true); setMenu(null); }} /><MenuItem label="Net Assessment" shortcut="Ctrl+A" onClick={() => { setShowAssessment(true); setMenu(null); }} /><MenuItem label="Net Configs" shortcut="Ctrl+F" onClick={() => { setShowNetConfigs(true); setMenu(null); }} /><MenuItem label="Net Connect Manager" shortcut="Ctrl+M" onClick={() => { setShowNetConnectManager(true); setMenu(null); }} /><MenuItem label="Net Packet Monitor" shortcut="Ctrl+T" onClick={() => { setShowPing(true); setMenu(null); }} /><div className="my-1 border-t" /><MenuItem label="Preferences" onClick={() => { setShowPreferences(true); setMenu(null); }} /><MenuItem label="Clear Configuration (Start Lab)" onClick={startPractice} /><MenuItem label="Reset selected lab" onClick={() => { localStorage.removeItem(`network-lab-v1:${preset}`); setTopology(teacherLab ? buildTeacherTopology(teacherLab.id, teacherStudentNumber) : createPreset(preset)); setMenu(null); setPing(null); }} /></>}
-          {menu === 'Help' && <><MenuItem label="Giải thích sơ đồ đang chọn" disabled={!teacherLab} onClick={() => { setShowTeacherExplanation(true); setMenu(null); }} /><MenuItem label="How to use RouterSim" onClick={() => { setShowGuide(true); setMenu(null); }} /><MenuItem label="RouterSim manual (PDF)" onClick={() => { window.open(resolveMediaUrl('/media/course-slides/comp303_routersim_manual.pdf'), '_blank'); setMenu(null); }} /></>}
+          {menu === 'Help' && <><MenuItem label="Hướng dẫn thực hành bài đang chọn" disabled={!teacherLab} onClick={() => { setShowTeacherExplanation(true); setMenu(null); }} /><MenuItem label="How to use RouterSim" onClick={() => { setShowGuide(true); setMenu(null); }} /><MenuItem label="RouterSim manual (PDF)" onClick={() => { window.open(resolveMediaUrl('/media/course-slides/comp303_routersim_manual.pdf'), '_blank'); setMenu(null); }} /></>}
         </div>}
       </div>
       <div className="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-400 bg-[#f3f3f3] px-1">
@@ -617,7 +646,8 @@ export const RouterSimPage: React.FC = () => {
         <ToolButton title="Insert Switch 3550 · click or drag onto canvas" onClick={() => addDeviceAt('switch', undefined, '3550')} deviceKind="switch" switchModel="3550"><img src="/routersim/3550device_up.png" alt="3550" /></ToolButton></>}
         {toolbarGroups.tools && <><ToolButton title="Net Assessment (Ctrl+A)" onClick={() => setShowAssessment(true)}><img src="/routersim/assessment_up.png" alt="Net Assessment" /></ToolButton><ToolButton title="Net Configs (Ctrl+F)" onClick={() => setShowNetConfigs(true)}><img src="/routersim/netconfig_up.png" alt="Net Configs" /></ToolButton><ToolButton title="Net Packet Monitor (Ctrl+T)" onClick={() => setShowPing(true)}><img src="/routersim/netpacket_up.png" alt="Net Packet Monitor" /></ToolButton></>}
         <button type="button" onClick={() => { setDraftStudentNumber(teacherStudentNumber); setShowTeacherLabs(true); }} className="ml-auto shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1 text-xs font-semibold text-blue-900 hover:bg-blue-50">Bài tập của thầy</button>
-        {teacherLab && <button type="button" onClick={() => setShowTeacherExplanation(true)} className="shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1 text-xs font-semibold text-blue-900 hover:bg-blue-50">Giải thích sơ đồ</button>}
+        {teacherLab && clickTutorStarted && !clickTutorActive && <button type="button" onClick={() => { setShowTeacherExplanation(false); setClickTutorActive(true); }} className="shrink-0 rounded-md bg-blue-700 px-3 py-1.5 text-xs font-bold text-white">▶ Tiếp tục hướng dẫn</button>}
+        {teacherLab && <button type="button" onClick={() => setShowTeacherExplanation(true)} className="shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1 text-xs font-semibold text-blue-900 hover:bg-blue-50">Hướng dẫn thực hành</button>}
       </div>
       <div className="min-h-0 flex-1 overflow-auto" style={{ backgroundColor: canvasColor }}>
         <div ref={canvasRef} className="relative" style={{ width: canvasWidth, height: canvasHeight, backgroundColor: canvasColor }} onPointerMove={e => { if (!pending) return; const rect = e.currentTarget.getBoundingClientRect(); setCableCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top }); }} onClick={() => { setPopup(null); setMenu(null); setCanvasMenu(null); }} onContextMenu={e => { e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); setPopup(null); setCanvasMenu({ x: Math.min(canvasWidth - 190, e.clientX - rect.left), y: Math.min(canvasHeight - 360, e.clientY - rect.top) }); }} onDragOver={e => { if (e.dataTransfer.types.includes('application/x-routersim-device')) e.preventDefault(); }} onDrop={e => { const kind = e.dataTransfer.getData('application/x-routersim-device'); if (!['pc', 'router', 'switch', 'netconnect'].includes(kind)) return; e.preventDefault(); const rect = e.currentTarget.getBoundingClientRect(); const model = e.dataTransfer.getData('application/x-routersim-model'); addDeviceAt(kind as DeviceKind, { x: Math.max(2, Math.min(canvasWidth - PICTURE_SIZE[kind as DeviceKind].width, e.clientX - rect.left - 25)), y: Math.max(2, Math.min(canvasHeight - 55, e.clientY - rect.top - 20)) }, model === '1900' || model === '3550' ? model : '2950'); }}>
@@ -641,19 +671,20 @@ export const RouterSimPage: React.FC = () => {
               return <line data-testid="pending-cable" x1={start.x} y1={start.y} x2={cableCursor.x} y2={cableCursor.y} stroke="#ff3030" strokeWidth="2" markerEnd="url(#routersim-cable-arrow)" />;
             })()}
           </svg>
-          {topology.devices.map(device => <div key={device.id} title={showTooltips ? `${device.name} · ${pending ? 'click for connection ports' : 'right-click for ports, double-click for console'}` : undefined} className="absolute select-none text-center text-white" style={{ left: device.x, top: device.y, width: PICTURE_SIZE[device.kind].width, touchAction: 'none', cursor: pending ? 'crosshair' : 'move' }}
+          {topology.devices.map(device => <div key={device.id} data-guide-device={device.id} title={showTooltips ? `${device.name} · ${pending ? 'click for connection ports' : 'right-click for ports, double-click for console'}` : undefined} className={`absolute select-none text-center text-white ${guidedTargetId === device.id ? 'rounded ring-4 ring-yellow-400 ring-offset-4 ring-offset-[#000064]' : ''}`} style={{ left: device.x, top: device.y, width: PICTURE_SIZE[device.kind].width, touchAction: 'none', cursor: pending ? 'crosshair' : 'move' }}
             onPointerDown={event => { if (event.button !== 0 || pending) return; event.currentTarget.setPointerCapture(event.pointerId); dragRef.current = { id: device.id, x: device.x, y: device.y, clientX: event.clientX, clientY: event.clientY }; setSelectedId(device.id); }}
             onPointerMove={event => { const drag = dragRef.current; if (!drag || drag.id !== device.id) return; updateDevice(device.id, d => ({ ...d, x: Math.max(3, Math.min(canvasWidth - PICTURE_SIZE[d.kind].width - 4, drag.x + event.clientX - drag.clientX)), y: Math.max(3, Math.min(canvasHeight - 60, drag.y + event.clientY - drag.clientY)) })); }}
             onPointerUp={() => { dragRef.current = null; }}
             onClick={event => { if (!pending) return; event.stopPropagation(); if (device.id === pending.deviceId) return; if (device.kind === 'pc' && !occupied.has(`${device.id}:Eth0`)) choosePort({ deviceId: device.id, port: 'Eth0' }); else setPopup({ deviceId: device.id, x: Math.max(0, Math.min(canvasWidth - (device.kind === 'router' ? 497 : device.kind === 'pc' ? 355 : 430), device.x + 25)), y: Math.max(0, Math.min(canvasHeight - 110, device.y + 30)) }); }}
             onDoubleClick={event => { event.stopPropagation(); if (device.kind === 'netconnect') setShowNetConnectManager(true); else openConsole(device); }}
             onContextMenu={event => { event.preventDefault(); event.stopPropagation(); setSelectedId(device.id); setCanvasMenu(null); setPopup({ deviceId: device.id, x: Math.max(0, Math.min(canvasWidth - (device.kind === 'router' ? 497 : device.kind === 'pc' ? 355 : 430), device.x + 25)), y: Math.max(0, Math.min(canvasHeight - 110, device.y + 30)) }); }}>
+            {guidedTargetId === device.id && <div className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-yellow-300 px-2 py-1 text-xs font-bold text-black">👇 Thao tác ở đây</div>}
             {showHostnames && <div className="mb-1 truncate text-[11px]" style={{ textShadow: '1px 1px black' }}>{device.name}</div>}
             <img src={pictureFor(device)} alt={device.kind} width={PICTURE_SIZE[device.kind].width} height={PICTURE_SIZE[device.kind].height} className={`mx-auto block ${selectedId === device.id ? 'outline outline-1 outline-dotted outline-white' : ''}`} draggable={false} style={{ imageRendering: 'pixelated' }} />
             {showIp && device.kind === 'pc' && device.ports[0]?.ip && <div className={`absolute top-[18px] whitespace-nowrap font-mono text-[11px] font-bold text-[#00fb20] ${device.x > 105 ? 'right-[calc(100%+8px)]' : 'left-[calc(100%+8px)]'}`}>{device.ports[0].ip}/{networkInfo(device.ports[0].ip, device.ports[0].mask)?.prefix}</div>}
             {showIp && device.kind !== 'switch' && device.kind !== 'netconnect' && !device.ports.some(port => port.ip) && <div className="mt-1 whitespace-nowrap text-[10px]">unassigned</div>}
           </div>)}
-          {popup && popupDevice && <div className="absolute z-20 text-xs text-black shadow-xl" style={{ left: popup.x, top: popup.y }} onClick={e => e.stopPropagation()}>
+          {popup && popupDevice && <div data-guide-popup={popupDevice.id} className="absolute z-20 text-xs text-black shadow-xl" style={{ left: popup.x, top: popup.y }} onClick={e => e.stopPropagation()}>
             {popupDevice.kind === 'router' ? <div className="relative h-[86px] w-[497px]" style={{ backgroundImage: 'url(/routersim/router-back.png)', imageRendering: 'pixelated' }}>
               {([
                 ['S0/1', 77, 7, 98, 28], ['S0/0', 209, 7, 91, 28],
@@ -670,13 +701,13 @@ export const RouterSimPage: React.FC = () => {
             </div> : popupDevice.kind === 'pc' ? <div className="relative h-[86px] w-[355px] border-[3px] border-[#2189d8] bg-gradient-to-r from-[#78b8e2] to-[#a8d7f7] font-[Tahoma] shadow-inner">
               <strong className="absolute left-3 top-2 text-lg text-white">Host</strong>
               <span className="absolute left-[145px] top-1 text-sm font-bold">F0/0</span>
-              <button title={occupied.has(`${popupDevice.id}:Eth0`) ? 'F0/0 · connected' : 'F0/0 · click to connect'} aria-label="F0/0 · connect cable" onClick={() => occupied.has(`${popupDevice.id}:Eth0`) ? setStatus('Host F0/0 is already connected. Click Disconnect to remove its cable.') : choosePort({ deviceId: popupDevice.id, port: 'Eth0' })} className={`absolute left-[149px] top-[27px] grid h-8 w-9 place-items-center border bg-gradient-to-b from-[#dce9f2] to-[#7c9cba] shadow-[inset_1px_1px_0_white] hover:outline hover:outline-2 hover:outline-yellow-400 ${occupied.has(`${popupDevice.id}:Eth0`) ? 'border-2 border-green-500' : 'border-[#333b44]'}`}><span className="grid h-[17px] w-[17px] place-items-center border-2 border-black bg-[#1b4d73] text-[8px] text-white">▣</span></button>
+              <button data-guide-port="Eth0" title={occupied.has(`${popupDevice.id}:Eth0`) ? 'F0/0 · connected' : 'F0/0 · click to connect'} aria-label="F0/0 · connect cable" onClick={() => occupied.has(`${popupDevice.id}:Eth0`) ? setStatus('Host F0/0 is already connected. Click Disconnect to remove its cable.') : choosePort({ deviceId: popupDevice.id, port: 'Eth0' })} className={`absolute left-[149px] top-[27px] grid h-8 w-9 place-items-center border bg-gradient-to-b from-[#dce9f2] to-[#7c9cba] shadow-[inset_1px_1px_0_white] hover:outline hover:outline-2 hover:outline-yellow-400 ${occupied.has(`${popupDevice.id}:Eth0`) ? 'border-2 border-green-500' : 'border-[#333b44]'}`}><span className="grid h-[17px] w-[17px] place-items-center border-2 border-black bg-[#1b4d73] text-[8px] text-white">▣</span></button>
               {occupied.has(`${popupDevice.id}:Eth0`) && <button onClick={() => disconnect({ deviceId: popupDevice.id, port: 'Eth0' })} className="absolute left-[139px] top-[61px] text-[10px] font-bold text-red-700 underline">Disconnect</button>}
               <button className="absolute bottom-1 left-3 rounded border border-slate-600 bg-gradient-to-b from-white to-[#c0cad3] px-4 py-0.5 text-xs" onClick={() => setPopup(null)}>Close</button>
-              <button onClick={() => openHostConfig(popupDevice)} className="absolute bottom-1 right-3 rounded border border-slate-700 bg-gradient-to-b from-white to-[#c0cad3] px-3 py-0.5 text-xs font-bold">Configs</button>
+              <button data-guide-config onClick={() => openHostConfig(popupDevice)} className="absolute bottom-1 right-3 rounded border border-slate-700 bg-gradient-to-b from-white to-[#c0cad3] px-3 py-0.5 text-xs font-bold">Configs</button>
             </div> : popupDevice.kind === 'netconnect' ? <div className="w-52 overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] p-2"><strong>{popupDevice.name}</strong><p className="my-1 text-[10px]">Local two-port bridge</p><div className="flex gap-2">{popupDevice.ports.map(port => <button key={port.name} onClick={() => choosePort({ deviceId: popupDevice.id, port: port.name })} className="border border-slate-600 bg-white px-2 py-1">{port.name}</button>)}</div><button className="mt-2 underline" onClick={() => { setPopup(null); setShowNetConnectManager(true); }}>Configure...</button></div> : <div className="relative h-[100px] w-[430px] border-[3px] border-slate-500 bg-gradient-to-b from-[#f5f7f6] via-[#8fa1a4] to-[#4a6168] p-2">
               <div className="mb-1 font-bold text-slate-800">{popupDevice.switchModel || '2950'} Switch · {popupDevice.name}</div>
-              <div className="flex flex-wrap gap-1">{popupDevice.ports.map(port => <div key={port.name} className="group relative text-center"><button title={`${port.name} · click to connect`} onClick={() => choosePort({ deviceId: popupDevice.id, port: port.name })} className={`h-5 w-7 border border-slate-700 text-[10px] text-white hover:outline hover:outline-yellow-300 ${occupied.has(`${popupDevice.id}:${port.name}`) ? 'bg-emerald-800' : 'bg-slate-950'}`}>▣</button>{occupied.has(`${popupDevice.id}:${port.name}`) && <button title={`Disconnect ${port.name}`} onClick={() => disconnect({ deviceId: popupDevice.id, port: port.name })} className="absolute -right-1 -top-2 hidden rounded bg-red-600 px-1 text-[9px] text-white group-hover:block">×</button>}<div className="text-[9px] font-bold text-white">{port.name}</div></div>)}</div>
+              <div className="flex flex-wrap gap-1">{popupDevice.ports.map(port => <div key={port.name} className="group relative text-center"><button data-guide-port={port.name} title={`${port.name} · click to connect`} onClick={() => choosePort({ deviceId: popupDevice.id, port: port.name })} className={`h-5 w-7 border border-slate-700 text-[10px] text-white hover:outline hover:outline-yellow-300 ${occupied.has(`${popupDevice.id}:${port.name}`) ? 'bg-emerald-800' : 'bg-slate-950'}`}>▣</button>{occupied.has(`${popupDevice.id}:${port.name}`) && <button title={`Disconnect ${port.name}`} onClick={() => disconnect({ deviceId: popupDevice.id, port: port.name })} className="absolute -right-1 -top-2 hidden rounded bg-red-600 px-1 text-[9px] text-white group-hover:block">×</button>}<div className="text-[9px] font-bold text-white">{port.name}</div></div>)}</div>
               <button className="absolute bottom-1 right-2 rounded border bg-slate-100 px-2 text-[10px]" onClick={() => setPopup(null)}>Close</button>
             </div>}
           </div>}
@@ -690,22 +721,38 @@ export const RouterSimPage: React.FC = () => {
             <MenuSubmenu label="Insert"><MenuItem label="Host" onClick={() => { setCanvasMenu(null); addDeviceAt('pc', canvasMenu); }} /><MenuItem label="Net Connect" onClick={() => { setCanvasMenu(null); addDeviceAt('netconnect', canvasMenu); }} /><MenuItem label="Router 2600" onClick={() => { setCanvasMenu(null); addDeviceAt('router', canvasMenu); }} />{(['1900', '2950', '3550'] as const).map(model => <MenuItem key={model} label={`Switch ${model}`} onClick={() => { setCanvasMenu(null); addDeviceAt('switch', canvasMenu, model); }} />)}</MenuSubmenu>
             <MenuItem label="Device List" onClick={() => { setCanvasMenu(null); setShowDeviceList(true); }} /><MenuItem label="Net Assessment" onClick={() => { setCanvasMenu(null); setShowAssessment(true); }} /><MenuItem label="Net Configs" onClick={() => { setCanvasMenu(null); setShowNetConfigs(true); }} /><MenuItem label="Net Connect Manager" onClick={() => { setCanvasMenu(null); setShowNetConnectManager(true); }} /><MenuItem label="Net Packet Monitor" onClick={() => { setCanvasMenu(null); setShowPing(true); }} /><MenuItem label="Preferences" onClick={() => { setCanvasMenu(null); setShowPreferences(true); }} /><MenuItem label="Help" onClick={() => { setCanvasMenu(null); setShowGuide(true); }} />
           </div>}
-          {pending && <div className="absolute bottom-2 left-2 rounded bg-yellow-100 px-2 py-1 text-xs text-black">Cable: {topology.devices.find(d => d.id === pending.deviceId)?.name} {pending.port} → click another device, then choose its port. {pending.port.startsWith('S') && <span className="ml-2">DCE end: <button className={`px-1 ${dceEnd === 'first' ? 'font-bold underline' : ''}`} onClick={e => { e.stopPropagation(); setDceEnd('first'); }}>This end</button> / <button className={`px-1 ${dceEnd === 'second' ? 'font-bold underline' : ''}`} onClick={e => { e.stopPropagation(); setDceEnd('second'); }}>Other end</button></span>} <button className="underline" onClick={e => { e.stopPropagation(); setPending(null); setCableCursor(null); setDceEnd(null); }}>Cancel</button></div>}
+          {pending && <div className="absolute bottom-2 left-2 rounded bg-yellow-100 px-2 py-1 text-xs text-black">Cable: {topology.devices.find(d => d.id === pending.deviceId)?.name} {pending.port} → click another device, then choose its port. {pending.port.startsWith('S') && <span className="ml-2">DCE: {dceEnd === 'first' ? 'This end' : dceEnd === 'second' ? 'Other end' : 'chưa chọn'} <button className="underline" onClick={e => { e.stopPropagation(); setShowDceDialog(true); }}>Chọn đầu DCE…</button></span>} <button className="underline" onClick={e => { e.stopPropagation(); setPending(null); setCableCursor(null); setDceEnd(null); }}>Cancel</button></div>}
         </div>
       </div>
       <div className="flex h-7 items-center justify-between border-t border-slate-500 bg-[#ece9d8] px-2 text-[11px]"><span className="truncate">{status}</span><span className="ml-3 whitespace-nowrap">{topology.devices.length} devices · {topology.cables.length} cables</span></div>
     </div>}
 
-    {hostConfig && hostDraft && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onMouseDown={() => { setHostConfigId(null); setHostDraft(null); }}><div className="w-[min(390px,calc(100vw-24px))] max-h-[calc(100dvh-24px)] overflow-y-auto rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={e => e.stopPropagation()}>
+    {clickTutorActive && teacherLab && <ClickTutor topology={topology} pending={pending} dceEnd={dceEnd} labId={teacherLab.id} studentNumber={teacherStudentNumber} stepIndex={clickTutorStep} onStepChange={setClickTutorStep} onClose={() => { setClickTutorActive(false); setShowTeacherExplanation(false); }} />}
+    {showDceDialog && pending?.port.startsWith('S') && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"><section data-guide-dialog role="dialog" aria-label="Chọn đầu DCE" className="w-[390px] rounded-lg border border-slate-400 bg-[#f2f2f3] shadow-xl">
+      <WindowTitle title="Serial cable · Chọn đầu DCE" onClose={() => { setShowDceDialog(false); setPending(null); setCableCursor(null); setDceEnd(null); }} />
+      <div className="space-y-3 p-4 text-sm text-slate-950"><p>Đầu vừa chọn: <strong>{topology.devices.find(d => d.id === pending.deviceId)?.name} {pending.port}</strong></p><p>Chọn đầu cấp nhịp DCE cho cáp serial:</p>
+        <label className="flex items-center gap-2"><input data-guide-dce-choice="first" type="radio" name="serial-dce" checked={dceEnd === 'first'} onChange={() => { setDceEnd('first'); setDceError(''); }} />This end · đầu vừa chọn</label>
+        <label className="flex items-center gap-2"><input data-guide-dce-choice="second" type="radio" name="serial-dce" checked={dceEnd === 'second'} onChange={() => { setDceEnd('second'); setDceError(''); }} />Other end · đầu bên kia</label>
+        <p className="text-xs">Sau khi nối dây, nhập <code>clock rate 64000</code> trong console của cổng DCE. Cổng còn lại là DTE.</p>
+        {dceError && <p role="alert" className="text-red-700">{dceError}</p>}
+        <div className="flex justify-end gap-3"><button onClick={() => { setShowDceDialog(false); setPending(null); setCableCursor(null); setDceEnd(null); }} className="rounded border px-4 py-1">Cancel</button><button data-guide-dce-ok disabled={!dceEnd} className="rounded bg-green-700 px-5 py-1 text-white disabled:opacity-40" onClick={() => {
+          if (clickTutorActive && teacherLab) {
+            const cable = buildTeacherExample(teacherLab.id, teacherStudentNumber).cables.find(c => (c.a.deviceId === pending.deviceId && c.a.port === pending.port) || (c.b.deviceId === pending.deviceId && c.b.port === pending.port));
+            if (cable?.dce) { const expected = cable.dce.deviceId === pending.deviceId && cable.dce.port === pending.port ? 'first' : 'second'; if (dceEnd !== expected) { setDceError(`Bài này chọn ${cable.dce.deviceId.toUpperCase()} ${cable.dce.port} làm DCE. Hãy chọn ${expected === 'first' ? 'This end' : 'Other end'}.`); return; } }
+          }
+          setShowDceDialog(false);
+        }}>OK</button></div>
+      </div></section></div>}
+    {hostConfig && hostDraft && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onMouseDown={() => { setHostConfigId(null); setHostDraft(null); }}><div data-host-config-dialog className="w-[min(390px,calc(100vw-24px))] max-h-[calc(100dvh-24px)] overflow-y-auto rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={e => e.stopPropagation()}>
       <WindowTitle title={`Configure ${hostConfig.name}`} onClose={() => setHostConfigId(null)} />
       <div className="space-y-2 p-4 text-xs"><Field label="Host Name" value={hostDraft.name} onChange={value => setHostDraft(d => d && { ...d, name: value })} />
-        <label className="flex items-center gap-2"><input type="radio" checked={!hostDraft.ip} onChange={() => setHostDraft(d => d && { ...d, ip: '' })} /> Obtain an IP address automatically</label>
-        <label className="flex items-center gap-2"><input type="radio" checked={!!hostDraft.ip} onChange={() => setHostDraft(d => d && { ...d, ip: d.ip || '192.168.1.10' })} /> Use the following IP address:</label>
+        <label className="flex items-center gap-2"><input type="radio" checked={!hostDraft.manual} onChange={() => setHostDraft(d => d && { ...d, manual: false, ip: '' })} /> Obtain an IP address automatically</label>
+        <label className="flex items-center gap-2"><input data-guide-manual-ip type="radio" checked={hostDraft.manual} onChange={() => setHostDraft(d => d && { ...d, manual: true })} /> Use the following IP address:</label>
         <IpField label="IP Address" value={hostDraft.ip} onChange={value => setHostDraft(d => d && { ...d, ip: value })} />
         <IpField label="Subnet" value={hostDraft.mask} onChange={value => setHostDraft(d => d && { ...d, mask: value })} />
         <IpField label="Default Gateway" value={hostDraft.gateway} onChange={value => setHostDraft(d => d && { ...d, gateway: value })} />
         {hostDraft.ip && !networkInfo(hostDraft.ip, hostDraft.mask) && <p className="text-red-700">Check IP address and subnet mask.</p>}
-        <div className="flex justify-center gap-5 pt-2"><button className="rounded-full border border-green-900 bg-gradient-to-b from-green-400 to-green-800 px-8 py-1 font-bold text-white" onClick={saveHostConfig}>OK</button><button className="rounded-full border border-green-900 bg-gradient-to-b from-green-400 to-green-800 px-6 py-1 font-bold text-white" onClick={() => { setHostConfigId(null); setHostDraft(null); }}>Cancel</button></div>
+        <div className="flex justify-center gap-5 pt-2"><button className="rounded-full border border-green-900 bg-gradient-to-b from-green-400 to-green-800 px-8 py-1 font-bold text-white" data-guide-host-ok onClick={saveHostConfig}>OK</button><button className="rounded-full border border-green-900 bg-gradient-to-b from-green-400 to-green-800 px-6 py-1 font-bold text-white" onClick={() => { setHostConfigId(null); setHostDraft(null); }}>Cancel</button></div>
       </div>
     </div></div>}
 
@@ -746,31 +793,72 @@ export const RouterSimPage: React.FC = () => {
 
     {showPreferences && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onMouseDown={() => setShowPreferences(false)}><div className="w-[min(350px,calc(100vw-24px))] max-h-[calc(100dvh-24px)] overflow-y-auto rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-xl" onMouseDown={e => e.stopPropagation()}><WindowTitle title="Preferences" onClose={() => setShowPreferences(false)} /><div className="space-y-3 p-4 text-xs"><strong>Background Color</strong><p>Click a color to change the Network Visualizer background.</p><div className="grid grid-cols-10 gap-1">{['#ffffff','#000000','#000064','#0000ff','#00b7c6','#b9c9ff','#505050','#888888','#008542','#00e200','#ff00ff','#e6ad00','#ffaaaa','#e00000','#ffff00','#ffffcc','#dbffdf','#008b89'].map(color => <button key={color} title={color} aria-label={`Background ${color}`} onClick={() => setCanvasColor(color)} className={`h-5 w-5 border border-slate-500 ${canvasColor === color ? 'outline-2 outline-offset-1 outline-blue-700' : ''}`} style={{ backgroundColor: color }} />)}</div><label className="flex items-center gap-2"><input type="checkbox" checked={showDeviceListAtStart} onChange={e => setShowDeviceListAtStart(e.target.checked)} /> Show Device List with Network Visualizer</label><label className="flex items-center gap-2"><input type="checkbox" checked={autoSizeCanvas} onChange={e => setAutoSizeCanvas(e.target.checked)} /> Autosize Network Visualizer when loading a network</label><button onClick={() => setShowPreferences(false)} className="rounded-full border border-green-900 bg-gradient-to-b from-green-400 to-green-800 px-6 py-1 font-bold text-white">Close</button></div></div></div>}
 
-    {showTeacherLabs && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-3" onMouseDown={() => setShowTeacherLabs(false)}><section aria-label="Bài tập của thầy COMP303" className="w-[min(900px,100%)] overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={event => event.stopPropagation()}><WindowTitle title="Bài tập của thầy · COMP303" onClose={() => setShowTeacherLabs(false)} /><div className="max-h-[75vh] overflow-auto p-4"><p className="mb-3 text-sm text-slate-700">Chọn sơ đồ để xem cấu hình mẫu và giải thích cách chia mạng. Những bài chỉ có yêu cầu được ghi rõ là phương án minh họa.</p><label className="mb-4 flex items-center gap-2 text-sm"><span>Số thứ tự (STT) cho bài 4 router:</span><input aria-label="Số thứ tự STT" type="number" min={1} max={254} value={draftStudentNumber} onChange={event => setDraftStudentNumber(Number(event.target.value))} className="w-20 rounded border border-slate-400 bg-white px-2 py-1" /></label><div className="grid gap-3 md:grid-cols-2">{TEACHER_LABS.map(lab => <article key={lab.id} className="rounded-lg border border-slate-300 bg-white p-3 shadow-sm"><div className="mb-1 text-xs font-semibold text-blue-800">{lab.basis}</div><h3 className="font-bold text-slate-900">{lab.title}</h3><p className="mt-1 text-xs text-slate-500">Nguồn: {lab.source}</p><p className="mt-2 text-sm leading-5">{lab.summary}</p><button onClick={() => openTeacherLab(lab)} className="mt-3 rounded-md bg-blue-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-800">Mở sơ đồ</button></article>)}</div></div></section></div>}
-    {teacherLab && showTeacherExplanation && <TeacherExplanationWindow key={`${teacherLab.id}:${teacherStudentNumber}`} lab={teacherLab} studentNumber={teacherStudentNumber} topology={topology} onClose={() => setShowTeacherExplanation(false)} />}
+    {showTeacherLabs && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/35 p-3" onMouseDown={() => setShowTeacherLabs(false)}><section aria-label="Bài tập của thầy COMP303" className="w-[min(900px,100%)] overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={event => event.stopPropagation()}><WindowTitle title="Bài tập của thầy · COMP303" onClose={() => setShowTeacherLabs(false)} /><div className="max-h-[75vh] overflow-auto p-4"><p className="mb-3 text-sm text-slate-700">Chọn bài để tự thêm thiết bị, nối dây và nhập từng lệnh. Mỗi bài có hướng dẫn bấm vào đâu và điền gì.</p><label className="mb-4 flex items-center gap-2 text-sm"><span>Số thứ tự (STT) cho bài 4 router:</span><input aria-label="Số thứ tự STT" type="number" min={1} max={254} value={draftStudentNumber} onChange={event => setDraftStudentNumber(Number(event.target.value))} className="w-20 rounded border border-slate-400 bg-white px-2 py-1" /></label><div className="grid gap-3 md:grid-cols-2">{TEACHER_LABS.map(lab => <article key={lab.id} className="rounded-lg border border-slate-300 bg-white p-3 shadow-sm"><div className="mb-1 text-xs font-semibold text-blue-800">{lab.basis}</div><h3 className="font-bold text-slate-900">{lab.title}</h3><p className="mt-1 text-xs text-slate-500">Nguồn: {lab.source}</p><p className="mt-2 text-sm leading-5">{lab.summary}</p><button onClick={() => openTeacherLab(lab)} className="mt-3 rounded-md bg-blue-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-800">Bắt đầu tự dựng sơ đồ</button></article>)}</div></div></section></div>}
+    {teacherLab && showTeacherExplanation && !clickTutorActive && <TeacherExplanationWindow key={`${teacherLab.id}:${teacherStudentNumber}`} lab={teacherLab} studentNumber={teacherStudentNumber} topology={topology} onStartClickTutor={() => { openTeacherLab(teacherLab); setClickTutorStarted(true); setClickTutorActive(true); }} onLocate={locateGuideTarget} onRestart={() => openTeacherLab(teacherLab)} onClose={() => setShowTeacherExplanation(false)} />}
     {showGuide && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30" onMouseDown={() => setShowGuide(false)}><section className="w-[min(600px,calc(100vw-20px))] overflow-hidden rounded-lg border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl" onMouseDown={event => event.stopPropagation()}><WindowTitle title="RouterSim Help · Làm bài COMP303" onClose={() => setShowGuide(false)} /><div className="max-h-[70vh] overflow-auto p-4 text-sm leading-6"><ol className="list-decimal pl-5"><li>Chọn sơ đồ trong <strong>View → Labs</strong> hoặc mở tệp RouterSim <code>.rsm</code> bằng <strong>File → Open</strong>. Vào <strong>Tools → Clear Configuration</strong> để bắt đầu cấu hình từ đầu.</li><li>Kéo thiết bị từ thanh công cụ hoặc Device List vào vùng xanh. Nhấp chuột phải lên thiết bị và chọn cổng ở hai đầu để nối dây. Với cáp serial, chọn đầu DCE và đặt <code>clock rate 64000</code> trên cổng DCE.</li><li>Nhấp phải PC → Configs để nhập IP, mask và gateway. Nhấp đúp router để mở console; gõ <code>enable</code>, <code>conf t</code>, <code>int F0/0</code>, <code>ip add ...</code>, <code>no shut</code>, <code>router rip</code> và <code>network ...</code>.</li><li>Nhấp đúp PC, chạy <code>ipconfig</code> hoặc <code>ping IP_đích</code>. Dùng <code>show ip route</code> để xem tuyến; dùng mũi tên ↑/↓ để gọi lại lệnh.</li></ol><p className="mt-2">Nút tròn xanh trên thanh tiêu đề mở toàn màn hình. Các phím tắt chính: Ctrl+O mở tệp, Ctrl+S lưu JSON, Ctrl+D mở Device List, Ctrl+F mở Net Configs, Ctrl+T mở Net Packet Monitor.</p></div></section></div>}
     <input ref={fileRef} type="file" accept=".json,.rsm,application/json,application/xml,text/xml" className="hidden" onChange={e => { void importFile(e.target.files?.[0]); e.target.value = ''; }} />
   </div>;
 };
 
-function TeacherExplanationWindow({ lab, studentNumber, topology, onClose }: { lab: TeacherLab; studentNumber: number; topology: Topology; onClose: () => void }) {
+function TeacherExplanationWindow({ lab, studentNumber, topology, onStartClickTutor, onLocate, onRestart, onClose }: { lab: TeacherLab; studentNumber: number; topology: Topology; onStartClickTutor: () => void; onLocate: (target: GuideTarget) => void; onRestart: () => void; onClose: () => void }) {
   const lesson = getTeacherExplanation(lab.id);
   const show = (value: string) => teacherText(value, studentNumber);
-  return <section data-testid="teacher-explanation" className="fixed right-3 top-20 z-30 flex max-h-[85vh] w-[min(690px,calc(100vw-24px))] flex-col overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl">
-    <WindowTitle title="Giải thích bài tập của thầy · COMP303" onClose={onClose} />
+  const referenceContent = <>
+    <NetworkLabAiChat lab={lab} studentNumber={studentNumber} topology={topology} />
+    <h3 className="mt-5 text-base font-bold text-slate-900">Đi từ dễ đến khó</h3>
+    <div className="mt-2 space-y-3">{lesson.steps.map((step, index) => <article key={step.title} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"><h4 className="font-bold text-blue-900">Bước {index + 1}: {step.title}</h4><p className="mt-1 text-slate-800">{show(step.explanation)}</p>{step.analogy && <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-amber-950"><strong>Hình dung như thế này:</strong> {show(step.analogy)}</p>}<p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-slate-800"><strong>Nhìn vào sơ đồ:</strong> {show(step.example)}</p></article>)}</div>
+    <h3 className="mt-5 text-base font-bold text-slate-900">Bảng địa chỉ trong ví dụ</h3>
+    <div className="mt-2 grid gap-2 sm:grid-cols-2">{lab.networkPlan.map(row => <article key={row.network} className="rounded-lg border border-slate-200 bg-slate-50 p-3"><div className="font-mono font-bold text-blue-900">{show(row.network)}</div><div className="mt-1 font-semibold">{show(row.purpose)}</div><p className="mt-1 text-slate-700">{show(row.reason)}</p></article>)}</div>
+    <h3 className="mt-5 text-base font-bold text-slate-900">Theo chân một gói tin</h3><ol className="mt-2 list-decimal space-y-2 pl-5">{lesson.packetJourney.map(step => <li key={step}>{show(step)}</li>)}</ol>
+    <h3 className="mt-5 text-base font-bold text-slate-900">Nếu ping chưa được, kiểm tra gì?</h3><ul className="mt-2 list-disc space-y-1 pl-5">{lesson.commonMistakes.map(mistake => <li key={mistake}>{show(mistake)}</li>)}</ul>
+    <h3 className="mt-5 text-base font-bold text-slate-900">Thực hành tự kiểm tra</h3><ol className="mt-2 list-decimal space-y-1 pl-5">{lab.verify.map(step => <li key={step}>{show(step)}</li>)}</ol>
+  </>;
+  return <section data-testid="teacher-explanation" className="fixed right-3 top-32 z-30 flex max-h-[calc(100vh-160px)] w-[min(690px,calc(100vw-24px))] flex-col overflow-hidden rounded-xl border border-[#b8bec8] bg-[#f2f2f3] shadow-2xl">
+    <WindowTitle title="Hướng dẫn thực hành từng bước · COMP303" onClose={onClose} />
     <div className="min-h-0 overflow-y-auto bg-white p-4 text-sm leading-6 sm:p-5">
       <div className="rounded-lg bg-blue-50 p-3"><div className="text-xs font-semibold text-blue-800">{lab.basis}</div><h2 className="mt-1 text-lg font-bold text-slate-900">{lab.title}</h2><p className="mt-1 text-xs text-slate-600">Nguồn: {lab.source}</p><p className="mt-2 text-slate-800">{show(lab.summary)}</p></div>
-      <p className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3 text-green-950">Mới học mạng máy tính? Hãy đọc lần lượt từ bước 1. Mỗi bước giải thích một điều trên hình, rồi chỉ ngay số IP tương ứng để bạn đối chiếu.</p>
-      <NetworkLabAiChat lab={lab} studentNumber={studentNumber} topology={topology} />
-      <h3 className="mt-5 text-base font-bold text-slate-900">Đi từ dễ đến khó</h3>
-      <div className="mt-2 space-y-3">{lesson.steps.map((step, index) => <article key={step.title} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"><h4 className="font-bold text-blue-900">Bước {index + 1}: {step.title}</h4><p className="mt-1 text-slate-800">{show(step.explanation)}</p>{step.analogy && <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-amber-950"><strong>Hình dung như thế này:</strong> {show(step.analogy)}</p>}<p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-slate-800"><strong>Nhìn vào sơ đồ:</strong> {show(step.example)}</p></article>)}</div>
-      <h3 className="mt-5 text-base font-bold text-slate-900">Từng mạng trong bài dùng vào đâu?</h3>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">{lab.networkPlan.map(row => <article key={row.network} className="rounded-lg border border-slate-200 bg-slate-50 p-3"><div className="font-mono font-bold text-blue-900">{show(row.network)}</div><div className="mt-1 font-semibold">{show(row.purpose)}</div><p className="mt-1 text-slate-700">{show(row.reason)}</p></article>)}</div>
-      <h3 className="mt-5 text-base font-bold text-slate-900">Theo chân một gói tin</h3><ol className="mt-2 list-decimal space-y-2 pl-5">{lesson.packetJourney.map(step => <li key={step}>{show(step)}</li>)}</ol>
-      <h3 className="mt-5 text-base font-bold text-slate-900">Nếu ping chưa được, kiểm tra gì?</h3><ul className="mt-2 list-disc space-y-1 pl-5">{lesson.commonMistakes.map(mistake => <li key={mistake}>{show(mistake)}</li>)}</ul>
-      <h3 className="mt-5 text-base font-bold text-slate-900">Thực hành tự kiểm tra</h3><ol className="mt-2 list-decimal space-y-1 pl-5">{lab.verify.map(step => <li key={step}>{show(step)}</li>)}</ol>
-      <p className="mt-5 rounded-md bg-blue-50 p-3 text-xs text-blue-900">Muốn tự cấu hình từ đầu: Tools → Clear Configuration (Start Lab). Muốn xem lại cấu hình mẫu: Tools → Reset selected lab.</p>
+      <button type="button" onClick={onStartClickTutor} className="mt-3 w-full rounded-xl bg-blue-700 p-4 text-base font-bold text-white">👉 Bắt đầu chỉ tay từng cú bấm (dựng lại từ đầu)</button><TeacherPractice labId={lab.id} studentNumber={studentNumber} onLocate={onLocate} onRestart={onRestart} />
+      <details className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <summary className="cursor-pointer font-semibold text-blue-900">Giải thích thêm, bảng IP và hỏi gia sư AI</summary>
+        <div className="mt-3">{referenceContent}</div>
+      </details>
     </div>
+  </section>;
+}
+
+function TeacherPractice({ labId, studentNumber, onLocate, onRestart }: { labId: string; studentNumber: number; onLocate: (target: GuideTarget) => void; onRestart: () => void }) {
+  const steps = getTeacherWalkthrough(labId, studentNumber);
+  const savedStepKey = `teacher-guide-step:${labId}:${studentNumber}`;
+  const [stepIndex, setStepIndex] = useState(() => Math.max(0, Math.min(steps.length - 1, Number(sessionStorage.getItem(savedStepKey)) || 0)));
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { sessionStorage.setItem(savedStepKey, String(stepIndex)); headingRef.current?.scrollIntoView({ block: 'nearest' }); }, [stepIndex, savedStepKey]);
+  const step = steps[stepIndex];
+  return <section data-testid="teacher-walkthrough" className="mt-3 overflow-hidden rounded-xl border border-blue-200 bg-white shadow-sm">
+    <header className="border-b border-blue-100 bg-blue-50 p-3">
+      <div className="flex items-center justify-between gap-2"><strong className="text-blue-950">Hướng dẫn thao tác từ đầu</strong><span className="whitespace-nowrap text-xs text-blue-800">Bước {stepIndex + 1}/{steps.length}</span></div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-blue-100"><div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }} /></div>
+      <p className="mt-2 text-xs text-blue-950">Làm lần lượt: bấm nơi được chỉ, nhập nội dung rồi nhấn Enter hoặc OK. Nút bên dưới mở đúng cửa sổ để bạn thao tác.</p>
+    </header>
+    <div className="border-b border-slate-200 p-3">
+      <button type="button" onClick={() => { setStepIndex(0); onRestart(); }} className="rounded border border-blue-300 bg-white px-3 py-1.5 text-xs font-semibold text-blue-900">Bắt đầu lại từ vùng vẽ trống</button>
+      <label className="mt-2 flex items-center gap-2 text-xs">Đến bước:<select aria-label="Chọn bước hướng dẫn" value={stepIndex} onChange={event => setStepIndex(Number(event.target.value))} className="min-w-0 flex-1 rounded border border-slate-300 p-1">{steps.map((item, index) => <option key={index} value={index}>{index + 1}. {item.title}</option>)}</select></label>
+    </div>
+    <article aria-live="polite" className="space-y-3 p-3">
+      <h3 ref={headingRef} className="text-base font-bold text-slate-950">{step.title}</h3>
+      {step.target && <button type="button" onClick={() => onLocate(step.target!)} className="w-full rounded-lg border-2 border-blue-500 bg-blue-100 px-3 py-2 font-bold text-blue-950 hover:bg-blue-200">{step.target.label}</button>}
+      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-slate-900"><strong className="text-amber-950">Vì sao?</strong><p className="mt-1">{step.why}</p></div>
+      <div><h4 className="font-semibold text-slate-900">Bạn thao tác như sau</h4><ol className="mt-1 list-decimal space-y-1 pl-5 text-slate-800">{step.actions.map((action, index) => <li key={`${step.title}-action-${index}`}>{action}</li>)}</ol></div>
+      {step.connections && <div className="overflow-x-auto rounded-md border border-slate-200"><table className="w-full min-w-[480px] border-collapse text-left text-xs"><thead className="bg-slate-100"><tr><th className="p-2">Đoạn mạng</th><th className="p-2">Nối cổng</th><th className="p-2">Subnet</th><th className="p-2">DCE</th></tr></thead><tbody>{step.connections.map(connection => <tr key={connection.name} className="border-t border-slate-200"><td className="p-2 font-semibold">{connection.name}</td><td className="p-2">{connection.first} ↔ {connection.second}</td><td className="p-2 font-mono">{connection.subnet}</td><td className="p-2">{connection.dce ?? '—'}</td></tr>)}</tbody></table></div>}
+      {step.commands && <div className="overflow-hidden rounded-md border border-slate-300 bg-slate-950 text-slate-100"><div className="border-b border-slate-700 px-3 py-1.5 text-xs text-slate-300">{step.commandInput ? 'Gõ dòng này vào ô lệnh dưới console rồi nhấn Enter' : 'Thông tin nhập theo từng thiết bị'}</div><pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words p-3 font-mono text-xs leading-5">{step.commands.join('\n')}</pre></div>}
+      {step.commandGroups && <div className="space-y-2">{step.commandGroups.map(group => <div key={group.label} className="overflow-hidden rounded-md border border-slate-300 bg-slate-950 text-slate-100"><div className="border-b border-slate-700 px-3 py-1.5 text-xs text-slate-300">{group.label} · gõ từng dòng rồi nhấn Enter</div><pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words p-3 font-mono text-xs leading-5">{group.lines.join('\n')}</pre></div>)}</div>}
+      {step.result && <p className="rounded-md border border-green-200 bg-green-50 p-3 text-green-950"><strong>Sau bước này:</strong> {step.result}</p>}
+    </article>
+    <footer className="sticky bottom-0 flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 p-2">
+      <button type="button" disabled={stepIndex === 0} onClick={() => setStepIndex(index => Math.max(0, index - 1))} className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold disabled:opacity-40">Bước trước</button>
+      {stepIndex < steps.length - 1
+        ? <button type="button" onClick={() => setStepIndex(index => Math.min(steps.length - 1, index + 1))} className="rounded-md bg-blue-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-800">Tôi đã làm xong · bước tiếp theo</button>
+        : <button type="button" onClick={() => setStepIndex(0)} className="rounded-md bg-blue-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-800">Xem lại từ bước đầu</button>}
+    </footer>
   </section>;
 }
 
@@ -793,11 +881,13 @@ function NetworkLabAiChat({ lab, studentNumber, topology }: { lab: TeacherLab; s
     const text = (suggested ?? question).trim();
     if (!text || pendingRef.current) return;
     const lesson = getTeacherExplanation(lab.id);
+    const walkthrough = getTeacherWalkthrough(lab.id, studentNumber);
     const lessonContext = [
       `Tên bài: ${lab.title}. Nguồn: ${lab.source}. Loại: ${lab.basis}.`,
       show(lab.summary),
       ...lab.networkPlan.map(row => `${show(row.network)}: ${show(row.purpose)}. ${show(row.reason)}`),
-      ...lesson.steps.map(step => `${step.title}: ${show(step.explanation)} Ví dụ: ${show(step.example)}`),
+      ...lesson.steps.slice(0, 4).map(step => `${step.title}: ${show(step.explanation)}`),
+      ...walkthrough.map(step => step.title),
     ].join('\n').slice(0, 8000);
     const topologyContext = [
       ...topology.devices.map(device => `${device.name} (${device.kind}): ${device.kind === 'pc' ? `gateway ${device.gateway || 'chưa đặt'}; ` : ''}${device.ports.filter(port => port.ip || port.name.startsWith('S')).map(port => `${port.name} ${port.ip || 'chưa đặt'}/${port.mask} ${port.enabled ? 'bật' : 'tắt'}${port.clockRate ? ` clock ${port.clockRate}` : ''}`).join('; ')}${device.kind === 'router' ? `; RIP ${device.ripNetworks.join(', ') || 'chưa đặt'}` : ''}`),
@@ -828,7 +918,7 @@ function NetworkLabAiChat({ lab, studentNumber, topology }: { lab: TeacherLab; s
     <h3 className="font-bold text-blue-950">Hỏi AI về sơ đồ này</h3>
     <p className="mt-1 text-xs text-blue-900">Bạn có thể hỏi theo cách của mình. AI sẽ xem bài đang mở và các IP bạn đang đặt trên sơ đồ.</p>
     <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(suggestion => <button key={suggestion} type="button" disabled={loading} onClick={() => void ask(suggestion)} className="rounded-full border border-blue-200 bg-white px-2.5 py-1 text-xs text-blue-900 hover:bg-blue-100 disabled:opacity-50">{suggestion}</button>)}</div>
-    {messages.length > 0 && <div aria-live="polite" className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-md bg-white p-2">{messages.map((message, index) => <div key={index} className={`whitespace-pre-wrap rounded-md px-3 py-2 text-sm ${message.role === 'user' ? 'ml-8 bg-blue-100 text-blue-950' : 'mr-8 bg-slate-100 text-slate-900'}`}><strong className="mb-1 block text-xs">{message.role === 'user' ? 'Bạn' : 'Gia sư AI'}</strong>{message.content}</div>)}</div>}
+    {messages.length > 0 && <div aria-live="polite" className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-md bg-white p-2">{messages.map((message, index) => <div key={index} className={`rounded-md px-3 py-2 text-sm ${message.role === 'user' ? 'ml-8 whitespace-pre-wrap bg-blue-100 text-blue-950' : 'mr-8 bg-slate-100 text-slate-900'}`}><strong className="mb-1 block text-xs">{message.role === 'user' ? 'Bạn' : 'Gia sư AI'}</strong>{message.role === 'assistant' ? <MarkdownAnswer content={message.content} /> : message.content}</div>)}</div>}
     {loading && <p role="status" className="mt-2 text-xs text-blue-900">AI đang giải thích bài này...</p>}
     {error && <p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
     <form onSubmit={event => { event.preventDefault(); void ask(); }} className="mt-3 flex items-end gap-2"><textarea aria-label="Nhập câu hỏi cho AI về bài tập" value={question} maxLength={1000} rows={2} onChange={event => setQuestion(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder="Ví dụ: Vì sao PC1 phải đặt gateway là IP của R1?" className="min-h-16 min-w-0 flex-1 resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-blue-600" /><button type="submit" disabled={loading || !question.trim()} className="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50">Gửi</button></form>
@@ -839,10 +929,10 @@ function ToolButton({ title, onClick, children, deviceKind, switchModel }: { tit
   return <button title={title} onClick={onClick} draggable={!!deviceKind} onDragStart={e => { if (deviceKind) e.dataTransfer.setData('application/x-routersim-device', deviceKind); if (switchModel) e.dataTransfer.setData('application/x-routersim-model', switchModel); }} className="flex h-9 min-w-9 items-center justify-center border border-transparent px-1 text-xl hover:border-slate-400 hover:bg-blue-100">{children}</button>;
 }
 function PortHotspot({ name, x, y, w, h, connectedTo, onChoose, onDisconnect, onInspect }: { name: string; x: number; y: number; w: number; h: number; connectedTo?: string; onChoose: () => void; onDisconnect: () => void; onInspect: () => void }) {
-  return <div className="absolute group" style={{ left: x, top: y, width: w, height: h }}><button title={connectedTo ? `${name} → ${connectedTo}` : `${name} · click to connect`} aria-label={connectedTo ? `${name} connected to ${connectedTo}` : `${name} · click to connect`} onClick={connectedTo ? onInspect : onChoose} className={`h-full w-full border-2 hover:border-yellow-400 ${connectedTo ? 'border-[#22c55e] bg-[#22c55e]/15' : 'border-transparent hover:bg-yellow-300/20'}`} />{connectedTo && <><span aria-hidden="true" className="pointer-events-none absolute -left-1 -top-1 rounded-full border border-white bg-[#16803e] px-1 text-[9px] font-bold text-white">✓</span><button title={`Disconnect ${name} from ${connectedTo}`} aria-label={`Disconnect ${name}`} onClick={onDisconnect} className="absolute -right-1 -top-1 h-4 w-4 rounded bg-red-600 text-[10px] font-bold text-white opacity-90 hover:opacity-100">×</button></>}</div>;
+  return <div className="absolute group" style={{ left: x, top: y, width: w, height: h }}><button data-guide-port={name} title={connectedTo ? `${name} → ${connectedTo}` : `${name} · click to connect`} aria-label={connectedTo ? `${name} connected to ${connectedTo}` : `${name} · click to connect`} onClick={connectedTo ? onInspect : onChoose} className={`h-full w-full border-2 hover:border-yellow-400 ${connectedTo ? 'border-[#22c55e] bg-[#22c55e]/15' : 'border-transparent hover:bg-yellow-300/20'}`} />{connectedTo && <><span aria-hidden="true" className="pointer-events-none absolute -left-1 -top-1 rounded-full border border-white bg-[#16803e] px-1 text-[9px] font-bold text-white">✓</span><button title={`Disconnect ${name} from ${connectedTo}`} aria-label={`Disconnect ${name}`} onClick={onDisconnect} className="absolute -right-1 -top-1 h-4 w-4 rounded bg-red-600 text-[10px] font-bold text-white opacity-90 hover:opacity-100">×</button></>}</div>;
 }
 function MenuItem({ label, onClick, shortcut, disabled = false }: { label: string; onClick: () => void; shortcut?: string; disabled?: boolean }) {
-  return <button onClick={onClick} disabled={disabled} className="flex w-full items-center justify-between gap-5 whitespace-nowrap px-3 py-1 text-left hover:bg-[#316ac5] hover:text-white disabled:text-slate-400 disabled:hover:bg-transparent"><span>{label}</span>{shortcut && <span className="text-[10px] opacity-80">{shortcut}</span>}</button>;
+  return <button data-guide-item={label} onClick={onClick} disabled={disabled} className="flex w-full items-center justify-between gap-5 whitespace-nowrap px-3 py-1 text-left hover:bg-[#316ac5] hover:text-white disabled:text-slate-400 disabled:hover:bg-transparent"><span>{label}</span>{shortcut && <span className="text-[10px] opacity-80">{shortcut}</span>}</button>;
 }
 function MenuSubmenu({ label, children, scroll = false }: { label: string; children: React.ReactNode; scroll?: boolean }) {
   return <div className="rs-submenu relative"><button className="flex w-full items-center justify-between gap-5 whitespace-nowrap px-3 py-1 text-left hover:bg-[#316ac5] hover:text-white">{label}<span>▸</span></button><div className={`rs-submenu-panel absolute left-full top-0 z-50 hidden min-w-44 border border-slate-600 bg-[#f5f5f1] p-1 text-black shadow-lg ${scroll ? 'max-h-[70vh] overflow-y-auto' : ''}`}>{children}</div></div>;
@@ -899,7 +989,7 @@ function WindowTitle({ title, onClose, onMinimize, onMaximize, onDragStart, onDr
   </div>;
 }
 function Field({ label, value, onChange, asSelect }: { label: string; value: string; onChange: (value: string) => void; asSelect?: Array<{ id: string; label: string }> }) {
-  return <label className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-1 sm:gap-2"><span>{label}</span>{asSelect ? <select value={value} onChange={e => onChange(e.target.value)} className="border border-slate-500 bg-white px-1 py-0.5">{asSelect.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select> : <input value={value} onChange={e => onChange(e.target.value)} className="min-w-0 border border-slate-500 bg-white px-1 py-0.5" />}</label>;
+  return <label data-guide-field={label} className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-1 sm:gap-2"><span>{label}</span>{asSelect ? <select value={value} onChange={e => onChange(e.target.value)} className="border border-slate-500 bg-white px-1 py-0.5">{asSelect.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select> : <input value={value} onChange={e => onChange(e.target.value)} className="min-w-0 border border-slate-500 bg-white px-1 py-0.5" />}</label>;
 }
 function IpField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   const inputs = React.useRef<Array<HTMLInputElement | null>>([]);
@@ -907,12 +997,12 @@ function IpField({ label, value, onChange }: { label: string; value: string; onC
   while (parts.length < 4) parts.push('');
   const update = (index: number, octet: string) => { const next = [...parts]; next[index] = octet; onChange(next.join('.')); };
   const focus = (index: number) => { const input = inputs.current[index]; input?.focus(); input?.select(); };
-  return <label className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-1 sm:gap-2"><span>{label}</span><span className="flex items-center gap-0.5">{parts.map((part, index) => <React.Fragment key={index}><input ref={input => { inputs.current[index] = input; }} aria-label={`${label} octet ${index + 1}`} inputMode="numeric" maxLength={3} value={part} onChange={event => {
+  return <div data-guide-field={label} className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-1 sm:gap-2"><span>{label}</span><span className="flex items-center gap-0.5">{parts.map((part, index) => <React.Fragment key={index}><input ref={input => { inputs.current[index] = input; }} aria-label={`${label} octet ${index + 1}`} inputMode="numeric" maxLength={3} value={part} onFocus={event => event.currentTarget.select()} onChange={event => {
     const digits = event.target.value.replace(/\D/g, '').slice(0, 3);
     update(index, digits);
     if (digits.length === 3 && index < 3 && Number(digits) <= 255) requestAnimationFrame(() => focus(index + 1));
   }} onKeyDown={event => {
-    if ((event.key === '.' || event.key === 'Decimal') && index < 3) { event.preventDefault(); focus(index + 1); }
+    if ((event.key === '.' || event.key === 'Decimal' || event.key === 'Enter') && index < 3) { event.preventDefault(); focus(index + 1); }
     else if (event.key === 'ArrowRight' && event.currentTarget.selectionStart === part.length && index < 3) { event.preventDefault(); focus(index + 1); }
     else if (event.key === 'ArrowLeft' && event.currentTarget.selectionStart === 0 && index > 0) { event.preventDefault(); focus(index - 1); }
     else if (event.key === 'Backspace' && !part && index > 0) { event.preventDefault(); focus(index - 1); }
@@ -926,5 +1016,5 @@ function IpField({ label, value, onChange }: { label: string; value: string; onC
     octets.slice(0, 4 - index).forEach((octet, offset) => { next[index + offset] = octet; });
     onChange(next.join('.'));
     requestAnimationFrame(() => focus(Math.min(3, index + octets.length - 1)));
-  }} className="w-11 border border-slate-500 bg-white px-1 py-0.5 text-center" />{index < 3 && <span>.</span>}</React.Fragment>)}</span></label>;
+  }} className="w-11 border border-slate-500 bg-white px-1 py-0.5 text-center" />{index < 3 && <span>.</span>}</React.Fragment>)}</span></div>;
 }

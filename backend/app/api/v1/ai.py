@@ -15,6 +15,7 @@ from app.core.database import get_db
 from app.models.attempt import Attempt, AttemptAnswer, AttemptStatus
 from app.models.question import QuizQuestion, Question
 from app.ai_explanation_context import explanation_context
+from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -59,6 +60,7 @@ async def ask_network_lab_ai(
 ):
     if req.lab_id not in NETWORK_LAB_IDS or not req.question.strip():
         raise HTTPException(status_code=422, detail="Bài tập hoặc câu hỏi không hợp lệ.")
+    limiter.check(("ai-network", str(current_user.id)), 10, 60)
     if not settings.AI_API_KEY:
         raise HTTPException(status_code=503, detail="Model AI chưa được cấu hình trên máy chủ.")
 
@@ -131,6 +133,7 @@ async def explain_question_with_ai(
     if row is None:
         raise HTTPException(status_code=404, detail="Câu hỏi không thuộc bài làm này.")
     question, points_override = row
+    limiter.check(("ai-explain", str(current_user.id)), 10, 60)
     answer = (await db.execute(select(AttemptAnswer).where(
               AttemptAnswer.attempt_id == attempt.id,
               AttemptAnswer.question_id == question.id))).scalar_one_or_none()

@@ -21,9 +21,9 @@ interface AIPracticeQuestionProps {
 
 const renderKatexSafe = (formula: string): string => {
   try {
-    return katex.renderToString(formula.trim(), { displayMode: false, throwOnError: false });
+    return katex.renderToString(formula.trim(), { displayMode: false, throwOnError: false, trust: false, maxExpand: 100, maxSize: 12 });
   } catch {
-    return formula;
+    return formula.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
   }
 };
 
@@ -63,7 +63,7 @@ const renderMathInString = (text: string): React.ReactNode => {
     return subParts.map((sp, spIdx) => {
       if (/^\\[a-zA-Z]+/.test(sp)) {
         try {
-          const html = katex.renderToString(sp, { throwOnError: true });
+          const html = katex.renderToString(sp, { throwOnError: true, trust: false, maxExpand: 100, maxSize: 12 });
           return (
             <span
               key={`${idx}-${spIdx}`}

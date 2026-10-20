@@ -1,10 +1,12 @@
 from pathlib import Path
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
+from app.core.request_limits import RequestSizeLimitMiddleware
 from app.api.v1 import auth, subjects, quizzes, questions, attempts, stats, ai, lessons, users, backups, media
 
 app = FastAPI(
@@ -32,12 +34,25 @@ app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
 # Standardized Error Handling
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    logging.getLogger(__name__).exception("Unhandled application error")
     return JSONResponse(
         status_code=500,
-        content={"error": {"code": "INTERNAL_SERVER_ERROR", "message": str(exc)}}
+        content={"error": {"code": "INTERNAL_SERVER_ERROR", "message": "Internal server error"}}
     )
 
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if request.url.path.startswith(settings.API_V1_STR):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
 # Include Routers
+app.add_middleware(RequestSizeLimitMiddleware)
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(users.router, prefix=settings.API_V1_STR)
 app.include_router(subjects.router, prefix=settings.API_V1_STR)

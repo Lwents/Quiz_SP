@@ -23,6 +23,7 @@ from app.schemas.quiz import (
 )
 from app.schemas.question import QuestionStudentResponse, QuestionTeacherResponse, QuestionCreate
 from app.api.deps import get_current_user, require_role
+from app.student_questions import student_question_config
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 
@@ -305,28 +306,7 @@ async def get_quiz_detail(
             ))
         else:
             # Student sees sanitized question: NEVER EXPOSE CORRECT ANSWERS IN ACTIVE TAKING
-            sanitized_config = dict(q.config or {})
-            sanitized_config.pop("correct", None)
-            sanitized_config.pop("accepted_answers", None)
-
-            # Keep the visible ordering items while hiding the answer key.
-            # Older seeded questions only stored `correct_order`, so derive
-            # the display list before removing that field.
-            if q.type == QuestionType.ORDERING:
-                sanitized_config["items"] = list(
-                    sanitized_config.get("items")
-                    or (q.config or {}).get("correct_order", [])
-                )
-            sanitized_config.pop("correct_order", None)
-
-            # For matching pairs, hide right-side mapping association
-            if q.type in ("matching", "drag_drop"):
-                pairs = sanitized_config.get("pairs", [])
-                left_items = [p.get("left") for p in pairs if "left" in p]
-                right_items = [p.get("right") for p in pairs if "right" in p]
-                sanitized_config["left_items"] = left_items
-                sanitized_config["right_items"] = right_items
-                sanitized_config.pop("pairs", None)
+            sanitized_config = student_question_config(q.type, q.config, f"{current_user.id}_{q.id}")
 
             questions_out.append(QuestionStudentResponse(
                 id=q.id,
