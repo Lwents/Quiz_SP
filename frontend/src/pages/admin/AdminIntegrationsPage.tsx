@@ -131,12 +131,13 @@ export function AdminIntegrationsPage({ kind }: { kind: "ai" | "email" }) {
       {!ai && !mail && !failed && (
         <p className="text-sm text-slate-500">Đang tải cấu hình…</p>
       )}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
       <form
         onSubmit={(e) => {
           e.preventDefault();
           void save();
         }}
-        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5"
+        className="space-y-4"
       >
         {kind === "ai" && ai && (
           <>
@@ -302,7 +303,7 @@ export function AdminIntegrationsPage({ kind }: { kind: "ai" | "email" }) {
             e.preventDefault();
             void test();
           }}
-          className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5"
+          className="mt-5 space-y-3 border-t border-slate-200 pt-5"
         >
           <h3 className="font-bold">
             {kind === "ai" ? "Kiểm tra model" : "Gửi email kiểm tra"}
@@ -340,6 +341,7 @@ export function AdminIntegrationsPage({ kind }: { kind: "ai" | "email" }) {
           )}
         </form>
       )}
+      </div>
     </section>
   );
 }
