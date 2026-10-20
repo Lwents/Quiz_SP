@@ -19,6 +19,7 @@ import { CourseDetailPage } from './pages/student/CourseDetailPage';
 import { LessonPlayerPage } from './pages/student/LessonPlayerPage';
 import { RouterSimPage } from './pages/student/RouterSimPage';
 import { BackupSettingsPage } from './pages/admin/BackupSettingsPage';
+import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
 import { useAuthStore } from './stores/authStore';
 import type { UserRole } from './types';
 
@@ -51,6 +52,8 @@ const PageTitleHandler: React.FC = () => {
       document.title = 'Quản trị đề thi | HNUE PRO';
     } else if (path.startsWith('/settings/backup')) {
       document.title = 'Sao lưu dữ liệu | HNUE PRO';
+    } else if (path.startsWith('/admin/analytics')) {
+      document.title = 'Quản trị hệ thống | HNUE PRO';
     } else if (path.startsWith('/dashboard') || path.startsWith('/profile')) {
       document.title = 'Tiến độ & Thống kê | HNUE PRO';
     } else if (path.startsWith('/results')) {
@@ -190,6 +193,7 @@ export const App: React.FC = () => {
               <Route path="/teacher/quizzes/:quizId/preview" element={<QuizPreviewPage />} />
             </Route>
             <Route element={<RoleRoute allowedRoles={['ADMIN']} roleLabel="quản trị viên" />}>
+              <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               <Route path="/settings/backup" element={<BackupSettingsPage />} />
             </Route>
             <Route path="*" element={<RootRedirect />} />

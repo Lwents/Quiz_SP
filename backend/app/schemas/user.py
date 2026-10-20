@@ -1,5 +1,6 @@
 import uuid
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.models.user import UserRole
 
@@ -36,6 +37,17 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class AdminUserUpdate(BaseModel):
+    full_name: Optional[str] = Field(default=None, min_length=1, max_length=255)
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
+
+
+class AdminUserResponse(UserResponse):
+    created_at: datetime
+    last_login_at: Optional[datetime] = None
 
 
 class Token(BaseModel):

@@ -4,6 +4,7 @@ from app.models.quiz import Subject, Topic, Quiz, QuizStatus, DifficultyLevel
 from app.models.question import Question, QuestionType, QuizQuestion
 from app.models.attempt import Attempt, AttemptAnswer, AttemptStatus
 from app.models.lesson import Lesson, UserLessonProgress
+from app.models.audit import AuditLog
 
 __all__ = [
     "Base",
@@ -24,4 +25,5 @@ __all__ = [
     "AttemptStatus",
     "Lesson",
     "UserLessonProgress",
+    "AuditLog",
 ]

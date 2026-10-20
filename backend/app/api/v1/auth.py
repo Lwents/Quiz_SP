@@ -15,6 +15,7 @@ from app.core.security import (
     token_matches_user,
 )
 from app.models.user import User, UserRole
+from app.models.audit import AuditLog
 from app.schemas.user import (
     UserCreate,
     UserResponse,
@@ -57,17 +58,25 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == identifier))
     user = result.scalar_one_or_none()
     if not user or not verify_password(login_data.password, user.hashed_password):
+        # Retain only the supplied account identifier, never the password,
+        # request payload, token, or raw client address.
+        db.add(AuditLog(action="login_failed", email=identifier[:255]))
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={"error": {"code": "INVALID_CREDENTIALS", "message": "Incorrect email or password"}}
         )
 
     if not user.is_active:
+        db.add(AuditLog(user_id=user.id, action="login_blocked", email=user.email))
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"error": {"code": "INACTIVE_USER", "message": "Inactive user account"}}
         )
 
+    db.add(AuditLog(user_id=user.id, action="login_success", email=user.email))
+    await db.commit()
     access_token = create_access_token(user.id, password_hash=user.hashed_password)
     refresh_token = create_refresh_token(user.id, password_hash=user.hashed_password)
     return {

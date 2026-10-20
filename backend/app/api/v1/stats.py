@@ -1,4 +1,6 @@
 import uuid
+from collections import Counter
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,9 +12,103 @@ from app.models.quiz import Quiz, Subject, Topic, QuizStatus
 from app.models.question import Question
 from app.models.attempt import Attempt, AttemptAnswer, AttemptStatus
 from app.models.user import User, UserRole
+from app.models.audit import AuditLog
 from app.api.deps import get_current_user, require_role
 
 router = APIRouter(prefix="/stats", tags=["stats"])
+
+
+@router.get("/admin/overview")
+async def get_admin_overview(
+    days: int = 14,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    """Return aggregate administration and authentication statistics only."""
+    del current_user
+    days = max(7, min(days, 90))
+    now = datetime.now(timezone.utc)
+    start = now - timedelta(days=days - 1)
+    start_day = start.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    total_users = (await db.execute(select(func.count(User.id)))).scalar() or 0
+    active_users = (await db.execute(select(func.count(User.id)).where(User.is_active == True))).scalar() or 0
+    students = (await db.execute(select(func.count(User.id)).where(User.role == UserRole.STUDENT))).scalar() or 0
+    teachers = (await db.execute(select(func.count(User.id)).where(User.role == UserRole.TEACHER))).scalar() or 0
+    admins = (await db.execute(select(func.count(User.id)).where(User.role == UserRole.ADMIN))).scalar() or 0
+    new_users = (await db.execute(select(func.count(User.id)).where(User.created_at >= start_day))).scalar() or 0
+
+    events = (
+        await db.execute(
+            select(AuditLog)
+            .where(and_(AuditLog.occurred_at >= start_day, AuditLog.action.in_(["login_success", "login_failed", "login_blocked"])))
+            .order_by(AuditLog.occurred_at.desc())
+        )
+    ).scalars().all()
+    chart_counts: dict[str, Counter[str]] = {}
+    for index in range(days):
+        day = (start_day + timedelta(days=index)).date().isoformat()
+        chart_counts[day] = Counter()
+    for event in events:
+        event_time = event.occurred_at
+        if event_time is None:
+            continue
+        if event_time.tzinfo is None:
+            event_time = event_time.replace(tzinfo=timezone.utc)
+        event_day = event_time.astimezone(timezone.utc).date().isoformat()
+        # Keep the endpoint resilient if a legacy event falls just outside the
+        # requested UTC date window because of a stored timezone offset.
+        chart_counts.setdefault(event_day, Counter())[event.action] += 1
+
+    recent_events = (
+        await db.execute(
+            select(AuditLog, User.full_name)
+            .outerjoin(User, AuditLog.user_id == User.id)
+            .where(AuditLog.action.in_(["login_success", "login_failed", "login_blocked"]))
+            .order_by(AuditLog.occurred_at.desc())
+            .limit(30)
+        )
+    ).all()
+
+    return {
+        "period_days": days,
+        "users": {
+            "total": total_users,
+            "active": active_users,
+            "inactive": total_users - active_users,
+            "new_in_period": new_users,
+            "by_role": {"students": students, "teachers": teachers, "admins": admins},
+        },
+        "security": {
+            "failed_logins_in_period": sum(1 for event in events if event.action == "login_failed"),
+            "blocked_logins_in_period": sum(1 for event in events if event.action == "login_blocked"),
+            "controls": [
+                "Giới hạn yêu cầu đăng nhập đang bật",
+                "Phiên đăng nhập bị thu hồi khi đổi mật khẩu hoặc khóa tài khoản",
+                "Nhật ký chỉ lưu trạng thái đăng nhập, không lưu mật khẩu, token hay IP",
+            ],
+        },
+        "login_chart": [
+            {
+                "date": date,
+                "success": counts["login_success"],
+                "failed": counts["login_failed"],
+                "blocked": counts["login_blocked"],
+            }
+            for date, counts in chart_counts.items()
+        ],
+        "recent_logins": [
+            {
+                "id": event.id,
+                "user_id": event.user_id,
+                "email": event.email,
+                "full_name": full_name,
+                "action": event.action,
+                "occurred_at": event.occurred_at,
+            }
+            for event, full_name in recent_events
+        ],
+    }
 
 
 @router.get("/student/dashboard")

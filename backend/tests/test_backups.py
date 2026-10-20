@@ -10,7 +10,7 @@ from app.models import Base
 
 EXPECTED_TABLES = {
     "users", "subjects", "topics", "lessons", "questions", "quizzes",
-    "quiz_questions", "attempts", "attempt_answers", "user_lesson_progress",
+    "quiz_questions", "attempts", "attempt_answers", "user_lesson_progress", "audit_logs",
 }
 
 

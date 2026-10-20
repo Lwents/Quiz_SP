@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Settings,
   ShieldCheck,
+  BarChart3,
   FileSpreadsheet,
   Menu,
   X
@@ -97,6 +98,21 @@ export const Navbar: React.FC = () => {
                     <Layers className="w-4 h-4" />
                     Môn học & Chủ đề
                   </Link>
+
+                  {isAdmin && (
+                    <Link
+                      to="/admin/analytics"
+                      onClick={(e) => handleGuardedNav(e, '/admin/analytics')}
+                      className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                        location.pathname.startsWith('/admin/analytics')
+                          ? 'text-blue-600 bg-blue-50 font-semibold'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`}
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      Thống kê hệ thống
+                    </Link>
+                  )}
 
                   {isAdmin && (
                     <Link

@@ -9,12 +9,114 @@ from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash
 from app.models.user import User, UserRole
+from app.models.audit import AuditLog
 from app.models.attempt import Attempt, AttemptStatus
 from app.models.lesson import UserLessonProgress
-from app.schemas.user import UserResponse, UserUpdate, ChangePasswordRequest
-from app.api.deps import get_current_user
+from app.schemas.user import AdminUserResponse, AdminUserUpdate, UserResponse, UserUpdate, ChangePasswordRequest
+from app.api.deps import get_current_user, require_role
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/admin", response_model=list[AdminUserResponse])
+async def list_users_for_admin(
+    search: str = Query(default="", max_length=255),
+    role: Optional[UserRole] = None,
+    active: Optional[bool] = None,
+    limit: int = Query(default=100, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    del current_user
+    statement = select(User).order_by(User.created_at.desc()).limit(limit)
+    filters = []
+    term = search.strip()
+    if term:
+        pattern = f"%{term}%"
+        filters.append(or_(User.email.ilike(pattern), User.full_name.ilike(pattern)))
+    if role is not None:
+        filters.append(User.role == role)
+    if active is not None:
+        filters.append(User.is_active == active)
+    if filters:
+        statement = statement.where(and_(*filters))
+    users = (await db.execute(statement)).scalars().all()
+
+    user_ids = [user.id for user in users]
+    latest_logins: Dict[uuid.UUID, datetime] = {}
+    if user_ids:
+        logins = (
+            await db.execute(
+                select(AuditLog.user_id, AuditLog.occurred_at)
+                .where(and_(AuditLog.user_id.in_(user_ids), AuditLog.action == "login_success"))
+                .order_by(AuditLog.occurred_at.desc())
+            )
+        ).all()
+        for user_id, occurred_at in logins:
+            if user_id not in latest_logins:
+                latest_logins[user_id] = occurred_at
+
+    return [
+        {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "role": user.role,
+            "is_active": user.is_active,
+            "avatar_url": user.avatar_url,
+            "created_at": user.created_at,
+            "last_login_at": latest_logins.get(user.id),
+        }
+        for user in users
+    ]
+
+
+@router.patch("/admin/{user_id}", response_model=AdminUserResponse)
+async def update_user_for_admin(
+    user_id: uuid.UUID,
+    changes: AdminUserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    target = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    if target is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy tài khoản")
+
+    if changes.full_name is not None:
+        target.full_name = changes.full_name.strip()
+    if changes.is_active is False and target.id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Không thể tự khóa tài khoản quản trị đang đăng nhập")
+
+    removes_admin = target.role == UserRole.ADMIN and (
+        (changes.role is not None and changes.role != UserRole.ADMIN)
+        or changes.is_active is False
+    )
+    if removes_admin:
+        remaining_admins = (
+            await db.execute(
+                select(func.count(User.id)).where(
+                    and_(User.role == UserRole.ADMIN, User.is_active == True, User.id != target.id)
+                )
+            )
+        ).scalar() or 0
+        if remaining_admins == 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phải giữ lại ít nhất một quản trị viên đang hoạt động")
+
+    if changes.role is not None:
+        target.role = changes.role
+    if changes.is_active is not None:
+        target.is_active = changes.is_active
+    await db.commit()
+    await db.refresh(target)
+    latest_login = (
+        await db.execute(
+            select(AuditLog.occurred_at)
+            .where(and_(AuditLog.user_id == target.id, AuditLog.action == "login_success"))
+            .order_by(AuditLog.occurred_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+    return {**{column: getattr(target, column) for column in ("id", "email", "full_name", "role", "is_active", "avatar_url", "created_at")}, "last_login_at": latest_login}
 
 
 @router.get("/profile", response_model=UserResponse)
