@@ -3,6 +3,9 @@ import { apiClient } from "../../api/client";
 import { toast } from "../../stores/toastStore";
 import { dateTime, exportCsv } from "./adminTypes";
 import type { Account } from "./adminTypes";
+import { AdminDialog } from '../../components/AdminDialog';
+import { useAuthStore } from '../../stores/authStore';
+import { ShieldCheck } from 'lucide-react';
 
 const input = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
 const button =
@@ -15,6 +18,7 @@ const roleName = (role: string) =>
       : "Quyền cũ";
 const empty = { full_name: "", email: "", password: "", role: "STUDENT" };
 export function AdminAccounts() {
+  const actor = useAuthStore((state) => state.user);
   const [users, setUsers] = useState<Account[]>([]);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
@@ -26,6 +30,10 @@ export function AdminAccounts() {
   const [resetUser, setResetUser] = useState<Account | null>(null);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
+  const [adminPassword, setAdminPassword] = useState('');
+  const [confirmationError, setConfirmationError] = useState('');
+  const [pendingChange, setPendingChange] = useState<{ user: Account; changes: { role?: string; is_active?: boolean }; title: string; description: string } | null>(null);
+  const closeConfirmation = () => { setPendingChange(null); setResetUser(null); setAdminPassword(''); setConfirmationError(''); setPassword(''); setConfirmation(''); };
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -60,6 +68,10 @@ export function AdminAccounts() {
     } catch (e) {
       const detail = (e as { response?: { data?: { detail?: unknown } } })
         .response?.data?.detail;
+      if (pendingChange || resetUser) {
+        setConfirmationError(typeof detail === 'string' ? detail : 'Không thể thực hiện. Vui lòng thử lại.');
+        setAdminPassword('');
+      }
       toast.error(
         typeof detail === "string"
           ? detail
@@ -83,8 +95,9 @@ export function AdminAccounts() {
           onSubmit={(e) => {
             e.preventDefault();
             void mutate(async () => {
-              await apiClient.post("/admin/users", form);
+              await apiClient.post("/admin/users", { ...form, ...(form.role === 'ADMIN' ? { admin_password: adminPassword } : {}) });
               setForm(empty);
+              setAdminPassword('');
               setCreating(false);
             });
           }}
@@ -129,6 +142,9 @@ export function AdminAccounts() {
             <option value="STUDENT">Sinh viên</option>
             <option value="ADMIN">Quản trị viên</option>
           </select>
+          {form.role === 'ADMIN' && <label className="text-sm font-semibold sm:col-span-2">Xác minh mật khẩu admin đang đăng nhập ({actor?.email})
+            <input required type="password" autoComplete="current-password" maxLength={72} className={`${input} mt-2`} value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} />
+          </label>}
           <button disabled={busy} className={button}>
             Tạo tài khoản
           </button>
@@ -202,14 +218,8 @@ export function AdminAccounts() {
                   value={u.role}
                   onChange={(e) => {
                     const next = e.target.value;
-                    if (
-                      window.confirm(
-                        `Đổi ${u.email} thành ${roleName(next)}?${next === "ADMIN" ? " Tài khoản sẽ có toàn quyền quản trị." : ""}`,
-                      )
-                    )
-                      void mutate(() =>
-                        apiClient.patch(`/users/admin/${u.id}`, { role: next }),
-                      );
+                    setAdminPassword(''); setConfirmationError('');
+                    setPendingChange({ user: u, changes: { role: next }, title: 'Xác nhận đổi quyền tài khoản', description: `Đổi ${u.email} từ ${roleName(u.role)} thành ${roleName(next)}.${next === 'ADMIN' ? ' Tài khoản sẽ có toàn quyền quản trị hệ thống.' : ''}` });
                   }}
                 >
                   {u.role === "TEACHER" && (
@@ -224,16 +234,8 @@ export function AdminAccounts() {
                   disabled={busy}
                   className={button}
                   onClick={() => {
-                    if (
-                      window.confirm(
-                        `${u.is_active ? "Khóa" : "Mở khóa"} ${u.email}?`,
-                      )
-                    )
-                      void mutate(() =>
-                        apiClient.patch(`/users/admin/${u.id}`, {
-                          is_active: !u.is_active,
-                        }),
-                      );
+                    setAdminPassword(''); setConfirmationError('');
+                    setPendingChange({ user: u, changes: { is_active: !u.is_active }, title: `Xác nhận ${u.is_active ? 'khóa' : 'mở khóa'} tài khoản`, description: `${u.is_active ? 'Khóa' : 'Mở khóa'} tài khoản ${u.email}.${u.is_active ? ' Các phiên đăng nhập của tài khoản sẽ bị thu hồi.' : ''}` });
                   }}
                 >
                   {u.is_active ? "Khóa" : "Mở khóa"}
@@ -245,6 +247,7 @@ export function AdminAccounts() {
                     setResetUser(u);
                     setPassword("");
                     setConfirmation("");
+                    setAdminPassword(''); setConfirmationError('');
                   }}
                 >
                   Đặt lại mật khẩu
@@ -276,15 +279,29 @@ export function AdminAccounts() {
           </button>
         </div>
       </section>
+      {pendingChange && <AdminDialog title={pendingChange.title} busy={busy} onClose={closeConfirmation}>
+        <form className="space-y-4" onSubmit={(event) => {
+          event.preventDefault(); setConfirmationError('');
+          void mutate(async () => {
+            await apiClient.patch(`/users/admin/${pendingChange.user.id}`, { ...pendingChange.changes, admin_password: adminPassword });
+            closeConfirmation();
+          });
+        }}>
+          <ShieldCheck className="h-10 w-10 rounded-xl bg-blue-50 p-2 text-blue-600" />
+          <h3 className="text-lg font-bold">{pendingChange.title}</h3>
+          <p className="break-words text-sm text-slate-600">{pendingChange.description}</p>
+          <p className="break-all text-xs text-slate-500">Xác minh quản trị viên: {actor?.email}</p>
+          <label className="block text-sm font-semibold">Mật khẩu admin đang đăng nhập
+            <input autoFocus type="password" autoComplete="current-password" required maxLength={72} className={`${input} mt-2`} value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} />
+          </label>
+          {confirmationError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{confirmationError}</p>}
+          <div className="flex justify-end gap-2"><button type="button" disabled={busy} className={button} onClick={closeConfirmation}>Hủy</button><button disabled={busy} className={`${button} bg-blue-600! text-white`}>{busy ? 'Đang xác minh…' : 'Xác minh & xác nhận'}</button></div>
+        </form>
+      </AdminDialog>}
       {resetUser && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Đặt lại mật khẩu"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        >
+        <AdminDialog title="Đặt lại mật khẩu" busy={busy} onClose={closeConfirmation}>
           <form
-            className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6"
+            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               if (password !== confirmation) {
@@ -294,10 +311,12 @@ export function AdminAccounts() {
               void mutate(async () => {
                 await apiClient.post(`/admin/users/${resetUser.id}/password`, {
                   password,
+                  admin_password: adminPassword,
                 });
                 setResetUser(null);
                 setPassword("");
                 setConfirmation("");
+                setAdminPassword(''); setConfirmationError('');
               });
             }}
           >
@@ -327,16 +346,17 @@ export function AdminAccounts() {
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
             />
+            <label className="block text-sm font-semibold">Mật khẩu admin đang đăng nhập
+              <span className="block break-all text-xs font-normal text-slate-500">{actor?.email}</span>
+              <input type="password" autoComplete="current-password" required maxLength={72} className={`${input} mt-2`} value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} />
+            </label>
+            {confirmationError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{confirmationError}</p>}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 className={button}
                 disabled={busy}
-                onClick={() => {
-                  setResetUser(null);
-                  setPassword("");
-                  setConfirmation("");
-                }}
+                onClick={closeConfirmation}
               >
                 Hủy
               </button>
@@ -345,7 +365,7 @@ export function AdminAccounts() {
               </button>
             </div>
           </form>
-        </div>
+        </AdminDialog>
       )}
     </div>
   );

@@ -34,7 +34,8 @@ practice reports, notices, and the existing backup/restore screen.
 - Only session metadata, identifiers and action outcomes are logged. Passwords,
   credential hashes, JWTs, raw IPs and request bodies are not returned in admin logs.
 - Security policy, AI and SMTP controls share the Bảo mật & cấu hình admin page.
-  Legacy AI/email tab links redirect to this shared page. Non-secret settings are
+  Its three tabs show one panel at a time with an animated selector and keyboard
+  navigation; legacy AI/email links select the matching panel. Non-secret settings are
   persisted in the database; credentials are write-only and stored encrypted in
   a private environment file in a separate Docker volume, outside public media
   and DB backups. The environment-only SECRET_KEY derives domain-separated
@@ -53,6 +54,10 @@ practice reports, notices, and the existing backup/restore screen.
   (local default `http://localhost:5173`; production compose uses the website).
   Opening the link does not consume it: users explicitly confirm on the page.
 - Both roles open profile and logout actions through the avatar dropdown.
+- Account role/status changes, password resets and creating another administrator
+  require the signed-in administrator's password, checked by the backend with a
+  per-administrator limit. Passwords are never logged or persisted by these actions.
+  Confirmation dialogs trap focus and clear their password when closed.
 
 ## Data and verification
 

@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, SecretStr
 from app.models.user import UserRole
 
 
@@ -40,6 +40,7 @@ class UserResponse(UserBase):
 
 
 class AdminUserUpdate(BaseModel):
+    admin_password: Optional[SecretStr] = None
     full_name: Optional[str] = Field(default=None, min_length=1, max_length=255)
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None

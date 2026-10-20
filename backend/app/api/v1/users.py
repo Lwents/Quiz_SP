@@ -15,6 +15,7 @@ from app.models.attempt import Attempt, AttemptStatus
 from app.models.lesson import UserLessonProgress
 from app.schemas.user import AdminUserResponse, AdminUserUpdate, UserResponse, UserUpdate, ChangePasswordRequest
 from app.api.deps import get_current_user, require_role
+from app.core.admin_confirmation import confirm_admin_password
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -80,6 +81,8 @@ async def update_user_for_admin(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
+    if changes.role is not None or changes.is_active is not None:
+        confirm_admin_password(current_user, changes.admin_password)
     # Serialize role/status changes so two concurrent requests cannot both
     # remove what each believes is the other remaining administrator.
     await db.execute(select(func.pg_advisory_xact_lock(724021)))

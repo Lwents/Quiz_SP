@@ -7,7 +7,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, SecretStr
+from app.core.admin_confirmation import confirm_admin_password
 from sqlalchemy import select, func, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -29,6 +30,7 @@ started = time.monotonic()
 
 
 class NewAccount(UserCreate):
+    admin_password: SecretStr | None = None
     password: str = Field(min_length=8, max_length=72)
     role: Literal["ADMIN", "STUDENT"] = "STUDENT"
 
@@ -41,6 +43,7 @@ class NewAccount(UserCreate):
 
 
 class ResetPassword(BaseModel):
+    admin_password: SecretStr | None = None
     password: str = Field(min_length=8, max_length=72)
 
     @field_validator("password")
@@ -84,6 +87,8 @@ async def save_policy(data: AdminPolicy, db: AsyncSession = Depends(get_db), act
 @router.post("/users", response_model=UserResponse, status_code=201)
 async def create_account(data: NewAccount, db: AsyncSession = Depends(get_db), actor: User = Depends(admin_only)):
     from app.core.email_verification import send_verification
+    if data.role == "ADMIN":
+        confirm_admin_password(actor, data.admin_password)
     if (await db.execute(select(User.id).where(func.lower(User.email) == data.email.lower()))).scalar_one_or_none():
         raise HTTPException(409, "Email đã tồn tại")
     user = User(email=data.email.lower(), full_name=data.full_name.strip(), role=UserRole(data.role),
@@ -103,6 +108,7 @@ async def create_account(data: NewAccount, db: AsyncSession = Depends(get_db), a
 
 @router.post("/users/{user_id}/password")
 async def reset_password(user_id: uuid.UUID, data: ResetPassword, db: AsyncSession = Depends(get_db), actor: User = Depends(admin_only)):
+    confirm_admin_password(actor, data.admin_password)
     user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if user is None:
         raise HTTPException(404, "Không tìm thấy tài khoản")

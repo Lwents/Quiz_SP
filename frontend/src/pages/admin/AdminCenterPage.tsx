@@ -51,12 +51,16 @@ export function AdminCenterPage() {
   const [params, setParams] = useSearchParams();
   const requestedTab = params.get("tab");
   const legacyConfiguration = requestedTab === "ai" || requestedTab === "email";
+  const configurationSections = [
+    { id: "policy", name: "Bảo mật" }, { id: "ai", name: "AI" }, { id: "email", name: "Email SMTP" },
+  ];
+  const configurationSection = legacyConfiguration ? requestedTab! : configurationSections.some((s) => s.id === params.get("section")) ? params.get("section")! : "policy";
   const tab = legacyConfiguration ? "security" : tabs.some((t) => t.id === requestedTab)
     ? requestedTab!
     : "overview";
   useEffect(() => {
-    if (legacyConfiguration) setParams({ tab: "security" }, { replace: true });
-  }, [legacyConfiguration, setParams]);
+    if (legacyConfiguration) setParams({ tab: "security", section: requestedTab! }, { replace: true });
+  }, [legacyConfiguration, requestedTab, setParams]);
   return (
     <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-6">
       <header className="mb-5">
@@ -105,15 +109,24 @@ export function AdminCenterPage() {
           ) : tab === "active" ? (
             <AdminOnlinePage />
           ) : tab === "security" ? (
-            <div className="space-y-8">
-              <nav aria-label="Các phần cấu hình" className="flex flex-wrap gap-2 text-sm font-semibold text-blue-700">
-                <a href="#security-policy" className={adminButton}>Chính sách bảo mật</a>
-                <a href="#ai-settings" className={adminButton}>AI</a>
-                <a href="#email-settings" className={adminButton}>Email SMTP</a>
-              </nav>
-              <section id="security-policy" className="scroll-mt-24"><Operations key={tab} tab={tab} /></section>
-              <section id="ai-settings" className="scroll-mt-24"><AdminIntegrationsPage kind="ai" /></section>
-              <section id="email-settings" className="scroll-mt-24"><AdminIntegrationsPage kind="email" /></section>
+            <div className="space-y-5">
+              <div role="tablist" aria-label="Các phần cấu hình" className="relative grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-100 p-1">
+                <span aria-hidden="true" className="absolute bottom-1 left-1 top-1 w-[calc((100%-0.5rem)/3)] rounded-lg bg-white shadow-sm transition-transform duration-300 ease-out motion-reduce:transition-none" style={{ transform: `translateX(${configurationSections.findIndex((s) => s.id === configurationSection) * 100}%)` }} />
+                {configurationSections.map((section) => <button key={section.id} id={`settings-tab-${section.id}`} role="tab" aria-selected={configurationSection === section.id} aria-controls={`settings-panel-${section.id}`}
+                  onClick={() => setParams({ tab: "security", section: section.id })}
+                  onKeyDown={(event) => {
+                    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                    event.preventDefault();
+                    const index = configurationSections.findIndex((s) => s.id === section.id);
+                    const next = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (index + (event.key === 'ArrowRight' ? 1 : 2)) % 3;
+                    setParams({ tab: 'security', section: configurationSections[next].id });
+                    document.getElementById(`settings-tab-${configurationSections[next].id}`)?.focus();
+                  }} tabIndex={configurationSection === section.id ? 0 : -1}
+                  className={`relative min-w-0 rounded-lg px-2 py-3 text-sm font-semibold transition-colors ${configurationSection === section.id ? 'text-blue-700' : 'text-slate-500 hover:text-slate-900'}`}>{section.name}</button>)}
+              </div>
+              {configurationSections.map((section) => <section key={section.id} id={`settings-panel-${section.id}`} role="tabpanel" aria-labelledby={`settings-tab-${section.id}`} hidden={configurationSection !== section.id} className={configurationSection === section.id ? 'settings-panel-enter' : ''}>
+                {section.id === 'policy' ? <Operations tab="security" /> : <AdminIntegrationsPage kind={section.id as 'ai' | 'email'} />}
+              </section>)}
             </div>
           ) : (
             <Operations key={tab} tab={tab} />
