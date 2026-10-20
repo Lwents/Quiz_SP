@@ -39,7 +39,8 @@ jobs:
         working-directory: backend
         run: |
           python -m pip install -r requirements.txt
-          python -m pytest -q -k 'not trio'
+          # Tests need a signing key but must never use the production key.
+          SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')" python -m pytest -q -k 'not trio'
       - name: Build frontend
         working-directory: frontend
         run: |
