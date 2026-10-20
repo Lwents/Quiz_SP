@@ -33,7 +33,8 @@ practice reports, notices, and the existing backup/restore screen.
   tokens immediately. The session page explicitly describes this transition.
 - Only session metadata, identifiers and action outcomes are logged. Passwords,
   credential hashes, JWTs, raw IPs and request bodies are not returned in admin logs.
-- AI and SMTP controls live in dedicated admin tabs. Non-secret settings are
+- Security policy, AI and SMTP controls share the Bảo mật & cấu hình admin page.
+  Legacy AI/email tab links redirect to this shared page. Non-secret settings are
   persisted in the database; credentials are write-only and stored encrypted in
   a private environment file in a separate Docker volume, outside public media
   and DB backups. The environment-only SECRET_KEY derives domain-separated

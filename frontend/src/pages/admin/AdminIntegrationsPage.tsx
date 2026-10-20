@@ -38,7 +38,7 @@ export function AdminIntegrationsPage({ kind }: { kind: "ai" | "email" }) {
   useEffect(() => {
     let active = true;
     apiClient
-      .get(`/admin/integrations/${kind}`)
+      .get(`/admin/integrations/${kind}`, { timeout: 15000 })
       .then((r) => {
         if (active) {
           if (kind === "ai") setAI({ ...r.data, api_key: "" });
@@ -131,7 +131,7 @@ export function AdminIntegrationsPage({ kind }: { kind: "ai" | "email" }) {
       {!ai && !mail && !failed && (
         <p className="text-sm text-slate-500">Đang tải cấu hình…</p>
       )}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+      {(ai || mail) && <div className="rounded-2xl border border-slate-200 bg-white p-5">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -341,7 +341,7 @@ export function AdminIntegrationsPage({ kind }: { kind: "ai" | "email" }) {
           )}
         </form>
       )}
-      </div>
+      </div>}
     </section>
   );
 }

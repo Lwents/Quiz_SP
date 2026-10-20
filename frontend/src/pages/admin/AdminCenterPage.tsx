@@ -12,8 +12,6 @@ import {
   Users,
   Monitor,
   RefreshCw,
-  Bot,
-  Mail,
 } from "lucide-react";
 import { apiClient } from "../../api/client";
 import { toast } from "../../stores/toastStore";
@@ -32,8 +30,6 @@ const tabs = [
   { id: "sessions", name: "Phiên đăng nhập", icon: Monitor },
   { id: "activity", name: "Nhật ký hoạt động", icon: History },
   { id: "security", name: "Bảo mật & cấu hình", icon: ShieldCheck },
-  { id: "ai", name: "Cấu hình AI", icon: Bot },
-  { id: "email", name: "Cấu hình email", icon: Mail },
   { id: "health", name: "Sức khỏe hệ thống", icon: HeartPulse },
   { id: "reports", name: "Báo cáo luyện tập", icon: ChartNoAxesCombined },
   { id: "notices", name: "Thông báo", icon: Bell },
@@ -53,9 +49,14 @@ function errorMessage(error: unknown) {
 
 export function AdminCenterPage() {
   const [params, setParams] = useSearchParams();
-  const tab = tabs.some((t) => t.id === params.get("tab"))
-    ? params.get("tab")!
+  const requestedTab = params.get("tab");
+  const legacyConfiguration = requestedTab === "ai" || requestedTab === "email";
+  const tab = legacyConfiguration ? "security" : tabs.some((t) => t.id === requestedTab)
+    ? requestedTab!
     : "overview";
+  useEffect(() => {
+    if (legacyConfiguration) setParams({ tab: "security" }, { replace: true });
+  }, [legacyConfiguration, setParams]);
   return (
     <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-6">
       <header className="mb-5">
@@ -103,8 +104,17 @@ export function AdminCenterPage() {
             <AdminReports />
           ) : tab === "active" ? (
             <AdminOnlinePage />
-          ) : tab === "ai" || tab === "email" ? (
-            <AdminIntegrationsPage key={tab} kind={tab} />
+          ) : tab === "security" ? (
+            <div className="space-y-8">
+              <nav aria-label="Các phần cấu hình" className="flex flex-wrap gap-2 text-sm font-semibold text-blue-700">
+                <a href="#security-policy" className={adminButton}>Chính sách bảo mật</a>
+                <a href="#ai-settings" className={adminButton}>AI</a>
+                <a href="#email-settings" className={adminButton}>Email SMTP</a>
+              </nav>
+              <section id="security-policy" className="scroll-mt-24"><Operations key={tab} tab={tab} /></section>
+              <section id="ai-settings" className="scroll-mt-24"><AdminIntegrationsPage kind="ai" /></section>
+              <section id="email-settings" className="scroll-mt-24"><AdminIntegrationsPage kind="email" /></section>
+            </div>
           ) : (
             <Operations key={tab} tab={tab} />
           )}
@@ -184,7 +194,7 @@ function Operations({ tab }: { tab: string }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-xl font-bold text-slate-900">
-          {tabs.find((t) => t.id === tab)?.name}
+          {tab === "security" ? "Chính sách bảo mật" : tabs.find((t) => t.id === tab)?.name}
         </h2>
         <button className={adminButton} disabled={loading} onClick={load}>
           <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
