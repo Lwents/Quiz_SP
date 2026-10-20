@@ -10,13 +10,19 @@ from fastapi import HTTPException
 from app.api.v1.auth import login
 from app.core.security import get_password_hash
 from app.models.audit import AuditLog
-from app.schemas.user import LoginRequest
+from app.schemas.user import AdminUserUpdate, LoginRequest
+from app.models.user import UserRole
 
 
 def test_audit_log_schema_never_persists_credentials_or_network_identity():
     columns = set(AuditLog.__table__.columns.keys())
     assert {"user_id", "action", "email", "occurred_at"}.issubset(columns)
     assert not {"password", "hashed_password", "access_token", "refresh_token", "request_body", "ip_address"}.intersection(columns)
+
+
+def test_admin_cannot_assign_the_retired_teacher_role():
+    with pytest.raises(ValueError):
+        AdminUserUpdate(role=UserRole.TEACHER)
 
 
 @pytest.mark.anyio

@@ -34,9 +34,30 @@ async def get_admin_overview(
     total_users = (await db.execute(select(func.count(User.id)))).scalar() or 0
     active_users = (await db.execute(select(func.count(User.id)).where(User.is_active == True))).scalar() or 0
     students = (await db.execute(select(func.count(User.id)).where(User.role == UserRole.STUDENT))).scalar() or 0
-    teachers = (await db.execute(select(func.count(User.id)).where(User.role == UserRole.TEACHER))).scalar() or 0
     admins = (await db.execute(select(func.count(User.id)).where(User.role == UserRole.ADMIN))).scalar() or 0
     new_users = (await db.execute(select(func.count(User.id)).where(User.created_at >= start_day))).scalar() or 0
+
+    # A real growth chart needs the existing population before the period as
+    # its baseline, then adds accounts created on each day.
+    created_dates = (await db.execute(select(User.created_at))).scalars().all()
+    users_before_period = 0
+    registrations_by_day: dict[str, int] = {}
+    for created_at in created_dates:
+        if created_at is None:
+            continue
+        created_utc = created_at if created_at.tzinfo else created_at.replace(tzinfo=timezone.utc)
+        if created_utc < start_day:
+            users_before_period += 1
+            continue
+        date_key = created_utc.astimezone(timezone.utc).date().isoformat()
+        registrations_by_day[date_key] = registrations_by_day.get(date_key, 0) + 1
+    user_chart = []
+    cumulative_users = users_before_period
+    for index in range(days):
+        date_key = (start_day + timedelta(days=index)).date().isoformat()
+        new_on_day = registrations_by_day.get(date_key, 0)
+        cumulative_users += new_on_day
+        user_chart.append({"date": date_key, "new_users": new_on_day, "total_users": cumulative_users})
 
     events = (
         await db.execute(
@@ -77,7 +98,13 @@ async def get_admin_overview(
             "active": active_users,
             "inactive": total_users - active_users,
             "new_in_period": new_users,
-            "by_role": {"students": students, "teachers": teachers, "admins": admins},
+            "by_role": {
+                "students": students,
+                "admins": admins,
+                # Kept only to make existing historic rows visible while the
+                # legacy role is no longer assignable in the admin UI.
+                "legacy_roles": total_users - students - admins,
+            },
         },
         "security": {
             "failed_logins_in_period": sum(1 for event in events if event.action == "login_failed"),
@@ -97,6 +124,7 @@ async def get_admin_overview(
             }
             for date, counts in chart_counts.items()
         ],
+        "user_chart": user_chart,
         "recent_logins": [
             {
                 "id": event.id,
