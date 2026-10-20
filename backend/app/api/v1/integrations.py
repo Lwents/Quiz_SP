@@ -58,9 +58,9 @@ async def test_ai(db: AsyncSession = Depends(get_db), actor: User = Depends(admi
     if not key:
         raise HTTPException(400, "Chưa cấu hình API key")
     try:
-        async with httpx.AsyncClient(timeout=30, follow_redirects=False) as client:
+        async with httpx.AsyncClient(timeout=45, follow_redirects=False) as client:
             response = await client.post(config.base_url + "/chat/completions", headers={"Authorization": "Bearer " + key},
-                json={"model": config.model, "messages": [{"role": "user", "content": "Reply with OK."}], "stream": False, "max_tokens": 16})
+                json={"model": config.model, "messages": [{"role": "user", "content": "Reply with OK."}], "stream": False, "max_tokens": 900})
         response.raise_for_status()
         if "text/event-stream" in response.headers.get("content-type", ""):
             import json
