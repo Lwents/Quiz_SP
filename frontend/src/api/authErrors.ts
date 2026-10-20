@@ -16,7 +16,7 @@ export function authErrorMessage(error: unknown, fallback: string): string {
   if (code && messages[code]) return messages[code];
   if (error.response.status === 401) return messages.INVALID_CREDENTIALS;
   if (error.response.status === 422) return 'Thông tin chưa hợp lệ. Vui lòng kiểm tra các trường đã nhập.';
-  if (error.response.status === 429) return 'Bạn đã thử quá nhiều lần. Vui lòng chờ một lát rồi thử lại.';
+  if (error.response.status === 429) return typeof detail === 'string' && /[À-ỹ]/.test(detail) ? detail : 'Bạn đã thử quá nhiều lần. Vui lòng chờ một lát rồi thử lại.';
   const text = typeof detail === 'string' ? detail : detail?.error?.message;
   if (error.response.status >= 500 && !(typeof text === 'string' && /[À-ỹ]/.test(text))) return 'Máy chủ chưa xử lý được yêu cầu. Vui lòng thử lại sau.';
   return typeof text === 'string' && /[À-ỹ]/.test(text) ? text : fallback;

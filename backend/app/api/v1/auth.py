@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -77,9 +78,17 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
     policy = await load_policy(db)
     now = datetime.now(timezone.utc)
+    reset_event = aliased(AuditLog)
+    reset_at = select(func.max(reset_event.occurred_at)).where(
+        func.lower(func.trim(reset_event.email)) == identifier,
+        reset_event.action.in_(("login_unlocked", "login_success")),
+    ).scalar_subquery()
+    def since_reset(minutes):
+        window_start = now - timedelta(minutes=minutes)
+        return func.greatest(window_start, func.coalesce(reset_at, window_start))
     lock_count = (await db.execute(select(func.count(AuditLog.id)).where(
         AuditLog.email == identifier, AuditLog.action == "login_locked",
-        AuditLog.occurred_at >= now - timedelta(minutes=policy.lockout_minutes)))).scalar()
+        AuditLog.occurred_at > since_reset(policy.lockout_minutes)))).scalar()
     if lock_count > 0:
         raise HTTPException(429, "Tài khoản đang bị tạm khóa do đăng nhập sai nhiều lần", headers={"Retry-After": str(policy.lockout_minutes * 60)})
     if not user or not verify_password(login_data.password, user.hashed_password):
@@ -88,7 +97,7 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
         db.add(AuditLog(action="login_failed", email=identifier[:255]))
         failures = (await db.execute(select(func.count(AuditLog.id)).where(
             AuditLog.email == identifier, AuditLog.action == "login_failed",
-            AuditLog.occurred_at >= now - timedelta(minutes=policy.failure_window_minutes)))).scalar()
+            AuditLog.occurred_at > since_reset(policy.failure_window_minutes)))).scalar()
         if failures + 1 >= policy.failed_attempts:
             db.add(AuditLog(action="login_locked", email=identifier[:255]))
         await db.commit()

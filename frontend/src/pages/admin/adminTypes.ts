@@ -45,6 +45,7 @@ export const eventNames: Record<string, string> = {
   login_failed: "Đăng nhập thất bại",
   login_blocked: "Tài khoản bị khóa",
   login_locked: "Tạm khóa do nhập sai",
+  login_unlocked: "Gỡ khóa đăng nhập do nhập sai",
   account_created: "Tạo tài khoản",
   account_updated: "Cập nhật tài khoản",
   password_reset: "Đặt lại mật khẩu",

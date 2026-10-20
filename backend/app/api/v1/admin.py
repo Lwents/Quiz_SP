@@ -54,6 +54,10 @@ class ResetPassword(BaseModel):
         return value
 
 
+class AdminConfirmation(BaseModel):
+    admin_password: SecretStr | None = None
+
+
 class NoticeInput(BaseModel):
     title: str = Field(min_length=1, max_length=160)
     message: str = Field(min_length=1, max_length=4000)
@@ -119,6 +123,18 @@ async def reset_password(user_id: uuid.UUID, data: ResetPassword, db: AsyncSessi
     db.add(AuditLog(user_id=actor.id, email=actor.email, action="password_reset"))
     await db.commit()
     return {"message": "Đã đổi mật khẩu và thu hồi phiên cũ"}
+
+
+@router.post("/users/{user_id}/unlock-login")
+async def unlock_login(user_id: uuid.UUID, data: AdminConfirmation, db: AsyncSession = Depends(get_db), actor: User = Depends(admin_only)):
+    confirm_admin_password(actor, data.admin_password)
+    user = (await db.execute(select(User).where(User.id == user_id).with_for_update())).scalar_one_or_none()
+    if user is None:
+        raise HTTPException(404, "Không tìm thấy tài khoản")
+    # Record the reset instead of deleting or rewriting authentication history.
+    db.add(AuditLog(user_id=actor.id, email=user.email.strip().lower(), action="login_unlocked"))
+    await db.commit()
+    return {"message": "Đã gỡ khóa đăng nhập do nhập sai. Trạng thái khóa/mở tài khoản không thay đổi."}
 
 
 @router.get("/sessions")

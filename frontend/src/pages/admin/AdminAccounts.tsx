@@ -32,7 +32,7 @@ export function AdminAccounts() {
   const [confirmation, setConfirmation] = useState("");
   const [adminPassword, setAdminPassword] = useState('');
   const [confirmationError, setConfirmationError] = useState('');
-  const [pendingChange, setPendingChange] = useState<{ user: Account; changes: { role?: string; is_active?: boolean }; title: string; description: string } | null>(null);
+  const [pendingChange, setPendingChange] = useState<{ user: Account; changes: { role?: string; is_active?: boolean }; unlockLogin?: boolean; title: string; description: string } | null>(null);
   const closeConfirmation = () => { setPendingChange(null); setResetUser(null); setAdminPassword(''); setConfirmationError(''); setPassword(''); setConfirmation(''); };
   const load = useCallback(async () => {
     setLoading(true);
@@ -244,6 +244,14 @@ export function AdminAccounts() {
                   className={button}
                   disabled={busy}
                   onClick={() => {
+                    setAdminPassword(''); setConfirmationError('');
+                    setPendingChange({ user: u, changes: {}, unlockLogin: true, title: 'Gỡ khóa đăng nhập do nhập sai', description: `Cho phép ${u.email} thử đăng nhập lại sau khi nhập sai nhiều lần. Nhật ký các lần nhập sai được giữ lại. Thao tác này không mở lại tài khoản đã bị quản trị viên khóa.` });
+                  }}
+                >Gỡ khóa do nhập sai</button>
+                <button
+                  className={button}
+                  disabled={busy}
+                  onClick={() => {
                     setResetUser(u);
                     setPassword("");
                     setConfirmation("");
@@ -283,7 +291,11 @@ export function AdminAccounts() {
         <form className="space-y-4" onSubmit={(event) => {
           event.preventDefault(); setConfirmationError('');
           void mutate(async () => {
-            await apiClient.patch(`/users/admin/${pendingChange.user.id}`, { ...pendingChange.changes, admin_password: adminPassword });
+            if (pendingChange.unlockLogin) {
+              await apiClient.post(`/admin/users/${pendingChange.user.id}/unlock-login`, { admin_password: adminPassword });
+            } else {
+              await apiClient.patch(`/users/admin/${pendingChange.user.id}`, { ...pendingChange.changes, admin_password: adminPassword });
+            }
             closeConfirmation();
           });
         }}>

@@ -8,7 +8,7 @@ from pydantic import SecretStr
 from app.core.admin_confirmation import confirm_admin_password
 from app.core.security import get_password_hash
 from app.api.v1.users import update_user_for_admin
-from app.api.v1.admin import reset_password, ResetPassword, create_account, NewAccount
+from app.api.v1.admin import reset_password, ResetPassword, create_account, NewAccount, unlock_login, AdminConfirmation
 from app.schemas.user import AdminUserUpdate
 from app.models import UserRole
 
@@ -74,7 +74,24 @@ async def test_reset_password_and_new_admin_creation_cannot_bypass_confirmation(
     with pytest.raises(HTTPException) as error:
         await create_account(NewAccount(email='new@example.com', full_name='New admin', password=secrets.token_urlsafe(16), role='ADMIN'), db, actor)
     assert error.value.status_code == 403
+    with pytest.raises(HTTPException) as error:
+        await unlock_login(uuid.uuid4(), AdminConfirmation(), db, actor)
+    assert error.value.status_code == 403
     db.execute.assert_not_awaited()
+
+
+@pytest.mark.anyio
+async def test_unlock_preserves_history_and_does_not_reactivate_disabled_account():
+    actor, password = administrator()
+    target = SimpleNamespace(id=uuid.uuid4(), email='Student@Example.com', is_active=False)
+    db = MagicMock(execute=AsyncMock(return_value=db_result(target)), commit=AsyncMock())
+    await unlock_login(target.id, AdminConfirmation(admin_password=password), db, actor)
+    event = db.add.call_args.args[0]
+    assert event.action == 'login_unlocked' and event.email == 'student@example.com'
+    assert event.user_id == actor.id
+    assert target.is_active is False
+    db.commit.assert_awaited_once()
+    db.delete.assert_not_called()
 
 
 def test_admin_confirmation_accepts_correct_password_and_does_not_echo_it():

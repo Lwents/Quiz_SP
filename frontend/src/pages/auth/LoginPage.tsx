@@ -66,11 +66,12 @@ export const LoginPage: React.FC = () => {
         {error?.includes('xác minh') && <Link to="/verify-email" className="block text-sm font-semibold text-blue-600">Gửi lại link xác minh email</Link>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Email hoặc tên đăng nhập</label>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider" htmlFor="login-email">Email</label>
             <div className="relative">
               <Mail className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
-                type="text"
+                id="login-email"
+                type="email"
                 autoComplete="username"
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -79,7 +80,7 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                placeholder="Nhập email hoặc tên đăng nhập..."
+                placeholder="Nhập email đã đăng ký..."
               />
             </div>
           </div>

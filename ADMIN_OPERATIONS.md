@@ -63,6 +63,11 @@ practice reports, notices, and the existing backup/restore screen.
   require the signed-in administrator's password, checked by the backend with a
   per-administrator limit. Passwords are never logged or persisted by these actions.
   Confirmation dialogs trap focus and clear their password when closed.
+- Registration and the login form use email as the public account identifier.
+  Administrators can clear a temporary failed-login lock after password
+  confirmation. The reset is an audit event; previous failures are retained,
+  and manually disabled accounts stay disabled. A successful login also resets
+  the failure streak, so earlier mistakes do not relock a valid session.
 
 ## Data and verification
 
