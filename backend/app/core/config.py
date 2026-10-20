@@ -42,6 +42,14 @@ class Settings(BaseSettings):
     AI_BASE_URL: str = "http://localhost:8000/v1"
     AI_API_KEY: str = ""
     AI_MODEL: str = "ag/gemini-3.8-flash-high"
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 465
+    SMTP_TLS_MODE: str = "ssl"
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = ""
+    SMTP_FROM_NAME: str = "HNUE PRO"
+    INTEGRATIONS_ENV_FILE: str = ".private/integrations.env"
 
     class Config:
         env_file = ".env"

@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
+from app.core.integrations import ai_runtime
 from app.api.deps import get_current_user
 from app.models.user import User, UserRole
 from app.core.database import get_db
@@ -57,11 +57,13 @@ NETWORK_LAB_IDS = {
 async def ask_network_lab_ai(
     req: NetworkLabAskRequest,
     current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     if req.lab_id not in NETWORK_LAB_IDS or not req.question.strip():
         raise HTTPException(status_code=422, detail="Bài tập hoặc câu hỏi không hợp lệ.")
     limiter.check(("ai-network", str(current_user.id)), 10, 60)
-    if not settings.AI_API_KEY:
+    ai_config, api_key = await ai_runtime(db)
+    if not api_key:
         raise HTTPException(status_code=503, detail="Model AI chưa được cấu hình trên máy chủ.")
 
     system_prompt = """Bạn là gia sư mạng máy tính cho sinh viên MỚI BẮT ĐẦU của HNUE.
@@ -83,9 +85,9 @@ Chỉ trả lời về kiến thức mạng máy tính và bài thực hành đa
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(
-                f"{settings.AI_BASE_URL.rstrip('/')}/chat/completions",
-                json={"model": settings.AI_MODEL, "messages": messages, "stream": False, "temperature": 0.3, "max_tokens": 900},
-                headers={"Content-Type": "application/json", "Authorization": f"Bearer {settings.AI_API_KEY}"},
+                f"{ai_config.base_url}/chat/completions",
+                json={"model": ai_config.model, "messages": messages, "stream": False, "temperature": 0.3, "max_tokens": 900},
+                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
             )
         resp.raise_for_status()
         if "application/json" in resp.headers.get("content-type", ""):
@@ -211,8 +213,11 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
 ```
 """
 
+    ai_config, api_key = await ai_runtime(db)
+    if not api_key:
+        raise HTTPException(503, "Model AI chưa được cấu hình trên máy chủ.")
     payload = {
-        "model": settings.AI_MODEL,
+        "model": ai_config.model,
         "messages": [
             {
                 "role": "system",
@@ -229,13 +234,13 @@ Giải thích thật giản dị, trực quan vì sao đáp án chuẩn `{correc
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {settings.AI_API_KEY}"
+        "Authorization": f"Bearer {api_key}"
     }
 
     try:
         async with httpx.AsyncClient(timeout=45.0) as client:
             resp = await client.post(
-                f"{settings.AI_BASE_URL.rstrip('/')}/chat/completions",
+                f"{ai_config.base_url}/chat/completions",
                 json=payload,
                 headers=headers
             )

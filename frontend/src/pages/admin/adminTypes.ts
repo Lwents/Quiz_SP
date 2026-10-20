@@ -38,6 +38,9 @@ export type Policy = {
   lockout_minutes: number;
 };
 export const eventNames: Record<string, string> = {
+  ai_config_updated: "Cập nhật cấu hình AI",
+  smtp_config_updated: "Cập nhật cấu hình email",
+  smtp_test_sent: "Gửi email kiểm tra",
   login_success: "Đăng nhập thành công",
   login_failed: "Đăng nhập thất bại",
   login_blocked: "Tài khoản bị khóa",

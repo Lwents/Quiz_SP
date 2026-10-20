@@ -11,7 +11,7 @@ from app.models import Base
 EXPECTED_TABLES = {
     "users", "subjects", "topics", "lessons", "questions", "quizzes",
     "quiz_questions", "attempts", "attempt_answers", "user_lesson_progress", "audit_logs",
-    "admin_settings", "login_sessions", "announcements", "announcement_reads",
+    "admin_settings", "login_sessions", "announcements", "announcement_reads", "user_presence",
 }
 
 

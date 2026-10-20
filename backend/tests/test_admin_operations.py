@@ -26,7 +26,7 @@ def clear_overrides():
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("path", ["/admin/policy", "/admin/health", "/admin/reports", "/admin/sessions", "/admin/activity", "/admin/announcements"])
+@pytest.mark.parametrize("path", ["/admin/policy", "/admin/health", "/admin/reports", "/admin/sessions", "/admin/activity", "/admin/announcements", "/admin/integrations/ai", "/admin/integrations/email", "/admin/presence/stream"])
 async def test_student_cannot_access_operational_admin_data(path):
     db = MagicMock()
     async def override_db():
@@ -34,7 +34,7 @@ async def test_student_cannot_access_operational_admin_data(path):
     app.dependency_overrides[get_db] = override_db
     app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(role=UserRole.STUDENT)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        response = await client.get("/api/v1" + path)
+        response = await client.get("/api/v1" + path, headers={"Authorization": "Bearer test-placeholder"})
     assert response.status_code == 403
     db.execute.assert_not_called()
 

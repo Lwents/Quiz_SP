@@ -43,7 +43,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Inactive or deleted user"
         )
-    await validate_session(db, payload, user.id, touch=not request.url.path.endswith(("/notifications", "/admin/sessions")))
+    await validate_session(db, payload, user.id, touch=not request.url.path.endswith(("/notifications", "/admin/sessions", "/presence", "/presence/stream")))
     return user
 
 

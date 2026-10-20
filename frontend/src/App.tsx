@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Navbar } from './layouts/Navbar';
+import { PresenceTracker } from './components/PresenceTracker';
 import { ToastContainer } from './components/Toast';
 import { toast } from './stores/toastStore';
 import { LoginPage } from './pages/auth/LoginPage';
@@ -166,6 +167,7 @@ export const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <PresenceTracker />
       <PageTitleHandler />
       <AppFrame>
           <Routes>

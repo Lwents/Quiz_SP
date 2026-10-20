@@ -1,4 +1,4 @@
-"""Operational administration data; never persist credentials in these tables."""
+"""Operational administration data; credentials remain outside the database."""
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -35,3 +35,10 @@ class AnnouncementRead(Base, UUIDMixin):
     announcement_id = Column(UUID(as_uuid=True), ForeignKey("announcements.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     read_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class UserPresence(Base):
+    __tablename__ = "user_presence"
+    id = Column(UUID(as_uuid=True), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    last_seen_at = Column(DateTime(timezone=True), nullable=False, index=True)

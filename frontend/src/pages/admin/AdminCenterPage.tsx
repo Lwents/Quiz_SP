@@ -12,12 +12,16 @@ import {
   Users,
   Monitor,
   RefreshCw,
+  Bot,
+  Mail,
 } from "lucide-react";
 import { apiClient } from "../../api/client";
 import { toast } from "../../stores/toastStore";
 import { AdminAnalyticsPage } from "./AdminAnalyticsPage";
 import { AdminAccounts } from "./AdminAccounts";
 import { AdminReports } from "./AdminReports";
+import { AdminOnlinePage } from "./AdminOnlinePage";
+import { AdminIntegrationsPage } from "./AdminIntegrationsPage";
 import { dateTime, eventNames, exportCsv } from "./adminTypes";
 import type { Event, Session, Policy, Notice } from "./adminTypes";
 
@@ -28,6 +32,8 @@ const tabs = [
   { id: "sessions", name: "Phiên đăng nhập", icon: Monitor },
   { id: "activity", name: "Nhật ký hoạt động", icon: History },
   { id: "security", name: "Bảo mật & cấu hình", icon: ShieldCheck },
+  { id: "ai", name: "Cấu hình AI", icon: Bot },
+  { id: "email", name: "Cấu hình email", icon: Mail },
   { id: "health", name: "Sức khỏe hệ thống", icon: HeartPulse },
   { id: "reports", name: "Báo cáo luyện tập", icon: ChartNoAxesCombined },
   { id: "notices", name: "Thông báo", icon: Bell },
@@ -95,6 +101,10 @@ export function AdminCenterPage() {
             <AdminAccounts />
           ) : tab === "reports" ? (
             <AdminReports />
+          ) : tab === "active" ? (
+            <AdminOnlinePage />
+          ) : tab === "ai" || tab === "email" ? (
+            <AdminIntegrationsPage key={tab} kind={tab} />
           ) : (
             <Operations key={tab} tab={tab} />
           )}
@@ -125,11 +135,11 @@ function Operations({ tab }: { tab: string }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      if (tab === "active" || tab === "sessions")
+      if (tab === "sessions")
         setSessions(
           (
             await apiClient.get<Session[]>("/admin/sessions", {
-              params: { active_only: tab === "active" },
+              params: { active_only: false },
             })
           ).data,
         );
@@ -157,12 +167,6 @@ function Operations({ tab }: { tab: string }) {
   }, [tab, action, offset]);
   useEffect(() => {
     void load();
-    if (tab === "active") {
-      const timer = setInterval(() => {
-        if (!document.hidden) void load();
-      }, 30000);
-      return () => clearInterval(timer);
-    }
   }, [load, tab]);
   const mutate = async (fn: () => Promise<unknown>, success: string) => {
     setBusy(true);
@@ -187,12 +191,11 @@ function Operations({ tab }: { tab: string }) {
         </button>
       </div>
       {loading && <p className="text-sm text-slate-500">Đang tải dữ liệu…</p>}
-      {(tab === "sessions" || tab === "active") && (
+      {tab === "sessions" && (
         <section className={panel}>
           <p className="mb-4 text-sm text-slate-500">
-            {tab === "active"
-              ? `${new Set(sessions.map((s) => s.user_id)).size} người dùng có thao tác trong 10 phút gần đây. Tự làm mới mỗi 30 giây.`
-              : "Phiên được theo dõi từ khi bật chức năng này. Phiên cũ cần đăng nhập lại để xuất hiện; đặt lại mật khẩu sẽ thu hồi cả token cũ."}
+            Phiên được theo dõi từ khi bật chức năng này. Phiên cũ cần đăng nhập
+            lại để xuất hiện; đặt lại mật khẩu sẽ thu hồi cả token cũ.
           </p>
           <div className="space-y-3">
             {sessions.map((s) => (

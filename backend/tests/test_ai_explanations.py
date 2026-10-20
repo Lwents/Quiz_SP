@@ -6,9 +6,15 @@ import pytest
 
 from app.ai_explanation_context import explanation_context
 from app.api.v1 import ai
+from app.core.config import settings
 from app.models.attempt import AttemptStatus
 from app.models.question import QuestionType
 from app.models.user import UserRole
+
+
+@pytest.fixture(autouse=True)
+def runtime_config(monkeypatch):
+    monkeypatch.setattr(ai, "ai_runtime", AsyncMock(return_value=(SimpleNamespace(base_url=settings.AI_BASE_URL.rstrip('/'), model=settings.AI_MODEL), "test-placeholder")))
 
 
 def test_matching_retains_repeated_answers_and_explains_only_wrong_rows():

@@ -8,8 +8,16 @@ from httpx import ASGITransport, AsyncClient
 
 from app.api import deps
 from app.api.v1 import ai
+from app.core.config import settings
 from app.main import app
 from app.models.user import User
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
+
+
+@pytest.fixture(autouse=True)
+def runtime_config(monkeypatch):
+    monkeypatch.setattr(ai, "ai_runtime", AsyncMock(return_value=(SimpleNamespace(base_url=settings.AI_BASE_URL.rstrip('/'), model=settings.AI_MODEL), "test-placeholder")))
 
 
 @pytest.mark.anyio
@@ -17,7 +25,7 @@ async def test_network_lab_uses_configured_model_and_current_diagram(monkeypatch
     user = MagicMock(spec=User)
     user.id = uuid.uuid4()
     app.dependency_overrides[deps.get_current_user] = lambda: user
-    monkeypatch.setattr(ai.settings, "AI_API_KEY", "test-placeholder")
+    monkeypatch.setattr(settings, "AI_API_KEY", "test-placeholder")
     seen = {}
     original_client = httpx.AsyncClient
 
@@ -37,7 +45,7 @@ async def test_network_lab_uses_configured_model_and_current_diagram(monkeypatch
             })
         assert response.status_code == 200
         assert "cổng R1" in response.json()["answer"]
-        assert seen["payload"]["model"] == ai.settings.AI_MODEL
+        assert seen["payload"]["model"] == settings.AI_MODEL
         assert "PC1 gateway 192.168.1.1" in seen["payload"]["messages"][1]["content"]
         assert seen["payload"]["messages"][-1]["content"] == "Vì sao cần gateway?"
         assert seen["payload"]["messages"][2]["content"] == "Mask là gì?"
@@ -48,7 +56,7 @@ async def test_network_lab_uses_configured_model_and_current_diagram(monkeypatch
 @pytest.mark.anyio
 async def test_network_lab_rejects_unknown_lab(monkeypatch):
     app.dependency_overrides[deps.get_current_user] = lambda: MagicMock(spec=User)
-    monkeypatch.setattr(ai.settings, "AI_API_KEY", "test-placeholder")
+    monkeypatch.setattr(settings, "AI_API_KEY", "test-placeholder")
     try:
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/api/v1/ai/network-lab/ask", json={
@@ -62,7 +70,7 @@ async def test_network_lab_rejects_unknown_lab(monkeypatch):
 @pytest.mark.anyio
 async def test_network_lab_reports_provider_timeout(monkeypatch):
     app.dependency_overrides[deps.get_current_user] = lambda: MagicMock(spec=User)
-    monkeypatch.setattr(ai.settings, "AI_API_KEY", "test-placeholder")
+    monkeypatch.setattr(settings, "AI_API_KEY", "test-placeholder")
     original_client = httpx.AsyncClient
 
     def provider(request: httpx.Request) -> httpx.Response:

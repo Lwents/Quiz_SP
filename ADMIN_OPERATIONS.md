@@ -10,9 +10,11 @@ practice reports, notices, and the existing backup/restore screen.
 - Account charts count records currently present in `users`, including locked
   accounts. Growth reconstructs creation dates of those records, not deleted users.
 - Enabled accounts are labelled “Được phép truy cập”; this is not an online count.
-- Recently active users are distinct users with a valid tracked session and an
-  authenticated request in the last ten minutes. Notification polling does not
-  extend activity/idle timestamps. The activity list refreshes every 30 seconds.
+- Online users are distinct users with a visible-tab presence heartbeat. Tabs
+  send heartbeats every 15 seconds and signal hiding/closing independently.
+  Admins receive snapshots over authenticated SSE every three seconds; abrupt
+  disconnections expire after 45 seconds. Background presence and notification
+  traffic does not extend the authentication idle timeout.
 - Practice reports include submitted/graded student attempts only. Percentage
   distributions exclude attempts with a zero maximum score.
 
@@ -31,9 +33,16 @@ practice reports, notices, and the existing backup/restore screen.
   tokens immediately. The session page explicitly describes this transition.
 - Only session metadata, identifiers and action outcomes are logged. Passwords,
   credential hashes, JWTs, raw IPs and request bodies are not returned in admin logs.
-- Existing infrastructure security and SMTP credentials remain environment-only.
-  This UI does not claim to implement 2FA, Google SSO, scheduled backups, or SMTP
-  administration merely by presenting nonfunctional switches.
+- AI and SMTP controls live in dedicated admin tabs. Non-secret settings are
+  persisted in the database; credentials are write-only and stored encrypted in
+  a private environment file in a separate Docker volume, outside public media
+  and DB backups. The environment-only SECRET_KEY derives domain-separated
+  encryption keys. Preserve that key and the private volume across rebuilds;
+  changing the master key requires re-entering integration credentials.
+- AI settings apply to both tutor endpoints. AI tests make one model request;
+  SMTP tests send only to the administrator-specified address using verified
+  SSL/TLS or STARTTLS. Blank secret inputs preserve the existing credential.
+- The UI does not claim to implement 2FA, Google SSO or scheduled backups.
 
 ## Data and verification
 
