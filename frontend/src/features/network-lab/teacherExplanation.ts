@@ -93,7 +93,7 @@ function twoRouterExplanation(otherGuide: boolean): TeacherExplanation {
       {
         title: 'DCE, clock rate và no shutdown nghĩa là gì?',
         explanation: 'Dây serial giữa router cần một đầu tạo nhịp truyền tín hiệu, gọi là DCE. Trong bài này R1 S0/0 là đầu DCE nên đặt clock rate 64000 tại đó. no shutdown nghĩa là bật cổng. Cắm dây và điền IP đúng vẫn chưa đủ nếu cổng còn tắt hoặc DCE chưa cấp nhịp.',
-        example: 'Ở R1: chọn cổng S0/0 → đặt clock rate 64000 → no shutdown. R2 S0/1 cũng cần no shutdown nhưng không đặt clock rate vì không phải DCE.',
+        example: otherGuide ? 'Word ghi clock rate 64000 trên cả R1 S0/0 và R2 S0/1. Giữ nguyên khi đối chiếu: đầu DCE nhận lệnh, đầu DTE báo %Error: This command applies only to DCE interfaces. Hai cổng đều cần no shutdown.' : 'Ở R1: chọn cổng S0/0 → đặt clock rate 64000 → no shutdown. R2 S0/1 cũng cần no shutdown nhưng không đặt clock rate vì không phải DCE.',
         analogy: 'Hai người dùng bộ đàm: phải bật máy ở cả hai đầu; một đầu giữ nhịp để tín hiệu được truyền đều.',
       },
       ...(otherGuide ? [{

@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client';
 import { BaseQuestion } from '../../types';
 import { getQuestionRenderer } from '../../features/question/question-registry';
 import { QuestionContent } from '../../components/QuestionContent';
+import { MathText } from '../../components/MathText';
 import { useAuthStore } from '../../stores/authStore';
 import {
   ArrowLeft,
@@ -254,7 +255,7 @@ export const QuizPreviewPage: React.FC = () => {
                   </div>
                   {currentQ.explanation && (
                     <p className="text-slate-600 italic pt-1">
-                      <strong>Giải thích:</strong> {currentQ.explanation}
+                      <strong>Giải thích:</strong> <MathText text={currentQ.explanation} />
                     </p>
                   )}
                 </div>

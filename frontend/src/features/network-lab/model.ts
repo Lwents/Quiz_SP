@@ -8,6 +8,7 @@ export interface Port {
   mask: string;
   enabled: boolean;
   clockRate?: number;
+  description?: string;
 }
 
 export interface Device {
@@ -20,6 +21,7 @@ export interface Device {
   ports: Port[];
   gateway: string;
   ripNetworks: string[];
+  startupConfig?: { name: string; ports: Port[]; ripNetworks: string[] };
 }
 
 export interface Endpoint { deviceId: string; port: string }
@@ -221,9 +223,19 @@ function findOnLan(topology: Topology, from: Endpoint, ip: string): Endpoint | u
   });
 }
 
+export function classfulNetwork(ip: string): string {
+  const parts = ip.split('.');
+  const keep = Number(parts[0]) < 128 ? 1 : Number(parts[0]) < 192 ? 2 : 3;
+  return parts.map((part, index) => index < keep ? part : '0').join('.');
+}
+
+export function ripEnabledFor(device: Device, network: string): boolean {
+  return device.ripNetworks.some(entry => classfulNetwork(entry) === classfulNetwork(network));
+}
+
 function hasRip(device: Device, port: Port): boolean {
   const info = networkInfo(port.ip, port.mask);
-  return Boolean(info && device.ripNetworks.includes(info.network));
+  return Boolean(info && ripEnabledFor(device, info.network));
 }
 
 function traceOneWay(topology: Topology, source: Device, target: Device): PingResult {

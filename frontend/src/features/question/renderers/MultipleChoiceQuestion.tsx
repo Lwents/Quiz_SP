@@ -1,6 +1,7 @@
 import React from 'react';
 import { QuestionRendererProps } from '../question.types';
 import { cn } from '../../../utils/cn';
+import { MathText } from '../../../components/MathText';
 
 export const MultipleChoiceQuestion: React.FC<QuestionRendererProps> = ({
   question,
@@ -44,7 +45,7 @@ export const MultipleChoiceQuestion: React.FC<QuestionRendererProps> = ({
               onChange={() => handleToggle(opt.id)}
               className="w-4 h-4 shrink-0 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
             />
-            <span className="min-w-0 [overflow-wrap:anywhere] text-base leading-relaxed font-medium">{opt.text}</span>
+            <span className="min-w-0 [overflow-wrap:anywhere] text-base leading-relaxed font-medium"><MathText text={opt.text} /></span>
           </label>
         );
       })}

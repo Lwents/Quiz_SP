@@ -1,6 +1,7 @@
 import React from 'react';
 import { QuestionRendererProps } from '../question.types';
 import { cn } from '../../../utils/cn';
+import { MathText } from '../../../components/MathText';
 
 export const SingleChoiceQuestion: React.FC<QuestionRendererProps> = ({
   question,
@@ -52,7 +53,7 @@ export const SingleChoiceQuestion: React.FC<QuestionRendererProps> = ({
                 showCorrect ? "text-emerald-600" : showIncorrectSelection ? "text-rose-600" : "text-blue-600"
               )}
             />
-            <span className="min-w-0 flex-1 [overflow-wrap:anywhere] text-base leading-relaxed font-medium">{opt.text}</span>
+            <span className="min-w-0 flex-1 [overflow-wrap:anywhere] text-base leading-relaxed font-medium"><MathText text={opt.text} /></span>
             {showCorrect && (
               <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-800">
                 Đáp án đúng

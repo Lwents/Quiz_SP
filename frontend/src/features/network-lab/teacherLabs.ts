@@ -49,7 +49,7 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '192.168.1.64/26', purpose: 'R1 S0/0 .65 ↔ R2 S0/1 .66', reason: 'Hai đầu serial cùng mạng .64/26.' },
       { network: '192.168.1.128/26', purpose: 'R2 F0/1 .129 ↔ PC2 .150', reason: 'Ảnh RouterSim dùng F0/1 và .129, khác F0/0 .130 trong sơ đồ Tuần 1; cả hai đều hợp lệ.' },
     ],
-    verify: ['Ping PC1 → PC2 .150 và chiều ngược lại.', 'Đối chiếu R2 F0/1 .129 với default gateway .129 của PC2.'],
+    verify: ['Sau khi cấu hình cổng của cả hai router rồi khai báo RIP, dùng Show ip route theo tài liệu.', 'Mỗi router cần thấy 3 mạng /26: 2 tuyến C và 1 tuyến R.'],
   },
   {
     id: 'week34-three-router-guide', title: 'Tuần 3–4 · 3 router tam giác theo hướng dẫn',
@@ -63,7 +63,7 @@ export const TEACHER_LABS: TeacherLab[] = [
       { network: '192.168.1.128/27', purpose: 'R3 – PC3', reason: 'R3 .129, PC3 .130.' },
       { network: '192.168.1.160/27', purpose: 'R3 – R1', reason: 'Hai đầu serial .161 và .162.' },
     ],
-    verify: ['Ping từng PC tới gateway, rồi thử PC1 → PC2, PC3.', 'Dùng show ip route xem các mạng /27 học qua RIP.'],
+    verify: ['Cấu hình cổng của cả ba router trước, sau đó mới nhập các khối Router RIP trong tài liệu.', 'Dùng Show ip route: mỗi router cần thấy 6 mạng /27, gồm 3 tuyến C và 3 tuyến R.'],
   },
   {
     id: 'week34-three-router-195', title: 'Tuần 3–4 · 3 router, dải 195.10.10.x',

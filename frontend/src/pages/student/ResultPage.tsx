@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { preprocessAllMath } from '../../components/aiMathTokens';
 import 'katex/dist/katex.min.css';
+import { MathText } from '../../components/MathText';
 import { apiClient } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import { AttemptResult } from '../../types';
@@ -397,14 +398,14 @@ const AnswerReviewSummary: React.FC<AnswerReviewSummaryProps> = ({ rev, isCorrec
       <div>
         <span className="font-semibold text-slate-700">Câu trả lời của bạn: </span>
         <span className={`font-medium ${!isCorrect ? 'text-rose-700 font-bold' : 'text-slate-900'}`}>
-          {formatAnswer(rev.user_answer)}
+          <MathText text={formatAnswer(rev.user_answer)} />
         </span>
       </div>
       {hasCorrectAnswer && (
         <div>
           <span className="font-semibold text-emerald-700">Đáp án chuẩn: </span>
           <span className="text-emerald-900 font-bold">
-            {formatAnswer(correctAnswer)}
+            <MathText text={formatAnswer(correctAnswer)} />
           </span>
         </div>
       )}

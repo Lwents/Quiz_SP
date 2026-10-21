@@ -7,7 +7,7 @@ function portName(device: Device, original: string): string | null {
   if (device.kind === 'router') return device.ports.some(port => port.name === name) ? name : null;
   const number = Number(name.match(/\d+$/)?.[0]);
   if (!Number.isInteger(number) || number < 1) return null;
-  const index = device.switchModel === '1900' && name.startsWith('F') ? number + 12 : number;
+  const index = device.switchModel === '1900' && name.startsWith('F') ? number >= 26 ? number - 13 : number + 12 : number;
   const port = `P${index}`;
   return device.ports.some(item => item.name === port) ? port : null;
 }
@@ -43,6 +43,21 @@ export function importRsm(xml: string): { name: string; topology: Topology } {
     }) };
     if (kind === 'pc') device.gateway = interfaces[0]?.querySelector('primaryIpConfig > defaultGateway')?.textContent?.trim() || '';
     const ripNetworks = Array.from(element.querySelectorAll('runningConfig > protocols > rip > networkMap > map')).map(map => map.textContent?.trim() || '').filter(Boolean);
+    const startup = element.querySelector('startupConfig');
+    if (startup) {
+      const startupInterfaces = Array.from(element.querySelectorAll('startupInterfaces > *'));
+      device.startupConfig = {
+        name: Array.from(startup.querySelectorAll('parms > parm')).find(parm => parm.getAttribute('name') === 'HOSTNAME')?.textContent?.trim() || 'Router',
+        ports: device.ports.map(port => {
+          const source = startupInterfaces.find(item => portName(device, item.getAttribute('type') || '') === port.name);
+          const rate = Number(source?.querySelector('clockRate')?.textContent || 0);
+          return { name: port.name, ip: source?.querySelector('primaryIpConfig > ipAddress')?.textContent?.trim() || '',
+            mask: source?.querySelector('primaryIpConfig > subnetMask')?.textContent?.trim() || '255.255.255.0',
+            enabled: source ? source.getAttribute('shutdown') !== 'true' : false, ...(rate > 0 ? { clockRate: rate } : {}) };
+        }),
+        ripNetworks: Array.from(startup.querySelectorAll('protocols > rip > networkMap > map')).map(map => map.textContent?.trim() || '').filter(Boolean),
+      };
+    }
     device.ripNetworks = ripNetworks;
     devices.push(device);
     ids.set(`${type}:${sourceId}`, id);

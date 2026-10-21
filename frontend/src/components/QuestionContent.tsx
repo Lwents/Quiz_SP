@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Maximize2, Minus, Plus, X } from 'lucide-react';
 import { resolveMediaUrl } from '../api/urls';
+import { MathText } from './MathText';
 
 interface QuestionContentProps {
   content: string;
@@ -69,11 +70,11 @@ export const QuestionContent: React.FC<QuestionContentProps> = ({ content, image
   let imageCount = 0;
   MARKDOWN_IMAGE.lastIndex = 0;
   for (const match of text.matchAll(MARKDOWN_IMAGE)) {
-    if (match.index > lastIndex) children.push(<span key={`text-${lastIndex}`} className="whitespace-pre-wrap">{text.slice(lastIndex, match.index)}</span>);
+    if (match.index > lastIndex) children.push(<span key={`text-${lastIndex}`} className="whitespace-pre-wrap"><MathText text={text.slice(lastIndex, match.index)} /></span>);
     children.push(<QuestionImage key={`image-${imageCount++}-${match[2]}`} src={match[2]} alt={match[1] || 'Hình minh họa câu hỏi'} />);
     lastIndex = match.index + match[0].length;
   }
-  if (lastIndex < text.length) children.push(<span key={`text-${lastIndex}`} className="whitespace-pre-wrap">{text.slice(lastIndex)}</span>);
+  if (lastIndex < text.length) children.push(<span key={`text-${lastIndex}`} className="whitespace-pre-wrap"><MathText text={text.slice(lastIndex)} /></span>);
   if (hasConfigImage) children.push(<QuestionImage key={imageUrl} src={imageUrl!} alt="Hình minh họa câu hỏi" />);
   return <div className={`min-w-0 max-w-full [overflow-wrap:anywhere] ${className}`}>{children}</div>;
 };

@@ -1,5 +1,6 @@
 import { buildTeacherExample } from './teacherLabs';
 import { networkInfo } from './model';
+import { getSourceRouterSteps } from './teacherSourceCommands';
 import type { WalkthroughStep } from './threeRouterWalkthrough';
 
 export type GuideTarget = { kind: 'devices' | 'ports' | 'host' | 'console'; deviceId?: string; label: string };
@@ -44,7 +45,7 @@ export function getTeacherWalkthrough(id: string, studentNumber = 1): TeacherPra
       why: cable.dce ? 'Đây là cáp serial nối hai router. Một đầu DCE cấp nhịp truyền, sau này phải nhập clock rate ở đúng đầu ấy.' : 'Dây này nối PC vào mạng bên cạnh. Chọn đúng cổng để lệnh IP ở bước sau áp dụng lên cổng thật sự có dây.',
       actions: [
         `Nhấp chuột phải ${first.name} (thiết bị thứ ${Number(first.id.replace(/\D/g, ''))} trong nhóm ${first.kind === 'pc' ? 'Host' : first.kind === 'router' ? 'Router' : 'Switch'}). Bấm cổng ${firstPortLabel} trên hình mặt sau.`,
-        ...(dce ? [`Hộp Chọn đầu DCE xuất hiện sau khi chọn cổng serial đầu tiên. Chọn “${cable.dce!.deviceId === cable.a.deviceId && cable.dce!.port === cable.a.port ? 'This end' : 'Other end'}” để ${dce.name} ${cable.dce!.port} là DCE, rồi bấm OK. Sau đó chọn đầu dây bên kia.`, 'Word có clock rate ở cả hai đầu serial; trong mô phỏng chỉ nhập clock rate 64000 tại đầu DCE đã chọn.'] : []),
+        ...(dce ? [`Sau khi chọn cổng serial đầu tiên, hộp “DCE or DTE” của RouterSim hiện ra. Chọn ${cable.dce!.deviceId === cable.a.deviceId && cable.dce!.port === cable.a.port ? 'DCE' : 'DTE'} để ${dce.name} ${cable.dce!.port} là đầu DCE. Sau đó chọn cổng serial ở router còn lại.`, 'Word ghi clock rate 64000 ở cả hai đầu. Giữ nguyên lệnh khi đối chiếu; đầu DTE sẽ báo %Error: This command applies only to DCE interfaces, đúng như app gốc.'] : []),
         `Nhấp phải ${second.name}, bấm cổng ${secondPortLabel}. Dây xuất hiện giữa hai thiết bị.`,
         'Nếu chọn sai, bấm × trên cổng đã nối để tháo dây rồi nối lại.',
       ],
@@ -66,6 +67,8 @@ export function getTeacherWalkthrough(id: string, studentNumber = 1): TeacherPra
       result: `Nhìn nhãn cạnh ${host.name}: phải hiện ${host.ports[0].ip}/${networkInfo(host.ports[0].ip, host.ports[0].mask)!.prefix}.`,
     });
   }
+  const sourceSteps = getSourceRouterSteps(id);
+  if (sourceSteps) return [...steps, ...sourceSteps];
   for (const router of routers) {
     const target: GuideTarget = { kind: 'console', deviceId: router.id, label: `👉 Mở ô nhập lệnh ${router.name}` };
     const addCommand = (command: string, why: string, result: string) => steps.push({
@@ -99,6 +102,6 @@ export function getTeacherWalkthrough(id: string, studentNumber = 1): TeacherPra
     const other = hosts.find(item => item.id !== host.id)!;
     steps.push({ title: `${host.name}: ping ${other.name}`, why: switches.length ? 'Các PC cùng mạng gửi trực tiếp qua switch; không cần RIP.' : routers.length === 1 ? 'R1 biết cả hai mạng vì cả hai cổng nối trực tiếp. Bài này không cần RIP.' : 'Ping tới PC khác LAN cần cáp serial hoạt động, gateway đúng và RIP học đủ đường đi cả hai chiều.', actions: [`Trong console ${host.name}, gõ dòng bên dưới rồi Enter.`], commands: [`ping ${other.ports[0].ip}`], commandInput: true, target, result: 'Cần thấy Reply from, Received = 4, Lost = 0. Nếu lỗi, kiểm tra từng chặng gần trước rồi mới kiểm tra mạng xa.' });
   }
-  steps.push({ title: 'Lưu bài thực hành', why: 'Tệp sơ đồ giữ lại thiết bị, dây và cấu hình bạn vừa tự nhập.', actions: ['Bấm biểu tượng đĩa mềm trên thanh công cụ hoặc nhấn Ctrl+S để tải tệp JSON.', 'Nếu muốn làm lại, chọn Tools → Reset selected lab để bắt đầu lại với vùng vẽ trống.'], result: 'Bạn đã có một bản sơ đồ để mở lại bằng File → Open.' });
+  steps.push({ title: 'Lưu bài thực hành', why: 'Tệp sơ đồ giữ lại thiết bị, dây và cấu hình bạn vừa tự nhập.', actions: ['Bấm biểu tượng đĩa mềm trên thanh công cụ hoặc nhấn Ctrl+S để tải tệp RouterSim .rsm.', 'Nếu muốn làm lại, chọn Tools → Reset selected lab để bắt đầu lại với vùng vẽ trống.'], result: 'Bạn đã có một bản sơ đồ để mở lại bằng File → Open.' });
   return steps;
 }
