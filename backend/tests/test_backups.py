@@ -1,4 +1,5 @@
 import hashlib
+import asyncio
 import uuid
 from datetime import datetime, timezone
 
@@ -6,6 +7,62 @@ import pytest
 
 from app.api.v1.backups import FORMAT, TABLES, VERSION, _json_bytes, parse_backup
 from app.models import Base
+
+
+def test_export_round_trip_covers_tables_without_id_columns(monkeypatch):
+    from app.api.v1 import backups
+
+    backup = sample_backup()
+    now = datetime.now(timezone.utc).isoformat()
+    admin_id = backup["tables"]["users"][0]["id"]
+    backup["tables"]["admin_settings"] = [{
+        "key": "auth_policy", "value": {"registration_enabled": False},
+        "created_at": now, "updated_at": now,
+    }]
+    backup["tables"]["email_verifications"] = [{
+        "user_id": admin_id, "token_hash": "test-token-hash", "expires_at": now,
+        "sent_at": now, "verified_at": None,
+    }]
+    visited = []
+
+    class Rows:
+        def __init__(self, rows):
+            self.rows = rows
+
+        def mappings(self):
+            return self
+
+        def all(self):
+            return self.rows
+
+    class Session:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        def begin(self):
+            return self
+
+        async def execute(self, statement):
+            if not hasattr(statement, "get_final_froms"):
+                return Rows([])
+            table = statement.get_final_froms()[0]
+            assert list(statement._order_by_clauses) == list(table.primary_key.columns)
+            visited.append(table.name)
+            return Rows(backup["tables"][table.name])
+
+    monkeypatch.setattr(backups, "AsyncSessionLocal", Session)
+    response = asyncio.run(backups.export_backup(uuid.UUID(admin_id)))
+    parsed, summary = parse_backup(response.body)
+    assert visited == list(TABLES)
+    assert summary["database_complete"] is True
+    assert summary["total_rows"] == 3
+    assert parsed["admin_settings"][0]["key"] == "auth_policy"
+    assert parsed["email_verifications"][0]["user_id"] == uuid.UUID(admin_id)
+    assert response.headers["content-disposition"].endswith('.json"')
+    assert response.headers["cache-control"] == "no-store"
 
 
 EXPECTED_TABLES = {

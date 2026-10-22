@@ -234,7 +234,7 @@ async def export_backup(admin_id: uuid.UUID = Depends(_authorize_admin)):
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY"))
             tables = {}
             for name, table in TABLES.items():
-                rows = (await session.execute(select(table).order_by(table.c.id))).mappings().all()
+                rows = (await session.execute(select(table).order_by(*table.primary_key.columns))).mappings().all()
                 tables[name] = [
                     {column.name: _encode_value(row[column.name]) for column in table.columns}
                     for row in rows
