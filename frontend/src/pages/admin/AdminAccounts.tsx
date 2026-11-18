@@ -5,6 +5,7 @@ import { dateTime, exportCsv } from "./adminTypes";
 import type { Account } from "./adminTypes";
 import { AdminDialog } from '../../components/AdminDialog';
 import { useAuthStore } from '../../stores/authStore';
+import { AccountAttempts } from './AccountAttempts';
 import { ShieldCheck } from 'lucide-react';
 
 const input = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm";
@@ -19,6 +20,7 @@ const roleName = (role: string) =>
 const empty = { full_name: "", email: "", password: "", role: "STUDENT" };
 export function AdminAccounts() {
   const actor = useAuthStore((state) => state.user);
+  const [historyUser, setHistoryUser] = useState<Account | null>(null);
   const [users, setUsers] = useState<Account[]>([]);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
@@ -89,6 +91,7 @@ export function AdminAccounts() {
           {creating ? "Đóng form" : "+ Tạo tài khoản"}
         </button>
       </header>
+      {historyUser && <AccountAttempts key={historyUser.id} account={historyUser} onClose={() => setHistoryUser(null)} />}
       {creating && (
         <form
           className="grid gap-3 rounded-2xl border bg-white p-5 sm:grid-cols-2"
@@ -211,6 +214,7 @@ export function AdminAccounts() {
                 </p>
               </div>
               <div className="flex flex-wrap items-start gap-2">
+                <button className={button} onClick={() => setHistoryUser(u)}>Lịch sử & điểm bài làm</button>
                 <select
                   aria-label={`Vai trò của ${u.email}`}
                   disabled={busy}

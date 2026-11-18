@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.core.database import AsyncSessionLocal, Base, engine
 from app.core.security import get_password_hash
@@ -13,6 +13,7 @@ from app.models import User, UserRole
 async def init_db():
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
+        await connection.execute(text("ALTER TABLE attempts ADD COLUMN IF NOT EXISTS extra_minutes INTEGER NOT NULL DEFAULT 0"))
 
 
 async def seed_data():

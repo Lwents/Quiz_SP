@@ -1,4 +1,6 @@
 import uuid
+from math import ceil
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -72,6 +74,60 @@ async def list_users_for_admin(
         }
         for user in users
     ]
+
+
+@router.get("/admin/{user_id}/attempts")
+async def user_attempts_for_admin(
+    user_id: uuid.UUID,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    target = await db.get(User, user_id)
+    if target is None:
+        raise HTTPException(404, "Không tìm thấy tài khoản")
+    total = (await db.execute(select(func.count()).select_from(Attempt).where(Attempt.user_id == user_id))).scalar_one()
+    rows = (await db.execute(select(Attempt).where(Attempt.user_id == user_id)
+        .options(selectinload(Attempt.quiz))
+        .order_by(Attempt.started_at.desc(), Attempt.id).limit(limit).offset(offset))).scalars().all()
+    return {"total": total, "items": [{
+        "id": row.id, "quiz_title": row.quiz.title, "quiz_id": row.quiz_id,
+        "status": row.status.value, "score": row.score, "max_score": row.max_score,
+        "percentage": round(row.score / row.max_score * 100, 1) if row.max_score else 0,
+        "started_at": row.started_at, "submitted_at": row.submitted_at,
+        "duration_seconds": row.duration_seconds,
+        "extra_minutes": row.extra_minutes,
+        "timed": row.quiz.duration_minutes > 0,
+    } for row in rows]}
+
+
+class AttemptExtension(BaseModel):
+    minutes: int = Field(ge=1, le=1440, strict=True)
+
+
+@router.post("/admin/{user_id}/attempts/{attempt_id}/extend")
+async def extend_attempt_for_admin(
+    user_id: uuid.UUID,
+    attempt_id: uuid.UUID,
+    changes: AttemptExtension,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    attempt = (await db.execute(
+        select(Attempt).where(Attempt.id == attempt_id, Attempt.user_id == user_id)
+        .options(selectinload(Attempt.quiz)).with_for_update()
+    )).scalar_one_or_none()
+    if attempt is None:
+        raise HTTPException(404, "Không tìm thấy lượt làm bài")
+    if attempt.status != AttemptStatus.IN_PROGRESS or attempt.quiz.duration_minutes <= 0:
+        raise HTTPException(409, "Chỉ gia hạn được lượt làm bài có giới hạn giờ và chưa nộp")
+    elapsed_minutes = ceil((datetime.now(timezone.utc) - attempt.started_at).total_seconds() / 60)
+    attempt.extra_minutes = max(attempt.extra_minutes, elapsed_minutes - attempt.quiz.duration_minutes) + changes.minutes
+    extra_minutes = attempt.extra_minutes
+    db.add(AuditLog(user_id=current_user.id, email=current_user.email, action="attempt_extended"))
+    await db.commit()
+    return {"extra_minutes": extra_minutes}
 
 
 @router.patch("/admin/{user_id}", response_model=AdminUserResponse)

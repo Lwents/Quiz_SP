@@ -28,7 +28,7 @@ from app.student_questions import student_question_config
 
 router = APIRouter(prefix="/attempts", tags=["attempts"])
 
-async def grade_and_finalize_attempt(attempt: Attempt, db: AsyncSession) -> Attempt:
+async def grade_and_finalize_attempt(attempt: Attempt, db: AsyncSession, *, only_if_expired: bool = False) -> Attempt:
     # Serialize grading and answer writes, then reload after acquiring the lock.
     locked = await db.execute(
         select(Attempt).where(Attempt.id == attempt.id).with_for_update()
@@ -41,6 +41,12 @@ async def grade_and_finalize_attempt(attempt: Attempt, db: AsyncSession) -> Atte
     attempt = locked.scalar_one()
     if attempt.status in (AttemptStatus.SUBMITTED, AttemptStatus.GRADED):
         return attempt
+
+    if only_if_expired:
+        duration = attempt.quiz.duration_minutes
+        deadline = attempt.started_at + timedelta(minutes=duration + attempt.extra_minutes)
+        if duration <= 0 or datetime.now(timezone.utc) < deadline:
+            return attempt
 
     # Ensure relations are loaded
     if not attempt.quiz or not hasattr(attempt.quiz, 'quiz_questions') or not attempt.answers:
@@ -195,10 +201,11 @@ async def start_quiz_attempt(
         # Check if duration limit has expired while student was away (NO PAUSE)
         if quiz.duration_minutes > 0:
             elapsed = (datetime.now(timezone.utc) - existing_attempt.started_at).total_seconds()
-            if elapsed >= quiz.duration_minutes * 60:
+            if elapsed >= (quiz.duration_minutes + existing_attempt.extra_minutes) * 60:
                 # Expired while away, auto finalize
-                await grade_and_finalize_attempt(existing_attempt, db)
-                existing_attempt = None
+                closed = await grade_and_finalize_attempt(existing_attempt, db, only_if_expired=True)
+                if closed.status != AttemptStatus.IN_PROGRESS:
+                    existing_attempt = None
 
     if not existing_attempt:
         # If max attempts limit is configured, re-verify completed count
@@ -270,7 +277,7 @@ async def start_quiz_attempt(
         quiz_id=quiz.id,
         started_at=attempt.started_at,
         status=attempt.status,
-        duration_minutes=quiz.duration_minutes,
+        duration_minutes=quiz.duration_minutes + (attempt.extra_minutes if quiz.duration_minutes > 0 else 0),
         questions=questions_out
     )
 
@@ -303,10 +310,11 @@ async def get_my_active_attempts(
     for att in in_progress:
         if att.quiz and att.quiz.duration_minutes > 0:
             elapsed = (now - att.started_at).total_seconds()
-            if elapsed >= att.quiz.duration_minutes * 60:
+            if elapsed >= (att.quiz.duration_minutes + att.extra_minutes) * 60:
                 # Expired while away, auto finalize
-                await grade_and_finalize_attempt(att, db)
-                continue
+                closed = await grade_and_finalize_attempt(att, db, only_if_expired=True)
+                if closed.status != AttemptStatus.IN_PROGRESS:
+                    continue
         active_quiz_ids.append(att.quiz_id)
 
     return list(set(active_quiz_ids))
@@ -325,7 +333,7 @@ async def update_attempt_progress(
             detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Chỉ sinh viên mới được cập nhật tiến độ làm bài"}}
         )
 
-    attempt = await db.get(Attempt, attempt_id)
+    attempt = (await db.execute(select(Attempt).where(Attempt.id == attempt_id).with_for_update())).scalar_one_or_none()
     if not attempt or attempt.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Attempt not found")
     if attempt.status != AttemptStatus.IN_PROGRESS:
@@ -333,8 +341,11 @@ async def update_attempt_progress(
 
     if data.duration_seconds is not None:
         attempt.duration_seconds = max(attempt.duration_seconds or 0, data.duration_seconds)
+    quiz = await db.get(Quiz, attempt.quiz_id)
+    duration_minutes = quiz.duration_minutes + attempt.extra_minutes if quiz.duration_minutes > 0 else 0
+    duration_seconds = attempt.duration_seconds
     await db.commit()
-    return {"status": "ok", "duration_seconds": attempt.duration_seconds}
+    return {"status": "ok", "duration_seconds": duration_seconds, "duration_minutes": duration_minutes}
 
 
 @router.get("/{attempt_id}", response_model=AttemptStatusResponse)
@@ -369,8 +380,8 @@ async def get_attempt_state(
     # If in-progress and time limit expired, auto finalize
     if attempt.status == AttemptStatus.IN_PROGRESS and attempt.quiz and attempt.quiz.duration_minutes > 0:
         elapsed = (datetime.now(timezone.utc) - attempt.started_at).total_seconds()
-        if elapsed >= attempt.quiz.duration_minutes * 60:
-            attempt = await grade_and_finalize_attempt(attempt, db)
+        if elapsed >= (attempt.quiz.duration_minutes + attempt.extra_minutes) * 60:
+            attempt = await grade_and_finalize_attempt(attempt, db, only_if_expired=True)
 
     duration = attempt.duration_seconds
     if attempt.status == AttemptStatus.IN_PROGRESS:
@@ -427,7 +438,7 @@ async def save_answer(
     quiz = await db.get(Quiz, attempt.quiz_id)
     if quiz and quiz.duration_minutes > 0:
         elapsed = (datetime.now(timezone.utc) - attempt.started_at).total_seconds()
-        if elapsed > quiz.duration_minutes * 60 + 15:
+        if elapsed > (quiz.duration_minutes + attempt.extra_minutes) * 60 + 15:
             await grade_and_finalize_attempt(attempt, db)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -467,6 +478,7 @@ async def save_answer(
 @router.post("/{attempt_id}/submit", response_model=AttemptResultResponse)
 async def submit_attempt(
     attempt_id: uuid.UUID,
+    automatic: bool = False,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -502,7 +514,9 @@ async def submit_attempt(
     if attempt.status in (AttemptStatus.SUBMITTED, AttemptStatus.GRADED):
         return await get_attempt_result(attempt_id=attempt_id, db=db, current_user=current_user)
 
-    await grade_and_finalize_attempt(attempt, db)
+    attempt = await grade_and_finalize_attempt(attempt, db, only_if_expired=automatic)
+    if attempt.status == AttemptStatus.IN_PROGRESS:
+        raise HTTPException(409, detail={"duration_minutes": attempt.quiz.duration_minutes + attempt.extra_minutes})
     return await get_attempt_result(attempt_id=attempt_id, db=db, current_user=current_user)
 
 

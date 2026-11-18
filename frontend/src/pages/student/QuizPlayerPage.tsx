@@ -34,6 +34,8 @@ export const QuizPlayerPage: React.FC = () => {
 
   const debounceTimers = useRef<Record<string, any>>({});
   const pendingSaves = useRef<Record<string, any>>({});
+  const submitInFlight = useRef(false);
+  const lastAutoSubmitAt = useRef(0);
   const activeSecondsRef = useRef<number>(0);
 
   // 1. Khởi tạo / khôi phục attempt
@@ -48,6 +50,10 @@ export const QuizPlayerPage: React.FC = () => {
       const data: AttemptStart = res.data;
       // Load existing answers if resuming
       const statusRes = await apiClient.get(`/attempts/${data.id}`);
+      if (statusRes.data.status !== 'IN_PROGRESS') {
+        navigate(`/results/${data.id}`);
+        return;
+      }
       const existingAnswersMap: Record<string, any> = {};
       statusRes.data.answers?.forEach((a: any) => {
         if (a.answer !== null && a.answer !== undefined) {
@@ -82,11 +88,6 @@ export const QuizPlayerPage: React.FC = () => {
         const totalSec = data.duration_minutes * 60;
         const remaining = Math.max(0, totalSec - elapsed);
         setTimeLeft(remaining);
-        if (remaining <= 0) {
-          toast.warning('Thời gian làm bài thi đã kết thúc! Hệ thống đang tự động nộp bài...');
-          handleSubmit();
-          return;
-        }
       }
     } catch (err: any) {
       toast.error(err.response?.data?.detail?.error?.message || 'Không thể bắt đầu bài làm');
@@ -113,10 +114,14 @@ export const QuizPlayerPage: React.FC = () => {
     const interval = setInterval(() => {
       const elapsed = Math.max(0, Math.floor((Date.now() - startTimeMs) / 1000));
       activeSecondsRef.current = elapsed;
-      // Sync progress to server every 20 seconds
-      if (elapsed % 20 === 0) {
+      // Sync progress to server every 5 seconds
+      if (elapsed % 5 === 0) {
         apiClient.patch(`/attempts/${attempt.id}/progress`, {
           duration_seconds: elapsed,
+        }).then(({ data }) => {
+          if (!Number.isInteger(data.duration_minutes)) return;
+          setAttempt((current) => current?.id === attempt.id && data.duration_minutes > current.duration_minutes
+            ? { ...current, duration_minutes: data.duration_minutes } : current);
         }).catch(() => {});
       }
     }, 1000);
@@ -136,10 +141,9 @@ export const QuizPlayerPage: React.FC = () => {
       const remainingSec = Math.max(0, Math.ceil((endTimeMs - nowMs) / 1000));
       setTimeLeft(remainingSec);
 
-      if (remainingSec <= 0) {
-        clearInterval(timerInterval);
-        toast.warning('Thời gian làm bài đã hết! Hệ thống đang tự động nộp bài...');
-        handleSubmit();
+      if (remainingSec <= 0 && nowMs - lastAutoSubmitAt.current >= 5000) {
+        lastAutoSubmitAt.current = nowMs;
+        void handleSubmit(true);
       }
     };
 
@@ -217,8 +221,9 @@ export const QuizPlayerPage: React.FC = () => {
   };
 
   // 8. Submit
-  const handleSubmit = async () => {
-    if (!attempt || submitting) return;
+  const handleSubmit = async (automatic = false) => {
+    if (!attempt || submitInFlight.current) return;
+    submitInFlight.current = true;
     setSubmitting(true);
     try {
       // Flush any pending saves
@@ -227,10 +232,16 @@ export const QuizPlayerPage: React.FC = () => {
       );
       await Promise.all(saves);
 
-      await apiClient.post(`/attempts/${attempt.id}/submit`);
+      await apiClient.post(`/attempts/${attempt.id}/submit`, null, { params: { automatic } });
       navigate(`/results/${attempt.id}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.detail?.error?.message || 'Có lỗi khi nộp bài');
+      const duration = err.response?.data?.detail?.duration_minutes;
+      if (automatic && err.response?.status === 409 && Number.isInteger(duration)) {
+        setAttempt((current) => current?.id === attempt.id ? { ...current, duration_minutes: duration } : current);
+      } else {
+        toast.error(err.response?.data?.detail?.error?.message || 'Có lỗi khi nộp bài');
+      }
+      submitInFlight.current = false;
       setSubmitting(false);
     }
   };
@@ -590,7 +601,7 @@ export const QuizPlayerPage: React.FC = () => {
               <button
                 type="button"
                 disabled={submitting}
-                onClick={handleSubmit}
+                onClick={() => void handleSubmit()}
                 className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition shadow-xs disabled:opacity-60 cursor-pointer"
               >
                 {submitting ? 'Đang nộp...' : 'Xác nhận nộp bài'}

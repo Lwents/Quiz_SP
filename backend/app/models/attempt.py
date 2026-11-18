@@ -27,6 +27,8 @@ class Attempt(Base, UUIDMixin, TimestampMixin):
     max_score = Column(Float, default=0.0, nullable=False)
     duration_seconds = Column(Integer, default=0, nullable=False)
 
+    extra_minutes = Column(Integer, default=0, server_default="0", nullable=False)
+
     quiz = relationship("Quiz", back_populates="attempts")
     answers = relationship("AttemptAnswer", back_populates="attempt", cascade="all, delete-orphan")
 
